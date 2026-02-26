@@ -31,7 +31,7 @@ function FAQItem({
           transition={{ duration: 0.25 }}
           className="flex-shrink-0 text-gold"
         >
-          <ChevronDown className="h-5 w-5" />
+          <ChevronDown className="h-5 w-5" aria-hidden="true" />
         </motion.span>
       </button>
 

@@ -150,6 +150,7 @@ export default function AboutPage() {
                   fill
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-black/20 transition-opacity duration-300 group-hover:bg-black/10" />
               </div>

@@ -177,6 +177,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"
                   priority
+                  quality={80}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
                 <div className="absolute left-4 top-4">
@@ -198,6 +199,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                         fill
                         sizes="(max-width: 1024px) 25vw, 12vw"
                         className="object-cover transition-transform duration-300 hover:scale-110"
+                        loading="lazy"
                       />
                     </div>
                   ))}
@@ -303,6 +305,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          loading="lazy"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                         <div className="absolute right-3 top-3">

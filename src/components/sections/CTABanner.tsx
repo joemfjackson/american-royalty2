@@ -11,6 +11,8 @@ export function CTABanner() {
         alt="Guests dancing and celebrating on an American Royalty party bus"
         fill
         sizes="100vw"
+        quality={80}
+        loading="lazy"
         className="object-cover"
       />
       {/* Heavy dark overlay */}
