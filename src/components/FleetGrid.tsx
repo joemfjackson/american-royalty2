@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Users, Check } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
@@ -9,10 +10,13 @@ import { Badge } from '@/components/ui/Badge'
 import { formatCurrency } from '@/lib/utils'
 import type { Vehicle } from '@/types'
 
-const vehicleEmoji: Record<Vehicle['type'], string> = {
-  'Party Bus': '\uD83D\uDE8C',
-  'Sprinter Limo': '\uD83D\uDE90',
-  'Stretch Limo': '\uD83D\uDE97',
+const vehicleImages: Record<string, string> = {
+  'the-sovereign': '/images/fleet/white-bus-casino.jpg',
+  'the-crown-jewel': '/images/fleet/black-bus-mgm.jpg',
+  'royal-sprinter': '/images/fleet/interior-pink-blue.jpg',
+  'the-monarch': '/images/fleet/interior-blue-led.jpg',
+  'black-diamond': '/images/fleet/interior-rainbow.jpg',
+  'the-empire': '/images/fleet/white-bus-valet.jpg',
 }
 
 const FILTER_TABS = ['All', 'Party Bus', 'Sprinter Limo', 'Stretch Limo'] as const
@@ -28,15 +32,16 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
       transition={{ duration: 0.4, delay: index * 0.08 }}
     >
       <Card hover className="group flex h-full flex-col overflow-hidden p-0">
-        {/* Placeholder image area */}
-        <div className="relative flex h-56 items-center justify-center bg-gradient-to-br from-dark-card via-royal/10 to-dark-card">
-          <span
-            className="text-7xl transition-transform duration-300 group-hover:scale-110"
-            role="img"
-            aria-label={vehicle.type}
-          >
-            {vehicleEmoji[vehicle.type]}
-          </span>
+        {/* Vehicle image */}
+        <div className="relative h-56 overflow-hidden">
+          <Image
+            src={vehicleImages[vehicle.slug] || '/images/fleet/white-bus-casino.jpg'}
+            alt={`${vehicle.name} - ${vehicle.type} in Las Vegas`}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
           <div className="absolute right-3 top-3">
             <Badge variant="gold">{vehicle.type}</Badge>
           </div>

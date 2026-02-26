@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { ChevronRight, Users, Clock, Star } from 'lucide-react'
 import { getServiceBySlug, getVehicles } from '@/lib/data'
@@ -56,12 +57,30 @@ export async function generateMetadata({ params }: MetadataProps): Promise<Metad
 }
 
 // ---------------------------------------------------------------------------
-// Vehicle emoji helper
+// Service hero images
 // ---------------------------------------------------------------------------
-const vehicleEmoji: Record<Vehicle['type'], string> = {
-  'Party Bus': '\uD83D\uDE8C',
-  'Sprinter Limo': '\uD83D\uDE90',
-  'Stretch Limo': '\uD83D\uDE97',
+const serviceImages: Record<string, string> = {
+  'bachelor-party': '/images/services/bachelor.jpg',
+  'bachelorette-party': '/images/services/bachelorette.jpg',
+  wedding: '/images/services/wedding.jpg',
+  nightlife: '/images/services/nightlife.jpg',
+  corporate: '/images/services/corporate.jpg',
+  birthday: '/images/services/birthday.jpg',
+  prom: '/images/services/prom.jpg',
+  airport: '/images/services/airport.jpg',
+  'strip-tour': '/images/services/strip-tour.jpg',
+}
+
+// ---------------------------------------------------------------------------
+// Vehicle image mapping
+// ---------------------------------------------------------------------------
+const vehicleImages: Record<string, string> = {
+  'the-sovereign': '/images/fleet/white-bus-casino.jpg',
+  'the-crown-jewel': '/images/fleet/black-bus-mgm.jpg',
+  'royal-sprinter': '/images/fleet/interior-pink-blue.jpg',
+  'the-monarch': '/images/fleet/interior-blue-led.jpg',
+  'black-diamond': '/images/fleet/interior-rainbow.jpg',
+  'the-empire': '/images/fleet/white-bus-valet.jpg',
 }
 
 // ---------------------------------------------------------------------------
@@ -135,7 +154,29 @@ export default async function ServiceDetailPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
-      <article className="section-padding pt-28">
+      {/* ---- Hero Banner Image ---- */}
+      {serviceImages[slug] && (
+        <div className="relative h-64 w-full sm:h-80 lg:h-96">
+          <Image
+            src={serviceImages[slug]}
+            alt={`${service.title} party bus service in Las Vegas`}
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black" />
+          <div className="absolute inset-0 flex items-end">
+            <div className="container-max px-4 pb-8 sm:px-6 lg:px-8">
+              <p className="text-sm font-semibold uppercase tracking-wider text-gold/80">
+                {service.icon} {service.title}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <article className="section-padding pt-10">
         <div className="container-max">
           {/* ---- Breadcrumb ---- */}
           <nav
@@ -249,15 +290,16 @@ export default async function ServiceDetailPage({ params }: PageProps) {
                     hover
                     className="flex h-full flex-col overflow-hidden p-0 transition-all duration-300 group-hover:-translate-y-1"
                   >
-                    {/* Image placeholder */}
-                    <div className="relative flex h-44 items-center justify-center bg-gradient-to-br from-dark-card via-royal/10 to-dark-card">
-                      <span
-                        className="text-5xl"
-                        role="img"
-                        aria-label={vehicle.type}
-                      >
-                        {vehicleEmoji[vehicle.type]}
-                      </span>
+                    {/* Vehicle image */}
+                    <div className="relative h-44 overflow-hidden">
+                      <Image
+                        src={vehicleImages[vehicle.slug] || '/images/fleet/white-bus-casino.jpg'}
+                        alt={`${vehicle.name} - ${vehicle.type}`}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                       <div className="absolute right-3 top-3">
                         <Badge variant="gold">{vehicle.type}</Badge>
                       </div>

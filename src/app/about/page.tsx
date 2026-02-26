@@ -1,10 +1,20 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Shield, Car, Clock, MapPin, Crown, Star, Users, Award } from 'lucide-react'
 import { SectionTag } from '@/components/ui/SectionTag'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { Card } from '@/components/ui/Card'
 import { BRAND, SERVICE_AREAS } from '@/lib/constants'
+
+const experienceGallery = [
+  { src: '/images/gallery/bachelorette-group.jpg', alt: 'Bachelorette party group celebrating on party bus' },
+  { src: '/images/gallery/bachelor-suits.jpg', alt: 'Bachelor party group in suits on party bus' },
+  { src: '/images/gallery/corporate-group.jpg', alt: 'Corporate team event on party bus' },
+  { src: '/images/gallery/full-bus-party.jpg', alt: 'Full bus of guests partying in Las Vegas' },
+  { src: '/images/gallery/friends-outside-bus.jpg', alt: 'Friends group photo outside American Royalty party bus' },
+  { src: '/images/gallery/wedding-on-bus.jpg', alt: 'Wedding couple celebrating on party bus' },
+]
 
 export const metadata: Metadata = {
   title: 'About American Royalty | Las Vegas Party Bus & Limo',
@@ -111,6 +121,40 @@ export default function AboutPage() {
               <p className="mt-1 text-sm text-white/50">{stat.label}</p>
             </div>
           ))}
+        </div>
+
+        {/* See the Experience Gallery */}
+        <div className="mt-28">
+          <div className="text-center">
+            <SectionTag>Gallery</SectionTag>
+            <h2 className="mt-3 text-2xl font-bold sm:text-3xl lg:text-4xl">
+              See the{' '}
+              <span className="gold-gradient-text">Experience</span>
+            </h2>
+            <GoldLine className="mx-auto mt-5" width="80px" />
+            <p className="mx-auto mt-4 max-w-2xl text-white/50">
+              From bachelorette parties to corporate events, here is what it
+              looks like to ride with American Royalty.
+            </p>
+          </div>
+
+          <div className="mt-10 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
+            {experienceGallery.map((photo) => (
+              <div
+                key={photo.src}
+                className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-dark-border"
+              >
+                <Image
+                  src={photo.src}
+                  alt={photo.alt}
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/20 transition-opacity duration-300 group-hover:bg-black/10" />
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Why Choose Us */}

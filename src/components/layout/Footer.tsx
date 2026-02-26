@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { BRAND, SERVICE_AREAS, MOCK_SERVICES } from '@/lib/constants'
 
 const QUICK_LINKS = [
@@ -23,13 +24,14 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           {/* Brand Column */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="group inline-flex flex-col items-start">
-              <span className="gold-gradient-text text-4xl font-bold leading-none tracking-wide">
-                AR
-              </span>
-              <span className="mt-1 text-[10px] font-semibold uppercase tracking-[3px] text-gold/70 transition-colors group-hover:text-gold">
-                American Royalty
-              </span>
+            <Link href="/" className="group inline-block">
+              <Image
+                src="/images/logo.png"
+                alt="American Royalty"
+                width={180}
+                height={72}
+                className="h-16 w-auto transition-opacity group-hover:opacity-90"
+              />
             </Link>
             <p className="mt-3 text-lg font-semibold italic text-gold/80">
               {BRAND.tagline}

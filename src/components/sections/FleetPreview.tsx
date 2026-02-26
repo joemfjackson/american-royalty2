@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Users } from 'lucide-react'
 import { SectionTag } from '@/components/ui/SectionTag'
@@ -9,10 +10,10 @@ import { Card } from '@/components/ui/Card'
 import { MOCK_VEHICLES } from '@/lib/constants'
 import type { Vehicle } from '@/types'
 
-const vehicleEmoji: Record<Vehicle['type'], string> = {
-  'Party Bus': '\uD83D\uDE8C',
-  'Sprinter Limo': '\uD83D\uDE90',
-  'Stretch Limo': '\uD83D\uDE95',
+const vehicleImages: Record<string, string> = {
+  'the-sovereign': '/images/fleet/white-bus-casino.jpg',
+  'the-crown-jewel': '/images/fleet/black-bus-mgm.jpg',
+  'royal-sprinter': '/images/fleet/interior-pink-blue.jpg',
 }
 
 const topVehicles = MOCK_VEHICLES.slice(0, 3)
@@ -26,12 +27,17 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
       transition={{ duration: 0.6, delay: index * 0.15 }}
     >
       <Card hover className="flex h-full flex-col overflow-hidden p-0">
-        {/* Placeholder image area */}
-        <div className="relative flex h-52 items-center justify-center bg-gradient-to-br from-dark-card via-royal/10 to-dark-card">
-          <span className="text-6xl" role="img" aria-label={vehicle.type}>
-            {vehicleEmoji[vehicle.type]}
-          </span>
-          <span className="absolute right-3 top-3 rounded-full bg-gold/10 px-3 py-1 text-xs font-semibold text-gold">
+        {/* Vehicle image */}
+        <div className="relative h-52 overflow-hidden">
+          <Image
+            src={vehicleImages[vehicle.slug] || '/images/fleet/white-bus-casino.jpg'}
+            alt={`${vehicle.name} - ${vehicle.type} exterior`}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          <span className="absolute right-3 top-3 rounded-full bg-black/50 px-3 py-1 text-xs font-semibold text-gold backdrop-blur-sm">
             {vehicle.type}
           </span>
         </div>

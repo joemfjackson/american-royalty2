@@ -1,11 +1,24 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { SectionTag } from '@/components/ui/SectionTag'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { MOCK_SERVICES } from '@/lib/constants'
 import type { Service } from '@/types'
+
+const serviceImages: Record<string, string> = {
+  'bachelor-party': '/images/services/bachelor.jpg',
+  'bachelorette-party': '/images/services/bachelorette.jpg',
+  wedding: '/images/services/wedding.jpg',
+  nightlife: '/images/services/nightlife.jpg',
+  corporate: '/images/services/corporate.jpg',
+  birthday: '/images/services/birthday.jpg',
+  prom: '/images/services/prom.jpg',
+  airport: '/images/services/airport.jpg',
+  'strip-tour': '/images/services/strip-tour.jpg',
+}
 
 function ServiceCard({ service, index }: { service: Service; index: number }) {
   return (
@@ -15,7 +28,22 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
       viewport={{ once: true, margin: '-40px' }}
       transition={{ duration: 0.5, delay: index * 0.08 }}
     >
-      <div className="group flex h-full flex-col rounded-xl border border-dark-border bg-dark-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-gold/30 hover:shadow-[0_0_40px_rgba(214,192,138,0.08)]">
+      <div className="group flex h-full flex-col overflow-hidden rounded-xl border border-dark-border bg-dark-card transition-all duration-300 hover:-translate-y-1 hover:border-gold/30 hover:shadow-[0_0_40px_rgba(214,192,138,0.08)]">
+        {/* Service thumbnail */}
+        {serviceImages[service.slug] && (
+          <div className="relative aspect-video overflow-hidden">
+            <Image
+              src={serviceImages[service.slug]}
+              alt={`${service.title} service in Las Vegas`}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-dark-card via-transparent to-transparent" />
+          </div>
+        )}
+
+        <div className="flex flex-1 flex-col p-6">
         <span className="text-3xl" role="img" aria-label={service.title}>
           {service.icon}
         </span>
@@ -36,6 +64,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
         >
           Learn More &rarr;
         </Link>
+        </div>
       </div>
     </motion.div>
   )

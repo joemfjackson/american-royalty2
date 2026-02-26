@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { Check, Users, Clock, ChevronRight, Phone } from 'lucide-react'
 import { getVehicleBySlug, getVehicles } from '@/lib/data'
@@ -46,12 +47,54 @@ export async function generateMetadata({ params }: MetadataProps): Promise<Metad
 }
 
 // ---------------------------------------------------------------------------
-// Emoji helper
+// Vehicle image mappings
 // ---------------------------------------------------------------------------
-const vehicleEmoji: Record<Vehicle['type'], string> = {
-  'Party Bus': '\uD83D\uDE8C',
-  'Sprinter Limo': '\uD83D\uDE90',
-  'Stretch Limo': '\uD83D\uDE97',
+const vehicleImages: Record<string, string> = {
+  'the-sovereign': '/images/fleet/white-bus-casino.jpg',
+  'the-crown-jewel': '/images/fleet/black-bus-mgm.jpg',
+  'royal-sprinter': '/images/fleet/interior-pink-blue.jpg',
+  'the-monarch': '/images/fleet/interior-blue-led.jpg',
+  'black-diamond': '/images/fleet/interior-rainbow.jpg',
+  'the-empire': '/images/fleet/white-bus-valet.jpg',
+}
+
+const vehicleGallery: Record<string, string[]> = {
+  'the-sovereign': [
+    '/images/fleet/white-bus-front.jpg',
+    '/images/fleet/interior-pink-blue.jpg',
+    '/images/fleet/interior-blue-led.jpg',
+    '/images/gallery/full-bus-party.jpg',
+  ],
+  'the-crown-jewel': [
+    '/images/fleet/black-bus-mgm-2.jpg',
+    '/images/fleet/interior-rainbow.jpg',
+    '/images/fleet/interior-rainbow-2.jpg',
+    '/images/gallery/celebration-group.jpg',
+  ],
+  'royal-sprinter': [
+    '/images/fleet/interior-blue-led.jpg',
+    '/images/fleet/interior-rainbow.jpg',
+    '/images/gallery/bachelorette-group.jpg',
+    '/images/gallery/bachelor-suits.jpg',
+  ],
+  'the-monarch': [
+    '/images/fleet/interior-pink-blue.jpg',
+    '/images/fleet/interior-rainbow.jpg',
+    '/images/gallery/dancing-on-bus.jpg',
+    '/images/gallery/nightlife-group.jpg',
+  ],
+  'black-diamond': [
+    '/images/fleet/interior-rainbow-2.jpg',
+    '/images/fleet/interior-blue-led.jpg',
+    '/images/fleet/black-bus-mgm.jpg',
+    '/images/gallery/friends-outside-bus.jpg',
+  ],
+  'the-empire': [
+    '/images/fleet/white-bus-front.jpg',
+    '/images/fleet/white-bus-casino.jpg',
+    '/images/fleet/interior-pink-blue.jpg',
+    '/images/gallery/corporate-group.jpg',
+  ],
 }
 
 // ---------------------------------------------------------------------------
@@ -124,18 +167,42 @@ export default async function VehicleDetailPage({ params }: PageProps) {
 
           {/* ---- Hero Section ---- */}
           <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
-            {/* Left: Image Placeholder */}
-            <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl border border-dark-border bg-gradient-to-br from-dark-card via-royal/10 to-dark-card">
-              <span
-                className="text-[120px]"
-                role="img"
-                aria-label={vehicle.type}
-              >
-                {vehicleEmoji[vehicle.type]}
-              </span>
-              <div className="absolute left-4 top-4">
-                <Badge variant="gold">{vehicle.type}</Badge>
+            {/* Left: Vehicle Image + Gallery */}
+            <div className="space-y-4">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-dark-border">
+                <Image
+                  src={vehicleImages[vehicle.slug] || '/images/fleet/white-bus-casino.jpg'}
+                  alt={`${vehicle.name} - ${vehicle.type} in Las Vegas`}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                <div className="absolute left-4 top-4">
+                  <Badge variant="gold">{vehicle.type}</Badge>
+                </div>
               </div>
+
+              {/* Gallery thumbnails */}
+              {vehicleGallery[vehicle.slug] && (
+                <div className="grid grid-cols-4 gap-2">
+                  {vehicleGallery[vehicle.slug].map((img, i) => (
+                    <div
+                      key={i}
+                      className="relative aspect-square overflow-hidden rounded-lg border border-dark-border"
+                    >
+                      <Image
+                        src={img}
+                        alt={`${vehicle.name} gallery photo ${i + 1}`}
+                        fill
+                        sizes="(max-width: 1024px) 25vw, 12vw"
+                        className="object-cover transition-transform duration-300 hover:scale-110"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Right: Vehicle Info */}
@@ -228,15 +295,16 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                 {related.map((rv) => (
                   <Link key={rv.id} href={`/fleet/${rv.slug}`} className="block">
                     <Card hover className="flex h-full flex-col overflow-hidden p-0">
-                      {/* Image placeholder */}
-                      <div className="relative flex h-44 items-center justify-center bg-gradient-to-br from-dark-card via-royal/10 to-dark-card">
-                        <span
-                          className="text-5xl"
-                          role="img"
-                          aria-label={rv.type}
-                        >
-                          {vehicleEmoji[rv.type]}
-                        </span>
+                      {/* Vehicle image */}
+                      <div className="relative h-44 overflow-hidden">
+                        <Image
+                          src={vehicleImages[rv.slug] || '/images/fleet/white-bus-casino.jpg'}
+                          alt={`${rv.name} - ${rv.type}`}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                         <div className="absolute right-3 top-3">
                           <Badge variant="gold">{rv.type}</Badge>
                         </div>

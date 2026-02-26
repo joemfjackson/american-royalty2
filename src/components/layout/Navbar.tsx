@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, Phone } from 'lucide-react'
@@ -64,13 +65,15 @@ export function Navbar() {
       >
         <div className="container-max mx-auto flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Logo */}
-          <Link href="/" className="group flex flex-col items-start">
-            <span className="gold-gradient-text text-3xl font-bold leading-none tracking-wide">
-              AR
-            </span>
-            <span className="mt-0.5 text-[9px] font-semibold uppercase tracking-[3px] text-gold/70 transition-colors group-hover:text-gold">
-              American Royalty
-            </span>
+          <Link href="/" className="group flex items-center">
+            <Image
+              src="/images/logo.png"
+              alt="American Royalty"
+              width={160}
+              height={64}
+              className="h-14 w-auto transition-opacity group-hover:opacity-90"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}

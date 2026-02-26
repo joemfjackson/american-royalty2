@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard,
@@ -14,7 +15,6 @@ import {
   LogOut,
   Menu,
   X,
-  Crown,
 } from 'lucide-react'
 
 const NAV_ITEMS = [
@@ -130,8 +130,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       >
         {/* Logo */}
         <div className="flex h-16 items-center gap-3 border-b border-dark-border px-5">
-          <Crown className="h-6 w-6 text-gold" />
-          <span className="text-lg font-bold text-gold">Admin Panel</span>
+          <Image
+            src="/images/logo.png"
+            alt="American Royalty"
+            width={120}
+            height={48}
+            className="h-9 w-auto"
+          />
+          <span className="text-xs font-semibold uppercase tracking-wider text-gold/60">Admin</span>
           <button
             onClick={() => setSidebarOpen(false)}
             className="ml-auto rounded-lg p-1 text-gray-400 hover:bg-white/5 hover:text-white lg:hidden"

@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Crown, Eye, EyeOff } from 'lucide-react'
+import Image from 'next/image'
+import { Eye, EyeOff } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 function isSupabaseConfigured(): boolean {
@@ -76,8 +77,14 @@ export default function AdminLoginPage() {
         <div className="rounded-2xl border border-dark-border bg-dark-card p-8 shadow-2xl">
           {/* Header */}
           <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/10">
-              <Crown className="h-8 w-8 text-gold" />
+            <div className="mx-auto mb-4 flex justify-center">
+              <Image
+                src="/images/logo.png"
+                alt="American Royalty"
+                width={180}
+                height={72}
+                className="h-16 w-auto"
+              />
             </div>
             <h1 className="text-2xl font-bold text-white">Admin Login</h1>
             <p className="mt-2 text-sm text-gray-400">

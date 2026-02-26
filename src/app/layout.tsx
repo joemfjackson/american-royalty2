@@ -38,6 +38,7 @@ export const metadata: Metadata = {
     title: 'American Royalty | Las Vegas Party Bus & Limousine Service',
     description:
       'Premium party bus and limousine rental in Las Vegas. Bachelor & bachelorette parties, weddings, nightlife, corporate events. Book your VIP ride today.',
+    images: [{ url: '/images/logo.png', width: 1200, height: 630, alt: 'American Royalty' }],
   },
   twitter: {
     card: 'summary_large_image',
