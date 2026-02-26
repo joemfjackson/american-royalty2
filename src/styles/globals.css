@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@source "../../src";
+
+@theme inline {
+  --color-gold: #D6C08A;
+  --color-gold-light: #E8D9B0;
+  --color-gold-dark: #B8A06A;
+  --color-royal: #6F2DBD;
+  --color-royal-light: #8B4FD4;
+  --color-royal-dark: #5A1FA3;
+  --color-dark: #0A0A0A;
+  --color-dark-card: #111111;
+  --color-dark-border: #1E1E1E;
+  --font-display: var(--font-montserrat), sans-serif;
+  --font-body: var(--font-montserrat), sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-black text-white antialiased;
+    font-family: var(--font-montserrat), sans-serif;
+  }
+
+  ::selection {
+    @apply bg-royal/30 text-gold;
+  }
+}
+
+@layer components {
+  .gold-gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #D6C08A, #E8D9B0, #D6C08A);
+  }
+
+  .gold-purple-gradient {
+    background-image: linear-gradient(135deg, #6F2DBD, #D6C08A);
+  }
+
+  .gold-line {
+    @apply h-0.5;
+    background: linear-gradient(90deg, #6F2DBD, #D6C08A);
+  }
+
+  .section-padding {
+    @apply px-4 py-20 sm:px-6 lg:px-8;
+  }
+
+  .container-max {
+    @apply mx-auto max-w-7xl;
+  }
+
+  .card-dark {
+    @apply rounded-xl border border-dark-border bg-dark-card;
+  }
+
+  .btn-gold {
+    @apply inline-flex items-center justify-center rounded-lg bg-gold px-6 py-3 font-semibold text-black transition-all hover:bg-gold-light hover:shadow-lg hover:shadow-gold/20;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center rounded-lg border border-gold/30 px-6 py-3 font-semibold text-gold transition-all hover:border-gold hover:bg-gold/10;
+  }
+
+  .btn-royal {
+    @apply inline-flex items-center justify-center rounded-lg bg-royal px-6 py-3 font-semibold text-white transition-all hover:bg-royal-light hover:shadow-lg hover:shadow-royal/20;
+  }
+
+  .section-tag {
+    @apply inline-block text-[11px] font-bold uppercase tracking-[3px] text-gold;
+  }
+
+  .glow-gold {
+    box-shadow: 0 0 60px rgba(214, 192, 138, 0.15);
+  }
+
+  .glow-purple {
+    box-shadow: 0 0 60px rgba(111, 45, 189, 0.15);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0A0A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1E1E1E;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #333;
+}
