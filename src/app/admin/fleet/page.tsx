@@ -1,20 +1,35 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Pencil, Trash2, Users, DollarSign, Clock, GripVertical } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { VehicleForm } from '@/components/admin/VehicleForm'
-import { MOCK_VEHICLES } from '@/lib/constants'
+import { getAdminVehicles, createVehicle, updateVehicle, deleteVehicle } from '@/lib/actions/admin'
 import { formatCurrency } from '@/lib/utils'
 import type { Vehicle } from '@/types'
 
 export default function AdminFleetPage() {
-  const [vehicles, setVehicles] = useState<Vehicle[]>(MOCK_VEHICLES)
+  const [vehicles, setVehicles] = useState<Vehicle[]>([])
+  const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const v = await getAdminVehicles()
+        setVehicles(v)
+      } catch (err) {
+        console.error('Failed to load vehicles:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
 
   const handleAdd = () => {
     setEditingVehicle(null)
@@ -26,63 +41,66 @@ export default function AdminFleetPage() {
     setFormOpen(true)
   }
 
-  const handleDelete = (id: string) => {
-    setVehicles((prev) => prev.filter((v) => v.id !== id))
-    setDeleteConfirm(null)
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteVehicle(id)
+      setVehicles((prev) => prev.filter((v) => v.id !== id))
+      setDeleteConfirm(null)
+    } catch (err) {
+      console.error('Failed to delete vehicle:', err)
+    }
   }
 
-  const handleFormSubmit = (
+  const handleFormSubmit = async (
     data: Omit<Vehicle, 'id' | 'created_at' | 'updated_at' | 'image_url' | 'gallery_urls' | 'display_order'> & { id?: string }
   ) => {
-    if (data.id) {
-      // Update
-      setVehicles((prev) =>
-        prev.map((v) =>
-          v.id === data.id
-            ? {
-                ...v,
-                name: data.name,
-                slug: data.slug,
-                type: data.type,
-                capacity: data.capacity,
-                hourly_rate: data.hourly_rate,
-                min_hours: data.min_hours,
-                description: data.description,
-                features: data.features,
-                is_active: data.is_active,
-              }
-            : v
-        )
-      )
-    } else {
-      // Add
-      const newVehicle: Vehicle = {
-        id: `v-${Date.now()}`,
-        name: data.name,
-        slug: data.slug,
-        type: data.type,
-        capacity: data.capacity,
-        hourly_rate: data.hourly_rate,
-        min_hours: data.min_hours,
-        description: data.description,
-        features: data.features,
-        is_active: data.is_active,
-        image_url: null,
-        gallery_urls: [],
-        display_order: vehicles.length + 1,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+    try {
+      if (data.id) {
+        const updated = await updateVehicle(data.id, {
+          name: data.name,
+          slug: data.slug,
+          type: data.type,
+          capacity: data.capacity,
+          hourly_rate: data.hourly_rate,
+          min_hours: data.min_hours,
+          description: data.description,
+          features: data.features,
+          is_active: data.is_active,
+        })
+        setVehicles((prev) => prev.map((v) => (v.id === data.id ? updated : v)))
+      } else {
+        const created = await createVehicle({
+          name: data.name,
+          slug: data.slug,
+          type: data.type,
+          capacity: data.capacity,
+          hourly_rate: data.hourly_rate,
+          min_hours: data.min_hours,
+          description: data.description,
+          features: data.features,
+          is_active: data.is_active,
+        })
+        setVehicles((prev) => [...prev, created])
       }
-      setVehicles((prev) => [...prev, newVehicle])
+      setFormOpen(false)
+      setEditingVehicle(null)
+    } catch (err) {
+      console.error('Failed to save vehicle:', err)
     }
-    setFormOpen(false)
-    setEditingVehicle(null)
   }
 
   const typeColor: Record<string, string> = {
     'Party Bus': 'gold',
     'Sprinter Limo': 'purple',
     'Stretch Limo': 'green',
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+      </div>
+    )
   }
 
   return (

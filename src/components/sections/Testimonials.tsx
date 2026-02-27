@@ -6,12 +6,12 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { SectionTag } from '@/components/ui/SectionTag'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { StarRating } from '@/components/ui/StarRating'
-import { MOCK_TESTIMONIALS } from '@/lib/constants'
+import type { Testimonial } from '@/types'
 
-const testimonials = MOCK_TESTIMONIALS.filter((t) => t.is_active)
-
-export function Testimonials() {
+export function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
   const [current, setCurrent] = useState(0)
+
+  if (testimonials.length === 0) return null
   const [direction, setDirection] = useState(1)
 
   const next = useCallback(() => {

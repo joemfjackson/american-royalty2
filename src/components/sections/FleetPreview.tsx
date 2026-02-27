@@ -6,7 +6,6 @@ import { motion } from 'framer-motion'
 import { Users } from 'lucide-react'
 import { SectionTag } from '@/components/ui/SectionTag'
 import { GoldLine } from '@/components/ui/GoldLine'
-import { MOCK_VEHICLES } from '@/lib/constants'
 import type { Vehicle } from '@/types'
 
 const vehicleImages: Record<string, string> = {
@@ -14,8 +13,6 @@ const vehicleImages: Record<string, string> = {
   'the-crown-jewel': '/images/fleet/black-bus-mgm.webp',
   'royal-sprinter': '/images/fleet/interior-pink-blue.webp',
 }
-
-const topVehicles = MOCK_VEHICLES.slice(0, 3)
 
 function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
   return (
@@ -85,7 +82,9 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
   )
 }
 
-export function FleetPreview() {
+export function FleetPreview({ vehicles }: { vehicles: Vehicle[] }) {
+  const topVehicles = vehicles.slice(0, 3)
+
   return (
     <section className="section-padding relative overflow-hidden">
       {/* Purple ambient glow */}

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import {
@@ -16,8 +17,9 @@ import {
 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { MOCK_QUOTES, MOCK_BOOKINGS, DASHBOARD_STATS, getVehicleName } from '@/lib/admin-mock-data'
+import { getDashboardStats, getRecentQuotes, getUpcomingBookings, getVehicleNames } from '@/lib/actions/admin'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import type { Quote, Booking } from '@/types'
 
 const statusBadgeVariant: Record<string, 'yellow' | 'gold' | 'purple' | 'green' | 'red' | 'outline'> = {
   new: 'yellow',
@@ -32,67 +34,75 @@ const statusBadgeVariant: Record<string, 'yellow' | 'gold' | 'purple' | 'green' 
   in_progress: 'purple',
 }
 
-const statCards = [
-  {
-    label: 'New Quotes',
-    value: DASHBOARD_STATS.newQuotes,
-    icon: FileText,
-    color: 'text-amber-400',
-    bg: 'bg-amber-400/10',
-  },
-  {
-    label: 'Pending Response',
-    value: DASHBOARD_STATS.pendingResponse,
-    icon: MessageSquare,
-    color: 'text-gold',
-    bg: 'bg-gold/10',
-  },
-  {
-    label: 'Quoted',
-    value: DASHBOARD_STATS.quoted,
-    icon: Send,
-    color: 'text-royal-light',
-    bg: 'bg-royal/10',
-  },
-  {
-    label: 'Booked',
-    value: DASHBOARD_STATS.booked,
-    icon: CheckCircle,
-    color: 'text-emerald-400',
-    bg: 'bg-emerald-400/10',
-  },
-  {
-    label: 'Upcoming Bookings',
-    value: DASHBOARD_STATS.upcomingBookings,
-    icon: CalendarDays,
-    color: 'text-blue-400',
-    bg: 'bg-blue-400/10',
-  },
-  {
-    label: 'Monthly Revenue',
-    value: formatCurrency(DASHBOARD_STATS.monthlyRevenue),
-    icon: DollarSign,
-    color: 'text-gold',
-    bg: 'bg-gold/10',
-  },
+const STAT_ICONS = [FileText, MessageSquare, Send, CheckCircle, CalendarDays, DollarSign]
+const STAT_STYLES = [
+  { color: 'text-amber-400', bg: 'bg-amber-400/10' },
+  { color: 'text-gold', bg: 'bg-gold/10' },
+  { color: 'text-royal-light', bg: 'bg-royal/10' },
+  { color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
+  { color: 'text-blue-400', bg: 'bg-blue-400/10' },
+  { color: 'text-gold', bg: 'bg-gold/10' },
 ]
+const STAT_LABELS = ['New Quotes', 'Pending Response', 'Quoted', 'Booked', 'Upcoming Bookings', 'Monthly Revenue']
 
 export default function AdminDashboardPage() {
-  const recentQuotes = MOCK_QUOTES.slice(0, 5)
-  const upcomingBookings = MOCK_BOOKINGS
-    .filter((b) => b.status !== 'completed' && b.status !== 'cancelled')
-    .sort((a, b) => new Date(a.booking_date).getTime() - new Date(b.booking_date).getTime())
-    .slice(0, 5)
+  const [stats, setStats] = useState<{ newQuotes: number; pendingResponse: number; quoted: number; booked: number; upcomingBookings: number; monthlyRevenue: number } | null>(null)
+  const [recentQuotes, setRecentQuotes] = useState<Quote[]>([])
+  const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([])
+  const [vehicleNames, setVehicleNames] = useState<Record<string, string>>({})
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [s, q, b, vn] = await Promise.all([
+          getDashboardStats(),
+          getRecentQuotes(),
+          getUpcomingBookings(),
+          getVehicleNames(),
+        ])
+        setStats(s)
+        setRecentQuotes(q)
+        setUpcomingBookings(b)
+        setVehicleNames(vn)
+      } catch (err) {
+        console.error('Failed to load dashboard:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  if (loading || !stats) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+      </div>
+    )
+  }
+
+  const statValues = [
+    stats.newQuotes,
+    stats.pendingResponse,
+    stats.quoted,
+    stats.booked,
+    stats.upcomingBookings,
+    formatCurrency(stats.monthlyRevenue),
+  ]
+
+  const getVehicleName = (id: string | null) => id ? vehicleNames[id] || 'Unknown' : 'Not specified'
 
   return (
     <div className="space-y-6">
       {/* Stats cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
-        {statCards.map((stat, i) => {
-          const Icon = stat.icon
+        {STAT_LABELS.map((label, i) => {
+          const Icon = STAT_ICONS[i]
+          const style = STAT_STYLES[i]
           return (
             <motion.div
-              key={stat.label}
+              key={label}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
@@ -101,12 +111,12 @@ export default function AdminDashboardPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                      {stat.label}
+                      {label}
                     </p>
-                    <p className="mt-2 text-2xl font-bold text-white">{stat.value}</p>
+                    <p className="mt-2 text-2xl font-bold text-white">{statValues[i]}</p>
                   </div>
-                  <div className={`rounded-lg p-2 ${stat.bg}`}>
-                    <Icon className={`h-5 w-5 ${stat.color}`} />
+                  <div className={`rounded-lg p-2 ${style.bg}`}>
+                    <Icon className={`h-5 w-5 ${style.color}`} />
                   </div>
                 </div>
               </Card>
@@ -197,6 +207,13 @@ export default function AdminDashboardPage() {
                       </td>
                     </tr>
                   ))}
+                  {recentQuotes.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-gray-400">
+                        No quotes yet
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -263,6 +280,9 @@ export default function AdminDashboardPage() {
                   )}
                 </div>
               ))}
+              {upcomingBookings.length === 0 && (
+                <p className="py-8 text-center text-gray-400">No upcoming bookings</p>
+              )}
             </div>
           </Card>
         </motion.div>

@@ -13,31 +13,15 @@ export async function POST(request: Request) {
     const body = await request.json()
     const data = contactSchema.parse(body)
 
-    // Try to insert into Supabase if configured
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    // Log the contact message
+    console.log('[Contact Form]', {
+      name: data.name,
+      email: data.email,
+      phone: data.phone || 'N/A',
+      message: data.message.substring(0, 100),
+    })
 
-    if (supabaseUrl && (supabaseServiceKey || supabaseAnonKey)) {
-      const { createClient } = await import('@supabase/supabase-js')
-      const supabase = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey!)
-
-      const { error: dbError } = await supabase.from('contact_messages').insert({
-        name: data.name,
-        email: data.email,
-        phone: data.phone || null,
-        message: data.message,
-      })
-
-      if (dbError) {
-        console.error('Supabase insert error:', dbError)
-        // Don't fail the request
-      }
-    } else {
-      console.log('[DEV] Contact form submission:', data)
-    }
-
-    // Optional: send email via Resend (install `resend` package to enable)
+    // Send email notification via Resend if configured
     if (process.env.RESEND_API_KEY) {
       try {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -59,7 +43,7 @@ export async function POST(request: Request) {
           `,
         })
       } catch (emailError) {
-        console.error('Email notification failed (is resend installed?):', emailError)
+        console.error('Email notification failed:', emailError)
       }
     }
 

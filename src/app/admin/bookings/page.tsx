@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search,
@@ -13,12 +13,10 @@ import {
   MapPin,
   Users,
   Car,
-  DollarSign,
-  FileText,
 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { MOCK_BOOKINGS, getVehicleName } from '@/lib/admin-mock-data'
+import { getBookings, getVehicleNames, updateBookingStatus } from '@/lib/actions/admin'
 import { formatDate, formatCurrency } from '@/lib/utils'
 import type { Booking } from '@/types'
 
@@ -44,11 +42,30 @@ const statusBadgeVariant: Record<string, 'yellow' | 'gold' | 'purple' | 'green' 
 }
 
 export default function AdminBookingsPage() {
-  const [bookings, setBookings] = useState<Booking[]>(MOCK_BOOKINGS)
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [vehicleNames, setVehicleNames] = useState<Record<string, string>>({})
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all')
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [b, vn] = await Promise.all([getBookings(), getVehicleNames()])
+        setBookings(b)
+        setVehicleNames(vn)
+      } catch (err) {
+        console.error('Failed to load bookings:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  const getVehicleName = (id: string | null) => id ? vehicleNames[id] || 'Unknown' : 'Not specified'
 
   const filteredBookings = useMemo(() => {
     let result = [...bookings]
@@ -67,19 +84,31 @@ export default function AdminBookingsPage() {
       )
     }
 
-    // Sort by booking date
     result.sort((a, b) => new Date(a.booking_date).getTime() - new Date(b.booking_date).getTime())
 
     return result
   }, [bookings, search, statusFilter])
 
-  const handleStatusChange = (bookingId: string, newStatus: BookingStatus) => {
-    setBookings((prev) =>
-      prev.map((b) => (b.id === bookingId ? { ...b, status: newStatus } : b))
-    )
-    if (selectedBooking?.id === bookingId) {
-      setSelectedBooking((prev) => (prev ? { ...prev, status: newStatus } : null))
+  const handleStatusChange = async (bookingId: string, newStatus: BookingStatus) => {
+    try {
+      const updated = await updateBookingStatus(bookingId, newStatus)
+      setBookings((prev) =>
+        prev.map((b) => (b.id === bookingId ? updated : b))
+      )
+      if (selectedBooking?.id === bookingId) {
+        setSelectedBooking(updated)
+      }
+    } catch (err) {
+      console.error('Failed to update booking status:', err)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+      </div>
+    )
   }
 
   return (

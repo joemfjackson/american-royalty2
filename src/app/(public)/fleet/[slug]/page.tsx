@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { Check, Users, Clock, ChevronRight, Phone } from 'lucide-react'
 import { getVehicleBySlug, getVehicles } from '@/lib/data'
-import { MOCK_VEHICLES, BRAND } from '@/lib/constants'
+import { BRAND } from '@/lib/constants'
 import { SectionTag } from '@/components/ui/SectionTag'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { Badge } from '@/components/ui/Badge'
@@ -15,8 +15,9 @@ import type { Vehicle } from '@/types'
 // ---------------------------------------------------------------------------
 // Static params for all known vehicle slugs
 // ---------------------------------------------------------------------------
-export function generateStaticParams() {
-  return MOCK_VEHICLES.map((v) => ({ slug: v.slug }))
+export async function generateStaticParams() {
+  const vehicles = await getVehicles()
+  return vehicles.map((v) => ({ slug: v.slug }))
 }
 
 // ---------------------------------------------------------------------------

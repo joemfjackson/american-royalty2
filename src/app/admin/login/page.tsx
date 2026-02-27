@@ -1,19 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Eye, EyeOff } from 'lucide-react'
 import { motion } from 'framer-motion'
-
-function isSupabaseConfigured(): boolean {
-  return !!(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-    process.env.NEXT_PUBLIC_SUPABASE_URL !== '' &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== ''
-  )
-}
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -29,30 +21,20 @@ export default function AdminLoginPage() {
     setLoading(true)
 
     try {
-      if (isSupabaseConfigured()) {
-        const { createClient } = await import('@/lib/supabase/client')
-        const supabase = createClient()
-        const { error: authError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-        if (authError) {
-          setError(authError.message)
-          setLoading(false)
-          return
-        }
-      } else {
-        // Mock auth
-        if (email === 'admin@americanroyalty.com' && password === 'admin123') {
-          localStorage.setItem('admin_logged_in', 'true')
-        } else {
-          setError('Invalid email or password')
-          setLoading(false)
-          return
-        }
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError('Invalid email or password')
+        setLoading(false)
+        return
       }
 
       router.push('/admin')
+      router.refresh()
     } catch {
       setError('An unexpected error occurred. Please try again.')
       setLoading(false)
@@ -159,22 +141,6 @@ export default function AdminLoginPage() {
               )}
             </button>
           </form>
-
-          {/* Mock auth hint */}
-          {!isSupabaseConfigured() && (
-            <div className="mt-6 rounded-lg border border-gold/20 bg-gold/5 p-3">
-              <p className="text-xs text-gold/80">
-                <span className="font-semibold">Demo Mode:</span> Use{' '}
-                <code className="rounded bg-black/50 px-1.5 py-0.5 font-mono text-gold">
-                  admin@americanroyalty.com
-                </code>{' '}
-                /{' '}
-                <code className="rounded bg-black/50 px-1.5 py-0.5 font-mono text-gold">
-                  admin123
-                </code>
-              </p>
-            </div>
-          )}
         </div>
       </motion.div>
     </div>

@@ -5,7 +5,6 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { SectionTag } from '@/components/ui/SectionTag'
 import { GoldLine } from '@/components/ui/GoldLine'
-import { MOCK_SERVICES } from '@/lib/constants'
 import type { Service } from '@/types'
 
 const serviceImages: Record<string, string> = {
@@ -78,7 +77,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
   )
 }
 
-export function ServicesGrid() {
+export function ServicesGrid({ services }: { services: Service[] }) {
   return (
     <section className="section-padding bg-dark/50 relative overflow-hidden">
       {/* Purple ambient glow */}
@@ -100,7 +99,7 @@ export function ServicesGrid() {
         </div>
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {MOCK_SERVICES.map((service, i) => (
+          {services.map((service, i) => (
             <ServiceCard key={service.id} service={service} index={i} />
           ))}
         </div>

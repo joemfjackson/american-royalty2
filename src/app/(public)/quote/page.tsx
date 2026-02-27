@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { SectionTag } from '@/components/ui/SectionTag'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { QuoteForm } from '@/components/forms/QuoteForm'
+import { getVehicles } from '@/lib/data'
 
 export const metadata: Metadata = {
   title: 'Get a Quote | Las Vegas Party Bus & Limo Pricing',
@@ -24,7 +25,13 @@ export const metadata: Metadata = {
   },
 }
 
-export default function QuotePage() {
+export default async function QuotePage() {
+  const vehicles = await getVehicles()
+  const vehicleOptions = vehicles.map((v) => ({
+    value: v.slug,
+    label: `${v.name} — ${v.type} (up to ${v.capacity} guests)`,
+  }))
+
   return (
     <section className="section-padding pt-32">
       <div className="container-max">
@@ -45,7 +52,7 @@ export default function QuotePage() {
 
         {/* Quote Form */}
         <div className="mt-14">
-          <QuoteForm />
+          <QuoteForm vehicleOptions={vehicleOptions} />
         </div>
       </div>
     </section>

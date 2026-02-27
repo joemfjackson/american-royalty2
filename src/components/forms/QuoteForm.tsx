@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { Button } from '@/components/ui/Button'
-import { EVENT_TYPES, MOCK_VEHICLES } from '@/lib/constants'
+import { EVENT_TYPES } from '@/lib/constants'
 import { BRAND } from '@/lib/constants'
 
 const quoteSchema = z.object({
@@ -37,12 +37,11 @@ const eventOptions = EVENT_TYPES.map((type) => ({
   label: type,
 }))
 
-const vehicleOptions = MOCK_VEHICLES.map((v) => ({
-  value: v.slug,
-  label: `${v.name} — ${v.type} (up to ${v.capacity} guests)`,
-}))
+interface QuoteFormProps {
+  vehicleOptions?: { value: string; label: string }[]
+}
 
-function QuoteFormInner() {
+function QuoteFormInner({ vehicleOptions = [] }: QuoteFormProps) {
   const searchParams = useSearchParams()
   const prefilledVehicle = searchParams.get('vehicle') || ''
   const prefilledEvent = searchParams.get('event') || ''
@@ -248,7 +247,7 @@ function QuoteFormInner() {
   )
 }
 
-export function QuoteForm() {
+export function QuoteForm({ vehicleOptions }: QuoteFormProps) {
   return (
     <Suspense
       fallback={
@@ -259,7 +258,7 @@ export function QuoteForm() {
         </div>
       }
     >
-      <QuoteFormInner />
+      <QuoteFormInner vehicleOptions={vehicleOptions} />
     </Suspense>
   )
 }

@@ -5,6 +5,7 @@ import { FleetPreview } from '@/components/sections/FleetPreview'
 import { ServicesGrid } from '@/components/sections/ServicesGrid'
 import { CTABanner } from '@/components/sections/CTABanner'
 import { BRAND, SERVICE_AREAS } from '@/lib/constants'
+import { getVehicles, getServices, getTestimonials } from '@/lib/data'
 
 const Testimonials = dynamic(
   () => import('@/components/sections/Testimonials').then((m) => ({ default: m.Testimonials })),
@@ -73,7 +74,13 @@ const jsonLd = {
   sameAs: [],
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [vehicles, services, testimonials] = await Promise.all([
+    getVehicles(),
+    getServices(),
+    getTestimonials(),
+  ])
+
   return (
     <>
       <script
@@ -82,9 +89,9 @@ export default function HomePage() {
       />
       <Hero />
       <TrustSignals />
-      <FleetPreview />
-      <ServicesGrid />
-      <Testimonials />
+      <FleetPreview vehicles={vehicles} />
+      <ServicesGrid services={services} />
+      <Testimonials testimonials={testimonials} />
       <CTABanner />
       <FAQ />
     </>

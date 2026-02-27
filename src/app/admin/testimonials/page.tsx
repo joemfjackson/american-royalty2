@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Plus,
@@ -14,7 +14,12 @@ import {
 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { MOCK_ADMIN_TESTIMONIALS } from '@/lib/admin-mock-data'
+import {
+  getAdminTestimonials,
+  createTestimonial,
+  updateTestimonial,
+  deleteTestimonial,
+} from '@/lib/actions/admin'
 import { EVENT_TYPES } from '@/lib/constants'
 import type { Testimonial } from '@/types'
 
@@ -77,7 +82,6 @@ function TestimonialFormModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Name */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-300">
               Customer Name
@@ -91,7 +95,6 @@ function TestimonialFormModal({
             />
           </div>
 
-          {/* Event type */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-300">
               Event Type
@@ -109,7 +112,6 @@ function TestimonialFormModal({
             </select>
           </div>
 
-          {/* Rating */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-300">
               Rating
@@ -132,7 +134,6 @@ function TestimonialFormModal({
             </div>
           </div>
 
-          {/* Text */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-300">
               Review Text
@@ -147,7 +148,6 @@ function TestimonialFormModal({
             />
           </div>
 
-          {/* Toggles */}
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <label className="relative inline-flex cursor-pointer items-center">
@@ -175,7 +175,6 @@ function TestimonialFormModal({
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-3 pt-2">
             <button
               type="button"
@@ -198,10 +197,25 @@ function TestimonialFormModal({
 }
 
 export default function AdminTestimonialsPage() {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>(MOCK_ADMIN_TESTIMONIALS)
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([])
+  const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
   const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const t = await getAdminTestimonials()
+        setTestimonials(t)
+      } catch (err) {
+        console.error('Failed to load testimonials:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
 
   const handleAdd = () => {
     setEditingTestimonial(null)
@@ -213,47 +227,64 @@ export default function AdminTestimonialsPage() {
     setFormOpen(true)
   }
 
-  const handleDelete = (id: string) => {
-    setTestimonials((prev) => prev.filter((t) => t.id !== id))
-    setDeleteConfirm(null)
-  }
-
-  const handleFormSubmit = (data: TestimonialFormData) => {
-    if (editingTestimonial) {
-      setTestimonials((prev) =>
-        prev.map((t) =>
-          t.id === editingTestimonial.id
-            ? { ...t, ...data }
-            : t
-        )
-      )
-    } else {
-      const newTestimonial: Testimonial = {
-        id: `t-${Date.now()}`,
-        ...data,
-        event_type: data.event_type,
-        created_at: new Date().toISOString(),
-      }
-      setTestimonials((prev) => [newTestimonial, ...prev])
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteTestimonial(id)
+      setTestimonials((prev) => prev.filter((t) => t.id !== id))
+      setDeleteConfirm(null)
+    } catch (err) {
+      console.error('Failed to delete testimonial:', err)
     }
-    setFormOpen(false)
-    setEditingTestimonial(null)
   }
 
-  const toggleFeatured = (id: string) => {
-    setTestimonials((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, is_featured: !t.is_featured } : t))
-    )
+  const handleFormSubmit = async (data: TestimonialFormData) => {
+    try {
+      if (editingTestimonial) {
+        const updated = await updateTestimonial(editingTestimonial.id, data)
+        setTestimonials((prev) => prev.map((t) => (t.id === editingTestimonial.id ? updated : t)))
+      } else {
+        const created = await createTestimonial(data)
+        setTestimonials((prev) => [created, ...prev])
+      }
+      setFormOpen(false)
+      setEditingTestimonial(null)
+    } catch (err) {
+      console.error('Failed to save testimonial:', err)
+    }
   }
 
-  const toggleActive = (id: string) => {
-    setTestimonials((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, is_active: !t.is_active } : t))
-    )
+  const toggleFeatured = async (id: string) => {
+    const testimonial = testimonials.find((t) => t.id === id)
+    if (!testimonial) return
+    try {
+      const updated = await updateTestimonial(id, { is_featured: !testimonial.is_featured })
+      setTestimonials((prev) => prev.map((t) => (t.id === id ? updated : t)))
+    } catch (err) {
+      console.error('Failed to toggle featured:', err)
+    }
+  }
+
+  const toggleActive = async (id: string) => {
+    const testimonial = testimonials.find((t) => t.id === id)
+    if (!testimonial) return
+    try {
+      const updated = await updateTestimonial(id, { is_active: !testimonial.is_active })
+      setTestimonials((prev) => prev.map((t) => (t.id === id ? updated : t)))
+    } catch (err) {
+      console.error('Failed to toggle active:', err)
+    }
   }
 
   const featuredCount = testimonials.filter((t) => t.is_featured).length
   const activeCount = testimonials.filter((t) => t.is_active).length
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -289,12 +320,10 @@ export default function AdminTestimonialsPage() {
               }`}
             >
               <div className="flex items-start gap-4">
-                {/* Avatar */}
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
                   {testimonial.name.charAt(0)}
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold text-white">{testimonial.name}</h3>
@@ -310,7 +339,6 @@ export default function AdminTestimonialsPage() {
                     )}
                   </div>
 
-                  {/* Stars */}
                   <div className="mt-1 flex gap-0.5">
                     {[1, 2, 3, 4, 5].map((r) => (
                       <Star
@@ -322,13 +350,11 @@ export default function AdminTestimonialsPage() {
                     ))}
                   </div>
 
-                  {/* Text */}
                   <p className="mt-2 text-sm text-gray-300 leading-relaxed">
                     &ldquo;{testimonial.text}&rdquo;
                   </p>
                 </div>
 
-                {/* Actions */}
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={() => toggleFeatured(testimonial.id)}
@@ -393,6 +419,13 @@ export default function AdminTestimonialsPage() {
             </Card>
           </motion.div>
         ))}
+
+        {testimonials.length === 0 && (
+          <div className="py-12 text-center text-gray-400">
+            <p className="font-medium">No testimonials yet</p>
+            <p className="mt-1 text-sm">Click &ldquo;Add Testimonial&rdquo; to create one</p>
+          </div>
+        )}
       </div>
 
       {/* Form modal */}

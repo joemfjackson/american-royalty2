@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronLeft,
@@ -11,10 +11,11 @@ import {
   MapPin,
   X,
   CalendarDays,
+  Loader2,
 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { MOCK_BOOKINGS, getVehicleName } from '@/lib/admin-mock-data'
+import { getBookings, getVehicleNames } from '@/lib/actions/admin'
 import { formatDate, formatCurrency } from '@/lib/utils'
 import type { Booking } from '@/types'
 
@@ -25,14 +26,16 @@ const MONTHS = [
 ]
 
 // Color assignments per vehicle for calendar pills
-const vehicleColors: Record<string, { bg: string; text: string; border: string }> = {
-  '1': { bg: 'bg-gold/15', text: 'text-gold', border: 'border-gold/30' },           // The Sovereign
-  '2': { bg: 'bg-royal/15', text: 'text-royal-light', border: 'border-royal/30' },   // Crown Jewel
-  '3': { bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/30' }, // Royal Sprinter
-  '4': { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30' }, // The Monarch
-  '5': { bg: 'bg-amber-500/15', text: 'text-amber-400', border: 'border-amber-500/30' }, // Black Diamond
-  '6': { bg: 'bg-rose-500/15', text: 'text-rose-400', border: 'border-rose-500/30' }, // The Empire
-}
+const vehicleColorPalette = [
+  { bg: 'bg-gold/15', text: 'text-gold', border: 'border-gold/30' },
+  { bg: 'bg-royal/15', text: 'text-royal-light', border: 'border-royal/30' },
+  { bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/30' },
+  { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30' },
+  { bg: 'bg-amber-500/15', text: 'text-amber-400', border: 'border-amber-500/30' },
+  { bg: 'bg-rose-500/15', text: 'text-rose-400', border: 'border-rose-500/30' },
+]
+
+const defaultColors = { bg: 'bg-gray-500/15', text: 'text-gray-400', border: 'border-gray-500/30' }
 
 const statusBadgeVariant: Record<string, 'yellow' | 'gold' | 'purple' | 'green' | 'red' | 'outline'> = {
   pending: 'yellow',
@@ -57,18 +60,51 @@ export default function AdminCalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(today.getMonth())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [vehicleNames, setVehicleNames] = useState<Record<string, string>>({})
+  const [loading, setLoading] = useState(true)
+
+  // Build a color map from vehicle IDs
+  const vehicleColors = useMemo(() => {
+    const map: Record<string, typeof defaultColors> = {}
+    const ids = Array.from(new Set(bookings.map(b => b.vehicle_id).filter(Boolean)))
+    ids.forEach((id, i) => {
+      if (id) map[id] = vehicleColorPalette[i % vehicleColorPalette.length]
+    })
+    return map
+  }, [bookings])
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [b, v] = await Promise.all([getBookings(), getVehicleNames()])
+        setBookings(b)
+        setVehicleNames(v)
+      } catch (err) {
+        console.error('Failed to load calendar data:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  function getVehicleName(vehicleId: string | null): string {
+    if (!vehicleId) return 'Not specified'
+    return vehicleNames[vehicleId] || 'Unknown'
+  }
 
   // Group bookings by date
   const bookingsByDate = useMemo(() => {
     const map: Record<string, Booking[]> = {}
-    MOCK_BOOKINGS.forEach((b) => {
+    bookings.forEach((b) => {
       if (b.status !== 'cancelled') {
         if (!map[b.booking_date]) map[b.booking_date] = []
         map[b.booking_date].push(b)
       }
     })
     return map
-  }, [])
+  }, [bookings])
 
   // Calendar grid data
   const calendarDays = useMemo(() => {
@@ -130,11 +166,11 @@ export default function AdminCalendarPage() {
 
   const upcomingBookings = useMemo(() => {
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-    return MOCK_BOOKINGS
+    return bookings
       .filter((b) => b.booking_date >= todayStr && b.status !== 'cancelled')
       .sort((a, b) => a.booking_date.localeCompare(b.booking_date))
       .slice(0, 5)
-  }, [today])
+  }, [bookings, today])
 
   const goToPrevMonth = () => {
     if (currentMonth === 0) {
@@ -157,6 +193,24 @@ export default function AdminCalendarPage() {
   const goToToday = () => {
     setCurrentMonth(today.getMonth())
     setCurrentYear(today.getFullYear())
+  }
+
+  // Build legend from actual vehicle names
+  const vehicleLegend = useMemo(() => {
+    const ids = Array.from(new Set(bookings.map(b => b.vehicle_id).filter(Boolean))) as string[]
+    return ids.map(id => ({
+      id,
+      name: vehicleNames[id] || `Vehicle ${id}`,
+      colors: vehicleColors[id] || defaultColors,
+    }))
+  }, [bookings, vehicleNames, vehicleColors])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-gold" />
+      </div>
+    )
   }
 
   return (
@@ -243,11 +297,7 @@ export default function AdminCalendarPage() {
                     {/* Booking pills - hidden on very small screens */}
                     <div className="mt-1 hidden space-y-0.5 sm:block">
                       {dayBookings.slice(0, 2).map((booking) => {
-                        const colors = vehicleColors[booking.vehicle_id || ''] || {
-                          bg: 'bg-gray-500/15',
-                          text: 'text-gray-400',
-                          border: 'border-gray-500/30',
-                        }
+                        const colors = vehicleColors[booking.vehicle_id || ''] || defaultColors
                         return (
                           <button
                             key={booking.id}
@@ -272,11 +322,7 @@ export default function AdminCalendarPage() {
                     {dayBookings.length > 0 && (
                       <div className="mt-1 flex gap-0.5 sm:hidden">
                         {dayBookings.slice(0, 3).map((b) => {
-                          const colors = vehicleColors[b.vehicle_id || ''] || {
-                            bg: 'bg-gray-400',
-                            text: '',
-                            border: '',
-                          }
+                          const colors = vehicleColors[b.vehicle_id || ''] || defaultColors
                           return (
                             <div
                               key={b.id}
@@ -351,54 +397,50 @@ export default function AdminCalendarPage() {
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
               Upcoming
             </h3>
-            <div className="space-y-2">
-              {upcomingBookings.map((booking) => (
-                <button
-                  key={booking.id}
-                  onClick={() => setSelectedBooking(booking)}
-                  className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-all hover:bg-white/[0.03]"
-                >
-                  <div className="flex h-10 w-10 flex-col items-center justify-center rounded-lg bg-gold/10 text-gold">
-                    <span className="text-[9px] font-bold uppercase leading-none">
-                      {new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short' })}
-                    </span>
-                    <span className="text-sm font-bold leading-tight">
-                      {new Date(booking.booking_date + 'T00:00:00').getDate()}
-                    </span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-white">{booking.client_name}</p>
-                    <p className="text-xs text-gray-400">{booking.event_type}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
+            {upcomingBookings.length > 0 ? (
+              <div className="space-y-2">
+                {upcomingBookings.map((booking) => (
+                  <button
+                    key={booking.id}
+                    onClick={() => setSelectedBooking(booking)}
+                    className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-all hover:bg-white/[0.03]"
+                  >
+                    <div className="flex h-10 w-10 flex-col items-center justify-center rounded-lg bg-gold/10 text-gold">
+                      <span className="text-[9px] font-bold uppercase leading-none">
+                        {new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short' })}
+                      </span>
+                      <span className="text-sm font-bold leading-tight">
+                        {new Date(booking.booking_date + 'T00:00:00').getDate()}
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-white">{booking.client_name}</p>
+                      <p className="text-xs text-gray-400">{booking.event_type}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">No upcoming bookings</p>
+            )}
           </Card>
 
           {/* Legend */}
-          <Card>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-              Vehicles
-            </h3>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { id: '1', name: 'Sovereign' },
-                { id: '2', name: 'Crown Jewel' },
-                { id: '3', name: 'Royal Sprinter' },
-                { id: '4', name: 'Monarch' },
-                { id: '5', name: 'Black Diamond' },
-                { id: '6', name: 'Empire' },
-              ].map((v) => {
-                const colors = vehicleColors[v.id]
-                return (
+          {vehicleLegend.length > 0 && (
+            <Card>
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
+                Vehicles
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                {vehicleLegend.map((v) => (
                   <div key={v.id} className="flex items-center gap-2">
-                    <div className={`h-2.5 w-2.5 rounded-full ${colors.bg} border ${colors.border}`} />
+                    <div className={`h-2.5 w-2.5 rounded-full ${v.colors.bg} border ${v.colors.border}`} />
                     <span className="text-xs text-gray-400">{v.name}</span>
                   </div>
-                )
-              })}
-            </div>
-          </Card>
+                ))}
+              </div>
+            </Card>
+          )}
         </div>
       </div>
 

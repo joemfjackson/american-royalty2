@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Filter, ArrowUpDown } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { QuoteDetailPanel } from '@/components/admin/QuoteDetailPanel'
-import { MOCK_QUOTES, getVehicleName } from '@/lib/admin-mock-data'
-import { formatDate, formatCurrency } from '@/lib/utils'
+import { getQuotes, getVehicleNames } from '@/lib/actions/admin'
+import { formatDate } from '@/lib/utils'
 import type { Quote } from '@/types'
 
 type QuoteStatus = Quote['status']
@@ -34,7 +34,9 @@ const statusBadgeVariant: Record<string, 'yellow' | 'gold' | 'purple' | 'green' 
 }
 
 export default function AdminQuotesPage() {
-  const [quotes, setQuotes] = useState<Quote[]>(MOCK_QUOTES)
+  const [quotes, setQuotes] = useState<Quote[]>([])
+  const [vehicleNames, setVehicleNames] = useState<Record<string, string>>({})
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<QuoteStatus | 'all'>('all')
   const [sortField, setSortField] = useState<SortField>('created_at')
@@ -42,15 +44,30 @@ export default function AdminQuotesPage() {
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
 
+  useEffect(() => {
+    async function load() {
+      try {
+        const [q, vn] = await Promise.all([getQuotes(), getVehicleNames()])
+        setQuotes(q)
+        setVehicleNames(vn)
+      } catch (err) {
+        console.error('Failed to load quotes:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  const getVehicleName = (id: string | null) => id ? vehicleNames[id] || 'Unknown' : 'Not specified'
+
   const filteredQuotes = useMemo(() => {
     let result = [...quotes]
 
-    // Filter by status
     if (statusFilter !== 'all') {
       result = result.filter((q) => q.status === statusFilter)
     }
 
-    // Filter by search
     if (search.trim()) {
       const term = search.toLowerCase()
       result = result.filter(
@@ -61,7 +78,6 @@ export default function AdminQuotesPage() {
       )
     }
 
-    // Sort
     result.sort((a, b) => {
       const aVal = a[sortField] || ''
       const bVal = b[sortField] || ''
@@ -110,6 +126,14 @@ export default function AdminQuotesPage() {
       </span>
     </th>
   )
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -232,6 +256,7 @@ export default function AdminQuotesPage() {
         open={panelOpen}
         onClose={() => setPanelOpen(false)}
         onUpdateQuote={handleUpdateQuote}
+        vehicleNames={vehicleNames}
       />
     </div>
   )

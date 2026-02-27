@@ -1,8 +1,14 @@
 import type { MetadataRoute } from 'next'
-import { BRAND, MOCK_VEHICLES, MOCK_SERVICES } from '@/lib/constants'
+import { BRAND } from '@/lib/constants'
+import { getVehicles, getServices } from '@/lib/data'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = BRAND.siteUrl
+
+  const [vehicles, services] = await Promise.all([
+    getVehicles(),
+    getServices(),
+  ])
 
   const staticPages: MetadataRoute.Sitemap = [
     {
@@ -43,18 +49,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ]
 
-  const vehiclePages: MetadataRoute.Sitemap = MOCK_VEHICLES.filter(
-    (v) => v.is_active
-  ).map((vehicle) => ({
+  const vehiclePages: MetadataRoute.Sitemap = vehicles.map((vehicle) => ({
     url: `${baseUrl}/fleet/${vehicle.slug}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.8,
   }))
 
-  const servicePages: MetadataRoute.Sitemap = MOCK_SERVICES.filter(
-    (s) => s.is_active
-  ).map((service) => ({
+  const servicePages: MetadataRoute.Sitemap = services.map((service) => ({
     url: `${baseUrl}/services/${service.slug}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { prisma } from '@/lib/db'
 
 const quoteSchema = z.object({
   name: z.string().min(2),
@@ -21,41 +22,25 @@ export async function POST(request: Request) {
     const body = await request.json()
     const data = quoteSchema.parse(body)
 
-    // Try to insert into Supabase if configured
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (supabaseUrl && (supabaseServiceKey || supabaseAnonKey)) {
-      const { createClient } = await import('@supabase/supabase-js')
-      const supabase = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey!)
-
-      const { error: dbError } = await supabase.from('quotes').insert({
+    await prisma.quote.create({
+      data: {
         name: data.name,
         email: data.email,
         phone: data.phone,
-        event_type: data.event_type,
-        preferred_vehicle_id: data.preferred_vehicle || null,
-        event_date: data.event_date,
-        pickup_time: data.pickup_time || null,
-        guest_count: data.guest_count || null,
-        duration_hours: data.duration_hours || null,
-        pickup_location: data.pickup_location || null,
-        dropoff_location: data.dropoff_location || null,
+        eventType: data.event_type,
+        preferredVehicleId: data.preferred_vehicle || null,
+        eventDate: data.event_date,
+        pickupTime: data.pickup_time || null,
+        guestCount: data.guest_count || null,
+        durationHours: data.duration_hours || null,
+        pickupLocation: data.pickup_location || null,
+        dropoffLocation: data.dropoff_location || null,
         details: data.details || null,
-        status: 'new',
-      })
+        status: 'NEW',
+      },
+    })
 
-      if (dbError) {
-        console.error('Supabase insert error:', dbError)
-        // Don't fail the request — still return success so the user isn't blocked
-      }
-    } else {
-      // Dev mode — log the quote
-      console.log('[DEV] Quote submission received:', data)
-    }
-
-    // Optional: send notification email via Resend (install `resend` package to enable)
+    // Optional: send notification email via Resend
     if (process.env.RESEND_API_KEY) {
       try {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -83,8 +68,7 @@ export async function POST(request: Request) {
           `,
         })
       } catch (emailError) {
-        console.error('Email notification failed (is resend installed?):', emailError)
-        // Don't fail the request
+        console.error('Email notification failed:', emailError)
       }
     }
 

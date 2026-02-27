@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 import type { Quote } from '@/types'
 import { Badge } from '@/components/ui/Badge'
-import { getVehicleName } from '@/lib/admin-mock-data'
+import { updateQuote } from '@/lib/actions/admin'
 import { formatDate, formatCurrency } from '@/lib/utils'
 
 type QuoteStatus = Quote['status']
@@ -47,9 +47,10 @@ interface QuoteDetailPanelProps {
   open: boolean
   onClose: () => void
   onUpdateQuote: (updated: Quote) => void
+  vehicleNames?: Record<string, string>
 }
 
-export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote }: QuoteDetailPanelProps) {
+export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleNames = {} }: QuoteDetailPanelProps) {
   const [status, setStatus] = useState<QuoteStatus>(quote?.status || 'new')
   const [adminNotes, setAdminNotes] = useState(quote?.admin_notes || '')
   const [quotedAmount, setQuotedAmount] = useState(quote?.quoted_amount?.toString() || '')
@@ -66,28 +67,34 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote }: QuoteD
 
   if (!quote) return null
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaving(true)
-    // Simulate save delay
-    setTimeout(() => {
-      onUpdateQuote({
-        ...quote,
+    try {
+      const updated = await updateQuote(quote.id, {
         status,
         admin_notes: adminNotes || null,
         quoted_amount: quotedAmount ? parseFloat(quotedAmount) : null,
       })
+      onUpdateQuote(updated)
+    } catch (err) {
+      console.error('Failed to save quote:', err)
+    } finally {
       setSaving(false)
-    }, 500)
+    }
   }
 
-  const handleQuickAction = (newStatus: QuoteStatus) => {
+  const handleQuickAction = async (newStatus: QuoteStatus) => {
     setStatus(newStatus)
-    onUpdateQuote({
-      ...quote,
-      status: newStatus,
-      admin_notes: adminNotes || null,
-      quoted_amount: quotedAmount ? parseFloat(quotedAmount) : null,
-    })
+    try {
+      const updated = await updateQuote(quote.id, {
+        status: newStatus,
+        admin_notes: adminNotes || null,
+        quoted_amount: quotedAmount ? parseFloat(quotedAmount) : null,
+      })
+      onUpdateQuote(updated)
+    } catch (err) {
+      console.error('Failed to update quote status:', err)
+    }
   }
 
   return (
@@ -170,7 +177,7 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote }: QuoteD
                   <div className="rounded-lg border border-dark-border p-3">
                     <p className="text-xs text-gray-400">Vehicle</p>
                     <p className="mt-1 text-sm font-medium text-white">
-                      {getVehicleName(quote.preferred_vehicle_id)}
+                      {quote.preferred_vehicle_id ? vehicleNames[quote.preferred_vehicle_id] || 'Unknown' : 'Not specified'}
                     </p>
                   </div>
                   <div className="rounded-lg border border-dark-border p-3">

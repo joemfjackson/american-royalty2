@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { SessionProvider, useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -26,65 +27,19 @@ const NAV_ITEMS = [
   { label: 'Testimonials', href: '/admin/testimonials', icon: Star },
 ]
 
-function isSupabaseConfigured(): boolean {
-  return !!(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-    process.env.NEXT_PUBLIC_SUPABASE_URL !== '' &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== ''
-  )
-}
-
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [authenticated, setAuthenticated] = useState<boolean | null>(null)
+  const { status } = useSession()
 
-  useEffect(() => {
-    // Skip auth check for the login page itself
-    if (pathname === '/admin/login') {
-      setAuthenticated(true)
-      return
-    }
-
-    if (isSupabaseConfigured()) {
-      // Use Supabase auth check
-      import('@/lib/supabase/client').then(({ createClient }) => {
-        const supabase = createClient()
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          if (session) {
-            setAuthenticated(true)
-          } else {
-            setAuthenticated(false)
-            router.push('/admin/login')
-          }
-        })
-      })
-    } else {
-      // Mock auth via localStorage
-      const isLoggedIn = localStorage.getItem('admin_logged_in')
-      if (isLoggedIn === 'true') {
-        setAuthenticated(true)
-      } else {
-        setAuthenticated(false)
-        router.push('/admin/login')
-      }
-    }
-  }, [pathname, router])
-
-  const handleLogout = async () => {
-    if (isSupabaseConfigured()) {
-      const { createClient } = await import('@/lib/supabase/client')
-      const supabase = createClient()
-      await supabase.auth.signOut()
-    }
-    localStorage.removeItem('admin_logged_in')
-    router.push('/admin/login')
+  // For the login page, render without sidebar or auth check
+  if (pathname === '/admin/login') {
+    return <div className="min-h-screen bg-black">{children}</div>
   }
 
-  // Show nothing while checking auth
-  if (authenticated === null) {
+  // Loading state
+  if (status === 'loading') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" />
@@ -92,14 +47,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     )
   }
 
-  // For the login page, render without sidebar
-  if (pathname === '/admin/login') {
-    return <div className="min-h-screen bg-black">{children}</div>
+  // Not authenticated — redirect to login
+  if (status === 'unauthenticated') {
+    router.push('/admin/login')
+    return null
   }
 
-  // If not authenticated, show nothing (redirect is in progress)
-  if (!authenticated) {
-    return null
+  const handleLogout = async () => {
+    await signOut({ redirect: false })
+    router.push('/admin/login')
   }
 
   const isActive = (href: string) => {
@@ -226,5 +182,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </main>
       </div>
     </div>
+  )
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SessionProvider>
+      <AdminLayoutInner>{children}</AdminLayoutInner>
+    </SessionProvider>
   )
 }

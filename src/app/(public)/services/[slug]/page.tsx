@@ -3,8 +3,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { ChevronRight, Users, Clock, Star } from 'lucide-react'
-import { getServiceBySlug, getVehicles } from '@/lib/data'
-import { MOCK_SERVICES, BRAND, FAQ_ITEMS } from '@/lib/constants'
+import { getServiceBySlug, getServices, getVehicles } from '@/lib/data'
+import { BRAND, FAQ_ITEMS } from '@/lib/constants'
 import { SectionTag } from '@/components/ui/SectionTag'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { Badge } from '@/components/ui/Badge'
@@ -15,8 +15,9 @@ import type { Vehicle } from '@/types'
 // ---------------------------------------------------------------------------
 // Static params for all known service slugs
 // ---------------------------------------------------------------------------
-export function generateStaticParams() {
-  return MOCK_SERVICES.map((s) => ({ slug: s.slug }))
+export async function generateStaticParams() {
+  const services = await getServices()
+  return services.map((s) => ({ slug: s.slug }))
 }
 
 // ---------------------------------------------------------------------------

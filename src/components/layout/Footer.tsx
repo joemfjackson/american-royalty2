@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { BRAND, SERVICE_AREAS, MOCK_SERVICES } from '@/lib/constants'
+import { BRAND, SERVICE_AREAS } from '@/lib/constants'
+import { getServices } from '@/lib/data'
 
 const QUICK_LINKS = [
   { href: '/', label: 'Home' },
@@ -50,8 +51,9 @@ const SOCIAL_LINKS = [
   { label: 'YouTube', icon: YouTubeIcon, href: '#' },
 ]
 
-export function Footer() {
+export async function Footer() {
   const currentYear = new Date().getFullYear()
+  const services = await getServices()
 
   return (
     <footer className="border-t border-dark-border bg-[#0A0A0A]">
@@ -120,7 +122,7 @@ export function Footer() {
               Our Services
             </h3>
             <ul className="space-y-2.5">
-              {MOCK_SERVICES.map((service, i) => (
+              {services.map((service, i) => (
                 <li key={service.id} className={`py-1 ${i >= 5 ? 'hidden sm:block' : ''}`}>
                   <Link
                     href={`/services/${service.slug}`}
@@ -130,7 +132,7 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
-              {MOCK_SERVICES.length > 5 && (
+              {services.length > 5 && (
                 <li className="py-1 sm:hidden">
                   <Link
                     href="/services"
