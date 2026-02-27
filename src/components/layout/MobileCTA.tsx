@@ -12,7 +12,7 @@ export function MobileCTA() {
   if (pathname.startsWith('/admin') || pathname === '/quote') return null
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-dark-border bg-black/95 backdrop-blur-lg sm:hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-royal/40 bg-black/95 shadow-[0_-4px_20px_rgba(111,45,189,0.25)] backdrop-blur-lg sm:hidden">
       <div className="flex items-stretch">
         <a
           href={`tel:${BRAND.phone.replace(/[^0-9+]/g, '')}`}
