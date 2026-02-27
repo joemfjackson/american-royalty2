@@ -36,7 +36,7 @@ export function Footer() {
             <p className="mt-3 text-lg font-semibold italic text-gold/80">
               {BRAND.tagline}
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-white/50">
+            <p className="mt-3 text-sm leading-relaxed text-white/60">
               Las Vegas&apos;s premier party bus and limousine service. Luxury
               transportation for bachelor parties, bachelorette parties,
               weddings, nightlife, and more.
@@ -57,10 +57,10 @@ export function Footer() {
             </h3>
             <ul className="space-y-2.5">
               {QUICK_LINKS.map((link) => (
-                <li key={link.href}>
+                <li key={link.href} className="py-1">
                   <Link
                     href={link.href}
-                    className="text-sm text-white/50 transition-colors hover:text-gold"
+                    className="text-sm text-white/60 transition-colors hover:text-gold"
                   >
                     {link.label}
                   </Link>
@@ -76,10 +76,10 @@ export function Footer() {
             </h3>
             <ul className="space-y-2.5">
               {MOCK_SERVICES.map((service) => (
-                <li key={service.id}>
+                <li key={service.id} className="py-1">
                   <Link
                     href={`/services/${service.slug}`}
-                    className="text-sm text-white/50 transition-colors hover:text-gold"
+                    className="text-sm text-white/60 transition-colors hover:text-gold"
                   >
                     {service.title}
                   </Link>
@@ -97,7 +97,7 @@ export function Footer() {
               {SERVICE_AREAS.map((area) => (
                 <li
                   key={area}
-                  className="text-sm text-white/50"
+                  className="text-sm text-white/60"
                 >
                   {area}
                 </li>
@@ -110,10 +110,10 @@ export function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-dark-border">
         <div className="container-max mx-auto flex flex-col items-center gap-3 px-4 py-6 sm:flex-row sm:justify-between sm:px-6 lg:px-8">
-          <p className="text-xs text-white/40">
+          <p className="text-xs text-white/60">
             &copy; {currentYear} {BRAND.name}. All rights reserved.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-white/40">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-white/60">
             <a
               href={`tel:${BRAND.phone.replace(/[^0-9+]/g, '')}`}
               className="transition-colors hover:text-gold"
@@ -136,7 +136,7 @@ export function Footer() {
 
 function SocialPlaceholder({ label }: { label: string }) {
   return (
-    <span className="flex h-9 w-9 items-center justify-center rounded-full border border-dark-border text-xs font-semibold text-white/40 transition-colors hover:border-gold/40 hover:text-gold">
+    <span className="flex h-10 w-10 items-center justify-center rounded-full border border-dark-border text-xs font-semibold text-white/60 transition-colors hover:border-gold/40 hover:text-gold">
       {label}
     </span>
   )

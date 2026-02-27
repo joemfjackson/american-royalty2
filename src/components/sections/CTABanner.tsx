@@ -7,7 +7,7 @@ export function CTABanner() {
     <section className="relative overflow-hidden">
       {/* Background photo */}
       <Image
-        src="/images/gallery/dancing-on-bus.jpg"
+        src="/images/gallery/dancing-on-bus.webp"
         alt="Guests dancing and celebrating on an American Royalty party bus"
         fill
         sizes="100vw"

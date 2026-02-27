@@ -1,11 +1,32 @@
+import dynamic from 'next/dynamic'
 import { Hero } from '@/components/sections/Hero'
 import { TrustSignals } from '@/components/sections/TrustSignals'
 import { FleetPreview } from '@/components/sections/FleetPreview'
 import { ServicesGrid } from '@/components/sections/ServicesGrid'
-import { Testimonials } from '@/components/sections/Testimonials'
 import { CTABanner } from '@/components/sections/CTABanner'
-import { FAQ } from '@/components/sections/FAQ'
 import { BRAND, SERVICE_AREAS } from '@/lib/constants'
+
+const Testimonials = dynamic(
+  () => import('@/components/sections/Testimonials').then((m) => ({ default: m.Testimonials })),
+  {
+    loading: () => (
+      <div className="section-padding">
+        <div className="container-max h-96" />
+      </div>
+    ),
+  }
+)
+
+const FAQ = dynamic(
+  () => import('@/components/sections/FAQ').then((m) => ({ default: m.FAQ })),
+  {
+    loading: () => (
+      <div className="section-padding">
+        <div className="container-max h-96" />
+      </div>
+    ),
+  }
+)
 
 const jsonLd = {
   '@context': 'https://schema.org',

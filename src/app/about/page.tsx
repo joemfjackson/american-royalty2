@@ -8,12 +8,12 @@ import { Card } from '@/components/ui/Card'
 import { BRAND, SERVICE_AREAS } from '@/lib/constants'
 
 const experienceGallery = [
-  { src: '/images/gallery/bachelorette-group.jpg', alt: 'Bachelorette party group celebrating on party bus' },
-  { src: '/images/gallery/bachelor-suits.jpg', alt: 'Bachelor party group in suits on party bus' },
-  { src: '/images/gallery/corporate-group.jpg', alt: 'Corporate team event on party bus' },
-  { src: '/images/gallery/full-bus-party.jpg', alt: 'Full bus of guests partying in Las Vegas' },
-  { src: '/images/gallery/friends-outside-bus.jpg', alt: 'Friends group photo outside American Royalty party bus' },
-  { src: '/images/gallery/wedding-on-bus.jpg', alt: 'Wedding couple celebrating on party bus' },
+  { src: '/images/gallery/bachelorette-group.webp', alt: 'Bachelorette party group celebrating on party bus' },
+  { src: '/images/gallery/bachelor-suits.webp', alt: 'Bachelor party group in suits on party bus' },
+  { src: '/images/gallery/corporate-group.webp', alt: 'Corporate team event on party bus' },
+  { src: '/images/gallery/full-bus-party.webp', alt: 'Full bus of guests partying in Las Vegas' },
+  { src: '/images/gallery/friends-outside-bus.webp', alt: 'Friends group photo outside American Royalty party bus' },
+  { src: '/images/gallery/wedding-on-bus.webp', alt: 'Wedding couple celebrating on party bus' },
 ]
 
 export const metadata: Metadata = {

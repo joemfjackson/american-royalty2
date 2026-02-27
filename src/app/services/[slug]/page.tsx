@@ -60,27 +60,27 @@ export async function generateMetadata({ params }: MetadataProps): Promise<Metad
 // Service hero images
 // ---------------------------------------------------------------------------
 const serviceImages: Record<string, string> = {
-  'bachelor-party': '/images/services/bachelor.jpg',
-  'bachelorette-party': '/images/services/bachelorette.jpg',
-  wedding: '/images/services/wedding.jpg',
-  nightlife: '/images/services/nightlife.jpg',
-  corporate: '/images/services/corporate.jpg',
-  birthday: '/images/services/birthday.jpg',
-  prom: '/images/services/prom.jpg',
-  airport: '/images/services/airport.jpg',
-  'strip-tour': '/images/services/strip-tour.jpg',
+  'bachelor-party': '/images/services/bachelor.webp',
+  'bachelorette-party': '/images/services/bachelorette.webp',
+  wedding: '/images/services/wedding.webp',
+  nightlife: '/images/services/nightlife.webp',
+  corporate: '/images/services/corporate.webp',
+  birthday: '/images/services/birthday.webp',
+  prom: '/images/services/prom.webp',
+  airport: '/images/services/airport.webp',
+  'strip-tour': '/images/services/strip-tour.webp',
 }
 
 // ---------------------------------------------------------------------------
 // Vehicle image mapping
 // ---------------------------------------------------------------------------
 const vehicleImages: Record<string, string> = {
-  'the-sovereign': '/images/fleet/white-bus-casino.jpg',
-  'the-crown-jewel': '/images/fleet/black-bus-mgm.jpg',
-  'royal-sprinter': '/images/fleet/interior-pink-blue.jpg',
-  'the-monarch': '/images/fleet/interior-blue-led.jpg',
-  'black-diamond': '/images/fleet/interior-rainbow.jpg',
-  'the-empire': '/images/fleet/white-bus-valet.jpg',
+  'the-sovereign': '/images/fleet/white-bus-casino.webp',
+  'the-crown-jewel': '/images/fleet/black-bus-mgm.webp',
+  'royal-sprinter': '/images/fleet/interior-pink-blue.webp',
+  'the-monarch': '/images/fleet/interior-blue-led.webp',
+  'black-diamond': '/images/fleet/interior-rainbow.webp',
+  'the-empire': '/images/fleet/white-bus-valet.webp',
 }
 
 // ---------------------------------------------------------------------------
@@ -294,7 +294,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
                     {/* Vehicle image */}
                     <div className="relative h-44 overflow-hidden">
                       <Image
-                        src={vehicleImages[vehicle.slug] || '/images/fleet/white-bus-casino.jpg'}
+                        src={vehicleImages[vehicle.slug] || '/images/fleet/white-bus-casino.webp'}
                         alt={`${vehicle.name} - ${vehicle.type}`}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

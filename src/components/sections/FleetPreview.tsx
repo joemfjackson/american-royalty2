@@ -11,9 +11,9 @@ import { MOCK_VEHICLES } from '@/lib/constants'
 import type { Vehicle } from '@/types'
 
 const vehicleImages: Record<string, string> = {
-  'the-sovereign': '/images/fleet/white-bus-casino.jpg',
-  'the-crown-jewel': '/images/fleet/black-bus-mgm.jpg',
-  'royal-sprinter': '/images/fleet/interior-pink-blue.jpg',
+  'the-sovereign': '/images/fleet/white-bus-casino.webp',
+  'the-crown-jewel': '/images/fleet/black-bus-mgm.webp',
+  'royal-sprinter': '/images/fleet/interior-pink-blue.webp',
 }
 
 const topVehicles = MOCK_VEHICLES.slice(0, 3)
@@ -30,7 +30,7 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
         {/* Vehicle image */}
         <div className="relative h-52 overflow-hidden">
           <Image
-            src={vehicleImages[vehicle.slug] || '/images/fleet/white-bus-casino.jpg'}
+            src={vehicleImages[vehicle.slug] || '/images/fleet/white-bus-casino.webp'}
             alt={`${vehicle.name} - ${vehicle.type} exterior`}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

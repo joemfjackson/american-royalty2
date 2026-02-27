@@ -9,7 +9,7 @@ export function Hero() {
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
       {/* Background photo */}
       <Image
-        src="/images/hero/bus-exterior-casino.jpg"
+        src="/images/hero/bus-exterior-casino.webp"
         alt="American Royalty white party bus at a Las Vegas casino"
         fill
         sizes="100vw"

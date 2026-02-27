@@ -9,15 +9,15 @@ import { MOCK_SERVICES } from '@/lib/constants'
 import type { Service } from '@/types'
 
 const serviceImages: Record<string, string> = {
-  'bachelor-party': '/images/services/bachelor.jpg',
-  'bachelorette-party': '/images/services/bachelorette.jpg',
-  wedding: '/images/services/wedding.jpg',
-  nightlife: '/images/services/nightlife.jpg',
-  corporate: '/images/services/corporate.jpg',
-  birthday: '/images/services/birthday.jpg',
-  prom: '/images/services/prom.jpg',
-  airport: '/images/services/airport.jpg',
-  'strip-tour': '/images/services/strip-tour.jpg',
+  'bachelor-party': '/images/services/bachelor.webp',
+  'bachelorette-party': '/images/services/bachelorette.webp',
+  wedding: '/images/services/wedding.webp',
+  nightlife: '/images/services/nightlife.webp',
+  corporate: '/images/services/corporate.webp',
+  birthday: '/images/services/birthday.webp',
+  prom: '/images/services/prom.webp',
+  airport: '/images/services/airport.webp',
+  'strip-tour': '/images/services/strip-tour.webp',
 }
 
 function ServiceCard({ service, index }: { service: Service; index: number }) {
