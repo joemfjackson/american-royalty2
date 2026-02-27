@@ -28,7 +28,7 @@ export default async function FleetPage() {
   const vehicles = await getVehicles()
 
   return (
-    <section className="section-padding pt-32">
+    <section className="section-padding overflow-hidden pt-32">
       <div className="container-max">
         {/* Page Header */}
         <div className="text-center">

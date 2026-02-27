@@ -39,7 +39,7 @@ export function Testimonials() {
   }
 
   return (
-    <section className="section-padding">
+    <section className="section-padding overflow-hidden">
       <div className="container-max">
         <div className="text-center">
           <SectionTag>Testimonials</SectionTag>
