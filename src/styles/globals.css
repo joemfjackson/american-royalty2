@@ -89,6 +89,62 @@
   }
 }
 
+/* Shimmer animation for gold gradient text */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.gold-gradient-text-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    #D6C08A 0%,
+    #E8D9B0 25%,
+    #F5ECD7 50%,
+    #E8D9B0 75%,
+    #D6C08A 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 4s ease-in-out infinite;
+}
+
+/* Bouncing chevron for scroll indicator */
+@keyframes bounce-gentle {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(8px);
+    opacity: 1;
+  }
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 2s ease-in-out infinite;
+}
+
+/* Pulsing glow for CTA buttons */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(214, 192, 138, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(214, 192, 138, 0.5);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

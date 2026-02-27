@@ -67,30 +67,52 @@ export function Testimonials() {
           </button>
 
           {/* Testimonial card */}
-          <div className="overflow-hidden rounded-xl border border-dark-border bg-dark-card px-6 py-10 sm:px-12 sm:py-14">
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.div
-                key={t.id}
-                custom={direction}
-                variants={variants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.35, ease: 'easeInOut' }}
-                className="text-center"
+          <div className="relative overflow-hidden rounded-xl border border-gold/20 bg-dark-card shadow-[0_0_40px_rgba(214,192,138,0.06)]">
+            {/* Gold gradient top border */}
+            <div
+              className="h-0.5 w-full"
+              style={{ background: 'linear-gradient(90deg, #6F2DBD, #D6C08A, #6F2DBD)' }}
+            />
+
+            <div className="relative px-6 py-10 sm:px-12 sm:py-14">
+              {/* Decorative quote marks */}
+              <span
+                className="pointer-events-none absolute left-4 top-4 select-none text-7xl font-serif leading-none text-gold/[0.08] sm:left-8 sm:top-6 sm:text-8xl"
+                aria-hidden="true"
               >
-                <StarRating rating={t.rating} className="justify-center text-lg" />
+                &ldquo;
+              </span>
+              <span
+                className="pointer-events-none absolute bottom-4 right-4 select-none text-7xl font-serif leading-none text-gold/[0.08] sm:bottom-6 sm:right-8 sm:text-8xl"
+                aria-hidden="true"
+              >
+                &rdquo;
+              </span>
 
-                <blockquote className="mt-6 text-lg italic leading-relaxed text-white/80 sm:text-xl">
-                  &ldquo;{t.text}&rdquo;
-                </blockquote>
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={t.id}
+                  custom={direction}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.35, ease: 'easeInOut' }}
+                  className="relative z-10 text-center"
+                >
+                  <StarRating rating={t.rating} className="justify-center text-xl sm:text-2xl" />
 
-                <p className="mt-6 font-semibold text-white">{t.name}</p>
-                {t.event_type && (
-                  <p className="mt-1 text-sm text-gold/70">{t.event_type}</p>
-                )}
-              </motion.div>
-            </AnimatePresence>
+                  <blockquote className="mt-6 text-lg italic leading-relaxed text-white/80 sm:text-xl">
+                    &ldquo;{t.text}&rdquo;
+                  </blockquote>
+
+                  <p className="mt-6 font-semibold text-white">{t.name}</p>
+                  {t.event_type && (
+                    <p className="mt-1 text-sm text-gold/70">{t.event_type}</p>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Mobile arrows */}

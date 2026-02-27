@@ -40,31 +40,36 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-dark-card via-transparent to-transparent" />
+            {/* Enhanced gradient overlay that blends into card */}
+            <div className="absolute inset-0 bg-gradient-to-t from-dark-card via-dark-card/30 to-transparent" />
           </div>
         )}
 
         <div className="flex flex-1 flex-col p-6">
-        <span className="text-3xl" role="img" aria-label={service.title}>
-          {service.icon}
-        </span>
+          {/* Emoji in gold-tinted circle */}
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gold/10 border border-gold/20">
+            <span className="text-3xl" role="img" aria-label={service.title}>
+              {service.icon}
+            </span>
+          </div>
 
-        <h3 className="mt-4 text-lg font-bold text-white">{service.title}</h3>
+          <h3 className="mt-4 text-lg font-bold text-white">{service.title}</h3>
 
-        <p className="mt-1 text-sm font-medium text-gold/70">
-          {service.tagline}
-        </p>
+          <p className="mt-1 text-sm font-medium text-gold/70">
+            {service.tagline}
+          </p>
 
-        <p className="mt-3 flex-1 text-sm leading-relaxed text-white/50">
-          {service.description}
-        </p>
+          <p className="mt-3 flex-1 text-sm leading-relaxed text-white/50">
+            {service.description}
+          </p>
 
-        <Link
-          href={`/services/${service.slug}`}
-          className="mt-5 inline-flex items-center text-sm font-semibold text-gold transition-colors group-hover:text-gold-light"
-        >
-          Learn More &rarr;
-        </Link>
+          <Link
+            href={`/services/${service.slug}`}
+            className="group/link mt-5 inline-flex items-center gap-1 text-sm font-semibold text-gold transition-colors group-hover:text-gold-light"
+          >
+            Learn More
+            <span className="inline-block transition-transform duration-200 group-hover/link:translate-x-1.5">&rarr;</span>
+          </Link>
         </div>
       </div>
     </motion.div>

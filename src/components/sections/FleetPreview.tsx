@@ -6,7 +6,6 @@ import { motion } from 'framer-motion'
 import { Users } from 'lucide-react'
 import { SectionTag } from '@/components/ui/SectionTag'
 import { GoldLine } from '@/components/ui/GoldLine'
-import { Card } from '@/components/ui/Card'
 import { MOCK_VEHICLES } from '@/lib/constants'
 import type { Vehicle } from '@/types'
 
@@ -26,7 +25,7 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.6, delay: index * 0.15 }}
     >
-      <Card hover className="flex h-full flex-col overflow-hidden p-0">
+      <div className="group flex h-full flex-col overflow-hidden rounded-xl border border-dark-border bg-dark-card transition-all duration-300 hover:border-gold/40 hover:shadow-[0_0_40px_rgba(214,192,138,0.08)]">
         {/* Vehicle image */}
         <div className="relative h-52 overflow-hidden">
           <Image
@@ -41,6 +40,10 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
           <span className="absolute right-3 top-3 rounded-full bg-black/50 px-3 py-1 text-xs font-semibold text-gold backdrop-blur-sm">
             {vehicle.type}
           </span>
+          {/* Price tag overlay */}
+          <span className="absolute bottom-3 right-3 rounded-md bg-black/70 px-3 py-1.5 text-sm font-bold text-gold backdrop-blur-sm border border-gold/20">
+            From ${vehicle.hourly_rate}/hr
+          </span>
         </div>
 
         <div className="flex flex-1 flex-col p-6">
@@ -50,9 +53,6 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
             <span className="flex items-center gap-1">
               <Users className="h-4 w-4" aria-hidden="true" />
               Up to {vehicle.capacity}
-            </span>
-            <span className="text-gold font-semibold">
-              ${vehicle.hourly_rate}/hr
             </span>
           </div>
 
@@ -71,13 +71,14 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
           <div className="mt-auto pt-5">
             <Link
               href={`/fleet/${vehicle.slug}`}
-              className="text-sm font-semibold text-gold transition-colors hover:text-gold-light"
+              className="group/link inline-flex items-center gap-1 text-sm font-semibold text-gold transition-colors hover:text-gold-light"
             >
-              View Details &rarr;
+              View Details
+              <span className="inline-block transition-transform duration-200 group-hover/link:translate-x-1">&rarr;</span>
             </Link>
           </div>
         </div>
-      </Card>
+      </div>
     </motion.div>
   )
 }

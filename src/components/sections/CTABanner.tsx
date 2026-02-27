@@ -32,14 +32,24 @@ export function CTABanner() {
           professional chauffeurs, unforgettable experiences.
         </p>
 
+        {/* Decorative gold line divider */}
+        <div className="mx-auto mt-6 flex items-center justify-center gap-3">
+          <div className="h-px w-12 bg-gradient-to-r from-transparent to-gold/60" />
+          <div className="h-1.5 w-1.5 rotate-45 bg-gold/80" />
+          <div className="h-px w-12 bg-gradient-to-l from-transparent to-gold/60" />
+        </div>
+
         <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <a
             href={`tel:${BRAND.phone.replace(/[^+\d]/g, '')}`}
-            className="btn-gold text-base sm:text-lg"
+            className="btn-gold text-lg sm:text-xl lg:text-2xl lg:px-8 lg:py-4 font-bold"
           >
             Call {BRAND.phone}
           </a>
-          <Link href="/quote" className="btn-outline border-white/30 text-white hover:border-white hover:bg-white/10 text-base sm:text-lg">
+          <Link
+            href="/quote"
+            className="btn-outline border-white/30 text-white hover:border-white hover:bg-white/10 text-base sm:text-lg animate-pulse-glow"
+          >
             Get a Quote
           </Link>
         </div>

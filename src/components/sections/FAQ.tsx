@@ -19,17 +19,29 @@ function FAQItem({
   onToggle: () => void
 }) {
   return (
-    <div className="border-b border-dark-border">
+    <div
+      className={`border-b border-dark-border transition-all duration-300 ${
+        isOpen ? 'border-l-2 border-l-gold pl-4' : 'border-l-2 border-l-transparent pl-4'
+      }`}
+    >
       <button
         onClick={onToggle}
         className="flex w-full items-center justify-between gap-4 py-5 text-left transition-colors hover:text-gold"
         aria-expanded={isOpen}
       >
-        <span className="text-base font-semibold sm:text-lg">{question}</span>
+        <span
+          className={`text-base sm:text-lg transition-all duration-200 ${
+            isOpen ? 'font-bold text-gold' : 'font-semibold text-white'
+          }`}
+        >
+          {question}
+        </span>
         <motion.span
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.25 }}
-          className="flex-shrink-0 text-gold"
+          className={`flex-shrink-0 transition-colors duration-200 ${
+            isOpen ? 'text-gold' : 'text-gold/50'
+          }`}
         >
           <ChevronDown className="h-5 w-5" aria-hidden="true" />
         </motion.span>
@@ -45,7 +57,7 @@ function FAQItem({
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <p className="pb-5 leading-relaxed text-white/50">{answer}</p>
+            <p className="pb-5 leading-relaxed text-white/60">{answer}</p>
           </motion.div>
         )}
       </AnimatePresence>

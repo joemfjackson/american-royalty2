@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { ChevronDown } from 'lucide-react'
 
 export function Hero() {
   return (
@@ -72,8 +73,8 @@ export function Hero() {
           transition={{ duration: 0.8, delay: 0.15, ease: 'easeOut' }}
         >
           Las Vegas{' '}
-          <span className="gold-gradient-text">Party Bus</span> &{' '}
-          <span className="gold-gradient-text">Limousine</span> Service
+          <span className="gold-gradient-text-shimmer">Party Bus</span> &{' '}
+          <span className="gold-gradient-text-shimmer">Limousine</span> Service
         </motion.h1>
 
         <motion.p
@@ -102,10 +103,16 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.65, ease: 'easeOut' }}
         >
-          <Link href="/quote" className="btn-gold text-base sm:text-lg">
+          <Link
+            href="/quote"
+            className="btn-gold text-base sm:text-lg lg:px-8 lg:py-4 lg:text-xl transition-shadow hover:shadow-[0_0_30px_rgba(214,192,138,0.4)]"
+          >
             Get a Quote
           </Link>
-          <Link href="/fleet" className="btn-outline text-base sm:text-lg">
+          <Link
+            href="/fleet"
+            className="btn-outline text-base sm:text-lg lg:px-8 lg:py-4 lg:text-xl transition-shadow hover:shadow-[0_0_30px_rgba(111,45,189,0.35)]"
+          >
             View Our Fleet
           </Link>
         </motion.div>
@@ -113,6 +120,23 @@ export function Hero() {
 
       {/* Bottom fade to black */}
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent" />
+
+      {/* Scroll-down indicator */}
+      <motion.div
+        className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 1.2 }}
+      >
+        <a
+          href="#trust-signals"
+          aria-label="Scroll down"
+          className="flex flex-col items-center gap-1 text-gold/60 transition-colors hover:text-gold"
+        >
+          <span className="text-[10px] uppercase tracking-[2px]">Scroll</span>
+          <ChevronDown className="h-5 w-5 animate-bounce-gentle" />
+        </a>
+      </motion.div>
     </section>
   )
 }
