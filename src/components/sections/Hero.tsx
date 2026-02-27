@@ -6,7 +6,7 @@ import { ChevronDown } from 'lucide-react'
 
 export function Hero() {
   return (
-    <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
+    <section className="relative flex min-h-[calc(100svh+60px)] items-center justify-center overflow-hidden sm:min-h-screen">
       {/* Background photo — mobile-optimized srcSet */}
       <picture>
         <source
@@ -112,7 +112,7 @@ export function Hero() {
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent" />
 
       {/* Scroll-down indicator */}
-      <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 animate-hero-fade-in" style={{ animationDelay: '1.2s' }}>
+      <div className="absolute bottom-20 left-1/2 z-10 -translate-x-1/2 animate-hero-fade-in sm:bottom-8" style={{ animationDelay: '1.2s' }}>
         <a
           href="#trust-signals"
           aria-label="Scroll down"
