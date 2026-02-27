@@ -47,56 +47,7 @@ export async function generateMetadata({ params }: MetadataProps): Promise<Metad
   }
 }
 
-// ---------------------------------------------------------------------------
-// Vehicle image mappings
-// ---------------------------------------------------------------------------
-const vehicleImages: Record<string, string> = {
-  'the-sovereign': '/images/fleet/white-bus-casino.webp',
-  'the-crown-jewel': '/images/fleet/black-bus-mgm.webp',
-  'royal-sprinter': '/images/fleet/interior-pink-blue.webp',
-  'the-monarch': '/images/fleet/interior-blue-led.webp',
-  'black-diamond': '/images/fleet/interior-rainbow.webp',
-  'the-empire': '/images/fleet/white-bus-valet.webp',
-}
-
-const vehicleGallery: Record<string, string[]> = {
-  'the-sovereign': [
-    '/images/fleet/white-bus-front.webp',
-    '/images/fleet/interior-pink-blue.webp',
-    '/images/fleet/interior-blue-led.webp',
-    '/images/gallery/full-bus-party.webp',
-  ],
-  'the-crown-jewel': [
-    '/images/fleet/black-bus-mgm-2.webp',
-    '/images/fleet/interior-rainbow.webp',
-    '/images/fleet/interior-rainbow-2.webp',
-    '/images/gallery/celebration-group.webp',
-  ],
-  'royal-sprinter': [
-    '/images/fleet/interior-blue-led.webp',
-    '/images/fleet/interior-rainbow.webp',
-    '/images/gallery/bachelorette-group.webp',
-    '/images/gallery/bachelor-suits.webp',
-  ],
-  'the-monarch': [
-    '/images/fleet/interior-pink-blue.webp',
-    '/images/fleet/interior-rainbow.webp',
-    '/images/gallery/dancing-on-bus.webp',
-    '/images/gallery/nightlife-group.webp',
-  ],
-  'black-diamond': [
-    '/images/fleet/interior-rainbow-2.webp',
-    '/images/fleet/interior-blue-led.webp',
-    '/images/fleet/black-bus-mgm.webp',
-    '/images/gallery/friends-outside-bus.webp',
-  ],
-  'the-empire': [
-    '/images/fleet/white-bus-front.webp',
-    '/images/fleet/white-bus-casino.webp',
-    '/images/fleet/interior-pink-blue.webp',
-    '/images/gallery/corporate-group.webp',
-  ],
-}
+const FALLBACK_IMAGE = '/images/fleet/white-bus-casino.webp'
 
 // ---------------------------------------------------------------------------
 // Page component
@@ -172,7 +123,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
             <div className="space-y-4">
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-dark-border">
                 <Image
-                  src={vehicleImages[vehicle.slug] || '/images/fleet/white-bus-casino.webp'}
+                  src={vehicle.image_url || FALLBACK_IMAGE}
                   alt={`${vehicle.name} - ${vehicle.type} in Las Vegas`}
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -187,9 +138,9 @@ export default async function VehicleDetailPage({ params }: PageProps) {
               </div>
 
               {/* Gallery thumbnails */}
-              {vehicleGallery[vehicle.slug] && (
+              {vehicle.gallery_urls.length > 0 && (
                 <div className="grid grid-cols-4 gap-2">
-                  {vehicleGallery[vehicle.slug].map((img, i) => (
+                  {vehicle.gallery_urls.map((img, i) => (
                     <div
                       key={i}
                       className="relative aspect-square overflow-hidden rounded-lg border border-dark-border"
@@ -301,7 +252,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                       {/* Vehicle image */}
                       <div className="relative h-44 overflow-hidden">
                         <Image
-                          src={vehicleImages[rv.slug] || '/images/fleet/white-bus-casino.webp'}
+                          src={rv.image_url || FALLBACK_IMAGE}
                           alt={`${rv.name} - ${rv.type}`}
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

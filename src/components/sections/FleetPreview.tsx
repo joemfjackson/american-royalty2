@@ -8,11 +8,7 @@ import { SectionTag } from '@/components/ui/SectionTag'
 import { GoldLine } from '@/components/ui/GoldLine'
 import type { Vehicle } from '@/types'
 
-const vehicleImages: Record<string, string> = {
-  'the-sovereign': '/images/fleet/white-bus-casino.webp',
-  'the-crown-jewel': '/images/fleet/black-bus-mgm.webp',
-  'royal-sprinter': '/images/fleet/interior-pink-blue.webp',
-}
+const FALLBACK_IMAGE = '/images/fleet/white-bus-casino.webp'
 
 function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
   return (
@@ -28,7 +24,7 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
         {/* Vehicle image */}
         <div className="relative h-52 overflow-hidden">
           <Image
-            src={vehicleImages[vehicle.slug] || '/images/fleet/white-bus-casino.webp'}
+            src={vehicle.image_url || FALLBACK_IMAGE}
             alt={`${vehicle.name} - ${vehicle.type} exterior`}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

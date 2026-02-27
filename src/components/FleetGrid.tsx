@@ -10,14 +10,7 @@ import { Badge } from '@/components/ui/Badge'
 import { formatCurrency } from '@/lib/utils'
 import type { Vehicle } from '@/types'
 
-const vehicleImages: Record<string, string> = {
-  'the-sovereign': '/images/fleet/white-bus-casino.webp',
-  'the-crown-jewel': '/images/fleet/black-bus-mgm.webp',
-  'royal-sprinter': '/images/fleet/interior-pink-blue.webp',
-  'the-monarch': '/images/fleet/interior-blue-led.webp',
-  'black-diamond': '/images/fleet/interior-rainbow.webp',
-  'the-empire': '/images/fleet/white-bus-valet.webp',
-}
+const FALLBACK_IMAGE = '/images/fleet/white-bus-casino.webp'
 
 const FILTER_TABS = ['All', 'Party Bus', 'Sprinter Limo', 'Stretch Limo'] as const
 type FilterTab = (typeof FILTER_TABS)[number]
@@ -37,7 +30,7 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
         {/* Vehicle image */}
         <div className="relative h-56 overflow-hidden">
           <Image
-            src={vehicleImages[vehicle.slug] || '/images/fleet/white-bus-casino.webp'}
+            src={vehicle.image_url || FALLBACK_IMAGE}
             alt={`${vehicle.name} - ${vehicle.type} in Las Vegas`}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
