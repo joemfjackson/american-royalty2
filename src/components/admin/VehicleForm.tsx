@@ -1,9 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { X } from 'lucide-react'
+import { X, Plus, Trash2, ImageIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { slugify } from '@/lib/utils'
 import type { Vehicle } from '@/types'
@@ -19,17 +20,34 @@ const vehicleSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   features: z.string().min(1, 'At least one feature is required'),
   is_active: z.boolean(),
+  image_url: z.string().optional(),
 })
 
 type VehicleFormData = z.infer<typeof vehicleSchema>
 
 interface VehicleFormProps {
   vehicle?: Vehicle | null
-  onSubmit: (data: Omit<Vehicle, 'id' | 'created_at' | 'updated_at' | 'image_url' | 'gallery_urls' | 'display_order'> & { id?: string }) => void
+  onSubmit: (data: {
+    id?: string
+    name: string
+    slug: string
+    type: Vehicle['type']
+    capacity: number
+    hourly_rate: number
+    min_hours: number
+    description: string
+    features: string[]
+    is_active: boolean
+    image_url: string | null
+    gallery_urls: string[]
+  }) => void
   onCancel: () => void
 }
 
 export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
+  const [galleryUrls, setGalleryUrls] = useState<string[]>(vehicle?.gallery_urls || [])
+  const [newGalleryUrl, setNewGalleryUrl] = useState('')
+
   const {
     register,
     handleSubmit,
@@ -46,10 +64,24 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
       description: vehicle?.description || '',
       features: vehicle?.features?.join(', ') || '',
       is_active: vehicle?.is_active ?? true,
+      image_url: vehicle?.image_url || '',
     },
   })
 
   const nameValue = watch('name')
+  const imageUrlValue = watch('image_url')
+
+  const addGalleryUrl = () => {
+    const url = newGalleryUrl.trim()
+    if (url && !galleryUrls.includes(url)) {
+      setGalleryUrls((prev) => [...prev, url])
+      setNewGalleryUrl('')
+    }
+  }
+
+  const removeGalleryUrl = (index: number) => {
+    setGalleryUrls((prev) => prev.filter((_, i) => i !== index))
+  }
 
   const onFormSubmit = (data: VehicleFormData) => {
     onSubmit({
@@ -63,8 +95,13 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
       description: data.description,
       features: data.features.split(',').map((f) => f.trim()).filter(Boolean),
       is_active: data.is_active,
+      image_url: data.image_url?.trim() || null,
+      gallery_urls: galleryUrls,
     })
   }
+
+  const inputClass =
+    'w-full rounded-lg border border-dark-border bg-black px-4 py-3 text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20'
 
   return (
     <motion.div
@@ -106,7 +143,7 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
             </label>
             <input
               {...register('name')}
-              className="w-full rounded-lg border border-dark-border bg-black px-4 py-3 text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+              className={inputClass}
               placeholder="e.g., The Sovereign"
             />
             {errors.name && (
@@ -126,7 +163,7 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
             </label>
             <select
               {...register('type')}
-              className="w-full appearance-none rounded-lg border border-dark-border bg-black px-4 py-3 text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+              className={`${inputClass} appearance-none`}
             >
               <option value="Party Bus">Party Bus</option>
               <option value="Sprinter Limo">Sprinter Limo</option>
@@ -146,7 +183,7 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
               <input
                 type="number"
                 {...register('capacity', { valueAsNumber: true })}
-                className="w-full rounded-lg border border-dark-border bg-black px-4 py-3 text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+                className={inputClass}
               />
               {errors.capacity && (
                 <p className="mt-1.5 text-sm text-red-400">{errors.capacity.message}</p>
@@ -159,7 +196,7 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
               <input
                 type="number"
                 {...register('hourly_rate', { valueAsNumber: true })}
-                className="w-full rounded-lg border border-dark-border bg-black px-4 py-3 text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+                className={inputClass}
               />
               {errors.hourly_rate && (
                 <p className="mt-1.5 text-sm text-red-400">{errors.hourly_rate.message}</p>
@@ -172,7 +209,7 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
               <input
                 type="number"
                 {...register('min_hours', { valueAsNumber: true })}
-                className="w-full rounded-lg border border-dark-border bg-black px-4 py-3 text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+                className={inputClass}
               />
               {errors.min_hours && (
                 <p className="mt-1.5 text-sm text-red-400">{errors.min_hours.message}</p>
@@ -188,7 +225,7 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
             <textarea
               {...register('description')}
               rows={3}
-              className="w-full rounded-lg border border-dark-border bg-black px-4 py-3 text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20 resize-y"
+              className={`${inputClass} resize-y`}
               placeholder="Describe the vehicle..."
             />
             {errors.description && (
@@ -203,12 +240,99 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
             </label>
             <input
               {...register('features')}
-              className="w-full rounded-lg border border-dark-border bg-black px-4 py-3 text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+              className={inputClass}
               placeholder="LED Lighting, Sound System, Wet Bar..."
             />
             {errors.features && (
               <p className="mt-1.5 text-sm text-red-400">{errors.features.message}</p>
             )}
+          </div>
+
+          {/* Main Image URL */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-300">
+              Main Image URL
+            </label>
+            <input
+              {...register('image_url')}
+              className={inputClass}
+              placeholder="/images/fleet/vehicle.webp or https://..."
+            />
+            {imageUrlValue && (
+              <div className="mt-2 relative h-32 w-full overflow-hidden rounded-lg border border-dark-border bg-black">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imageUrlValue}
+                  alt="Preview"
+                  className="h-full w-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Gallery URLs */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-300">
+              Gallery Images
+            </label>
+
+            {/* Existing gallery images */}
+            {galleryUrls.length > 0 && (
+              <div className="mb-3 grid grid-cols-3 gap-2">
+                {galleryUrls.map((url, i) => (
+                  <div key={i} className="group relative h-20 overflow-hidden rounded-lg border border-dark-border bg-black">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={url}
+                      alt={`Gallery ${i + 1}`}
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        const el = e.target as HTMLImageElement
+                        el.style.display = 'none'
+                        el.parentElement!.classList.add('flex', 'items-center', 'justify-center')
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeGalleryUrl(i)}
+                      className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-red-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-500/20"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                    <ImageIcon className="absolute inset-0 m-auto h-5 w-5 text-gray-600 -z-10" />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add new gallery URL */}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newGalleryUrl}
+                onChange={(e) => setNewGalleryUrl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    addGalleryUrl()
+                  }
+                }}
+                className={`${inputClass} flex-1`}
+                placeholder="Paste image URL and click +"
+              />
+              <button
+                type="button"
+                onClick={addGalleryUrl}
+                disabled={!newGalleryUrl.trim()}
+                className="rounded-lg border border-dark-border px-3 py-3 text-gray-400 transition-all hover:border-gold/30 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              {galleryUrls.length} image{galleryUrls.length !== 1 ? 's' : ''} in gallery
+            </p>
           </div>
 
           {/* Active toggle */}

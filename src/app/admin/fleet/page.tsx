@@ -52,7 +52,7 @@ export default function AdminFleetPage() {
   }
 
   const handleFormSubmit = async (
-    data: Omit<Vehicle, 'id' | 'created_at' | 'updated_at' | 'image_url' | 'gallery_urls' | 'display_order'> & { id?: string }
+    data: Omit<Vehicle, 'id' | 'created_at' | 'updated_at' | 'display_order'> & { id?: string }
   ) => {
     try {
       if (data.id) {
@@ -66,6 +66,8 @@ export default function AdminFleetPage() {
           description: data.description,
           features: data.features,
           is_active: data.is_active,
+          image_url: data.image_url,
+          gallery_urls: data.gallery_urls,
         })
         setVehicles((prev) => prev.map((v) => (v.id === data.id ? updated : v)))
       } else {
@@ -79,6 +81,8 @@ export default function AdminFleetPage() {
           description: data.description,
           features: data.features,
           is_active: data.is_active,
+          image_url: data.image_url,
+          gallery_urls: data.gallery_urls,
         })
         setVehicles((prev) => [...prev, created])
       }

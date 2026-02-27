@@ -294,6 +294,8 @@ export async function createVehicle(data: {
   description: string
   features: string[]
   is_active: boolean
+  image_url?: string | null
+  gallery_urls?: string[]
 }): Promise<Vehicle> {
   await requireAdmin()
 
@@ -310,6 +312,8 @@ export async function createVehicle(data: {
       description: data.description,
       features: data.features,
       isActive: data.is_active,
+      imageUrl: data.image_url || null,
+      galleryUrls: data.gallery_urls || [],
       displayOrder: (maxOrder._max.displayOrder || 0) + 1,
     },
   })
@@ -331,6 +335,8 @@ export async function updateVehicle(
     description: string
     features: string[]
     is_active: boolean
+    image_url?: string | null
+    gallery_urls?: string[]
   }
 ): Promise<Vehicle> {
   await requireAdmin()
@@ -347,6 +353,8 @@ export async function updateVehicle(
       description: data.description,
       features: data.features,
       isActive: data.is_active,
+      imageUrl: data.image_url || null,
+      galleryUrls: data.gallery_urls || [],
     },
   })
 
