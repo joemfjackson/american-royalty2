@@ -10,6 +10,7 @@ const VEHICLE_TYPE_MAP: Record<string, Vehicle['type']> = {
   PARTY_BUS: 'Party Bus',
   SPRINTER_LIMO: 'Sprinter Limo',
   STRETCH_LIMO: 'Stretch Limo',
+  SUV: 'SUV',
 }
 
 function mapVehicle(v: PrismaVehicle): Vehicle {

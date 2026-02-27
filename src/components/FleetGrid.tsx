@@ -12,7 +12,7 @@ import type { Vehicle } from '@/types'
 
 const FALLBACK_IMAGE = '/images/fleet/white-bus-casino.webp'
 
-const FILTER_TABS = ['All', 'Party Bus', 'Sprinter Limo', 'Stretch Limo'] as const
+const FILTER_TABS = ['All', 'Party Bus', 'Sprinter Limo', 'Stretch Limo', 'SUV'] as const
 type FilterTab = (typeof FILTER_TABS)[number]
 
 function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {

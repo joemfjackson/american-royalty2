@@ -27,12 +27,14 @@ const VEHICLE_TYPE_MAP: Record<string, Vehicle['type']> = {
   PARTY_BUS: 'Party Bus',
   SPRINTER_LIMO: 'Sprinter Limo',
   STRETCH_LIMO: 'Stretch Limo',
+  SUV: 'SUV',
 }
 
 const VEHICLE_TYPE_REVERSE: Record<string, string> = {
   'Party Bus': 'PARTY_BUS',
   'Sprinter Limo': 'SPRINTER_LIMO',
   'Stretch Limo': 'STRETCH_LIMO',
+  'SUV': 'SUV',
 }
 
 const QUOTE_STATUS_MAP: Record<string, string> = {
@@ -305,7 +307,7 @@ export async function createVehicle(data: {
     data: {
       name: data.name,
       slug: data.slug,
-      type: (VEHICLE_TYPE_REVERSE[data.type] || 'PARTY_BUS') as 'PARTY_BUS' | 'SPRINTER_LIMO' | 'STRETCH_LIMO',
+      type: (VEHICLE_TYPE_REVERSE[data.type] || 'PARTY_BUS') as 'PARTY_BUS' | 'SPRINTER_LIMO' | 'STRETCH_LIMO' | 'SUV',
       capacity: data.capacity,
       hourlyRate: data.hourly_rate,
       minHours: data.min_hours,
@@ -346,7 +348,7 @@ export async function updateVehicle(
     data: {
       name: data.name,
       slug: data.slug,
-      type: (VEHICLE_TYPE_REVERSE[data.type] || 'PARTY_BUS') as 'PARTY_BUS' | 'SPRINTER_LIMO' | 'STRETCH_LIMO',
+      type: (VEHICLE_TYPE_REVERSE[data.type] || 'PARTY_BUS') as 'PARTY_BUS' | 'SPRINTER_LIMO' | 'STRETCH_LIMO' | 'SUV',
       capacity: data.capacity,
       hourlyRate: data.hourly_rate,
       minHours: data.min_hours,

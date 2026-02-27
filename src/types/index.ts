@@ -2,7 +2,7 @@ export interface Vehicle {
   id: string
   name: string
   slug: string
-  type: 'Party Bus' | 'Sprinter Limo' | 'Stretch Limo'
+  type: 'Party Bus' | 'Sprinter Limo' | 'Stretch Limo' | 'SUV'
   capacity: number
   hourly_rate: number
   min_hours: number

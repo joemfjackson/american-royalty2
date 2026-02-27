@@ -33,6 +33,7 @@ enum VehicleType {
   PARTY_BUS
   SPRINTER_LIMO
   STRETCH_LIMO
+  SUV
 }
 
 model Vehicle {

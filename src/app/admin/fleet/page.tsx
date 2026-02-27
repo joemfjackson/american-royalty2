@@ -97,6 +97,7 @@ export default function AdminFleetPage() {
     'Party Bus': 'gold',
     'Sprinter Limo': 'purple',
     'Stretch Limo': 'green',
+    'SUV': 'outline',
   }
 
   if (loading) {
@@ -144,7 +145,7 @@ export default function AdminFleetPage() {
                 {/* Vehicle image placeholder */}
                 <div className="hidden sm:flex h-20 w-28 shrink-0 items-center justify-center rounded-lg border border-dark-border bg-black/50">
                   <span className="text-2xl">
-                    {vehicle.type === 'Party Bus' ? '🚌' : vehicle.type === 'Sprinter Limo' ? '🚐' : '🚗'}
+                    {vehicle.type === 'Party Bus' ? '🚌' : vehicle.type === 'Sprinter Limo' ? '🚐' : vehicle.type === 'SUV' ? '🚙' : '🚗'}
                   </span>
                 </div>
 

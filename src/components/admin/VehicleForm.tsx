@@ -13,7 +13,7 @@ import type { Vehicle } from '@/types'
 
 const vehicleSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  type: z.enum(['Party Bus', 'Sprinter Limo', 'Stretch Limo'], {
+  type: z.enum(['Party Bus', 'Sprinter Limo', 'Stretch Limo', 'SUV'], {
     message: 'Type is required',
   }),
   capacity: z.number().min(1, 'Capacity must be at least 1'),
@@ -155,6 +155,7 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
               <option value="Party Bus">Party Bus</option>
               <option value="Sprinter Limo">Sprinter Limo</option>
               <option value="Stretch Limo">Stretch Limo</option>
+              <option value="SUV">SUV</option>
             </select>
             {errors.type && (
               <p className="mt-1.5 text-sm text-red-400">{errors.type.message}</p>
