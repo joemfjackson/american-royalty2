@@ -28,7 +28,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
       viewport={{ once: true, margin: '-40px' }}
       transition={{ duration: 0.5, delay: index * 0.08 }}
     >
-      <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-royal/20 bg-dark-card shadow-[0_0_25px_rgba(111,45,189,0.1)] transition-all duration-300 sm:border-dark-border sm:shadow-none sm:hover:-translate-y-1 sm:hover:border-royal/30 sm:hover:shadow-[0_0_30px_rgba(111,45,189,0.12),0_0_60px_rgba(214,192,138,0.06)]">
+      <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-royal/20 bg-dark-card shadow-[0_8px_30px_rgba(111,45,189,0.18),0_2px_8px_rgba(0,0,0,0.4)] -translate-y-0.5 transition-all duration-300 sm:translate-y-0 sm:border-dark-border sm:shadow-none sm:hover:-translate-y-1 sm:hover:border-royal/30 sm:hover:shadow-[0_12px_40px_rgba(111,45,189,0.2),0_4px_12px_rgba(0,0,0,0.4)]">
         {/* Purple-gold gradient top accent — always visible on mobile */}
         <div className="absolute top-0 left-0 right-0 z-10 h-0.5 bg-gradient-to-r from-royal via-gold/60 to-royal sm:opacity-0 sm:transition-opacity sm:duration-300 sm:group-hover:opacity-100" />
         {/* Service thumbnail */}
