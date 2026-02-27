@@ -64,6 +64,23 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={montserrat.variable}>
+      <head>
+        {/* Preload hero image so browser fetches it immediately */}
+        <link
+          rel="preload"
+          href="/images/hero/bus-exterior-casino-mobile.webp"
+          as="image"
+          type="image/webp"
+          media="(max-width: 640px)"
+        />
+        <link
+          rel="preload"
+          href="/images/hero/bus-exterior-casino.webp"
+          as="image"
+          type="image/webp"
+          media="(min-width: 641px)"
+        />
+      </head>
       <body className="font-body">
         <a
           href="#main-content"

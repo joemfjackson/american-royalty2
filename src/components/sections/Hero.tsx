@@ -7,18 +7,25 @@ import { ChevronDown } from 'lucide-react'
 export function Hero() {
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
-      {/* Background photo */}
-      <Image
-        src="/images/hero/bus-exterior-casino.webp"
-        alt="American Royalty white party bus at a Las Vegas casino"
-        fill
-        sizes="100vw"
-        className="object-cover"
-        priority
-        quality={85}
-        placeholder="blur"
-        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMCwsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAAEAAQDAREAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAFRABAAAAAAAAAAAAAAAAAAAABf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AKyAP//Z"
-      />
+      {/* Background photo — mobile-optimized srcSet */}
+      <picture>
+        <source
+          media="(max-width: 640px)"
+          srcSet="/images/hero/bus-exterior-casino-mobile.webp"
+          type="image/webp"
+        />
+        <Image
+          src="/images/hero/bus-exterior-casino.webp"
+          alt="American Royalty white party bus at a Las Vegas casino"
+          fill
+          sizes="100vw"
+          className="object-cover"
+          priority
+          quality={85}
+          placeholder="blur"
+          blurDataURL="data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAADQAwCdASoUAA0APzmGuVOvKSWisAgB4CcJYgCdAB8mnOGcQ86DdEwA3e2EK7PyAHH3OpTJsIYODLN0Kwy266XViXXLedm1oTTembzGPZpLRln1H4v1DHj+fpYM5mGXYiPqDqSLE7DTJdAA"
+        />
+      </picture>
 
       {/* Dark overlay for text readability */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/90" />
