@@ -133,8 +133,8 @@ export function Testimonials() {
             </button>
           </div>
 
-          {/* Dots */}
-          <div className="mt-6 flex justify-center gap-3 sm:gap-2" role="tablist">
+          {/* Dots — padded for 44px touch targets */}
+          <div className="mt-4 flex justify-center gap-1 sm:mt-6" role="tablist">
             {testimonials.map((item, i) => (
               <button
                 key={item.id}
@@ -145,12 +145,14 @@ export function Testimonials() {
                   setDirection(i > current ? 1 : -1)
                   setCurrent(i)
                 }}
-                className={`h-2.5 rounded-full transition-all duration-300 sm:h-2 ${
+                className="flex items-center justify-center px-1.5 py-3 sm:px-1 sm:py-2"
+              >
+                <span className={`block rounded-full transition-all duration-300 h-2.5 sm:h-2 ${
                   i === current
                     ? 'w-7 bg-gold sm:w-6'
-                    : 'w-2.5 bg-white/20 hover:bg-white/40 sm:w-2'
-                }`}
-              />
+                    : 'w-2.5 bg-white/20 sm:w-2'
+                }`} />
+              </button>
             ))}
           </div>
         </div>

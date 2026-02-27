@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 
 export function Hero() {
@@ -42,12 +41,8 @@ export function Hero() {
       />
 
       <div className="container-max relative z-10 px-4 text-center sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="mb-6 flex justify-center sm:mb-8"
-        >
+        {/* Logo — CSS animation, no JS dependency */}
+        <div className="mb-6 flex justify-center animate-hero-fade-in" style={{ animationDelay: '0s' }}>
           <Image
             src="/images/logo.png"
             alt="American Royalty"
@@ -56,52 +51,40 @@ export function Hero() {
             className="h-20 w-auto sm:h-28 md:h-32"
             priority
           />
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
-        >
-          <p className="section-tag mb-4 sm:mb-6">Las Vegas Premium Transportation</p>
-        </motion.div>
+        <p className="section-tag mb-4 animate-hero-fade-in sm:mb-6" style={{ animationDelay: '0.1s' }}>
+          Las Vegas Premium Transportation
+        </p>
 
-        <motion.h1
-          className="mx-auto max-w-5xl text-3xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.15, ease: 'easeOut' }}
+        <h1
+          className="mx-auto max-w-5xl text-3xl font-bold leading-tight tracking-tight animate-hero-fade-in sm:text-5xl md:text-6xl lg:text-7xl"
+          style={{ animationDelay: '0.15s' }}
         >
           Las Vegas{' '}
           <span className="gold-gradient-text-shimmer">Party Bus</span> &{' '}
           <span className="gold-gradient-text-shimmer">Limousine</span> Service
-        </motion.h1>
+        </h1>
 
-        <motion.p
-          className="mx-auto mt-3 text-lg font-light tracking-widest uppercase text-gold/80 sm:mt-4 sm:text-2xl"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.35, ease: 'easeOut' }}
+        <p
+          className="mx-auto mt-3 text-lg font-light tracking-widest uppercase text-gold/80 animate-hero-fade-in sm:mt-4 sm:text-2xl"
+          style={{ animationDelay: '0.3s' }}
         >
           Ride Like Royalty
-        </motion.p>
+        </p>
 
-        <motion.p
-          className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-white/60 sm:mt-6 sm:text-lg"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.5, ease: 'easeOut' }}
+        <p
+          className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-white/60 animate-hero-fade-in sm:mt-6 sm:text-lg"
+          style={{ animationDelay: '0.45s' }}
         >
           Premium VIP transportation for bachelor and bachelorette parties,
           weddings, nightlife, corporate events, and more. Luxury fleet
           accommodating 8&ndash;40 guests across the Las Vegas valley.
-        </motion.p>
+        </p>
 
-        <motion.div
-          className="mt-8 flex flex-col items-center justify-center gap-3 sm:mt-10 sm:flex-row sm:gap-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.65, ease: 'easeOut' }}
+        <div
+          className="mt-8 flex flex-col items-center justify-center gap-3 animate-hero-fade-in sm:mt-10 sm:flex-row sm:gap-4"
+          style={{ animationDelay: '0.6s' }}
         >
           <Link
             href="/quote"
@@ -115,19 +98,14 @@ export function Hero() {
           >
             View Our Fleet
           </Link>
-        </motion.div>
+        </div>
       </div>
 
       {/* Bottom fade to black */}
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent" />
 
       {/* Scroll-down indicator */}
-      <motion.div
-        className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 1.2 }}
-      >
+      <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 animate-hero-fade-in" style={{ animationDelay: '1.2s' }}>
         <a
           href="#trust-signals"
           aria-label="Scroll down"
@@ -136,7 +114,7 @@ export function Hero() {
           <span className="text-[10px] uppercase tracking-[2px]">Scroll</span>
           <ChevronDown className="h-5 w-5 animate-bounce-gentle" />
         </a>
-      </motion.div>
+      </div>
     </section>
   )
 }
