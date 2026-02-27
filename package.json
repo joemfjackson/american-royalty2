@@ -26,6 +26,7 @@
     "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "^25.3.2",
     "@types/react": "^19.2.14",
+    "@vercel/blob": "^2.3.0",
     "autoprefixer": "^10.4.27",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",

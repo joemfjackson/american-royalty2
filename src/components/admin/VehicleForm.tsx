@@ -4,9 +4,11 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { X, Plus, Trash2, ImageIcon } from 'lucide-react'
+import { X } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { slugify } from '@/lib/utils'
+import { ImageUpload } from '@/components/admin/ImageUpload'
+import { GalleryUpload } from '@/components/admin/GalleryUpload'
 import type { Vehicle } from '@/types'
 
 const vehicleSchema = z.object({
@@ -20,7 +22,6 @@ const vehicleSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   features: z.string().min(1, 'At least one feature is required'),
   is_active: z.boolean(),
-  image_url: z.string().optional(),
 })
 
 type VehicleFormData = z.infer<typeof vehicleSchema>
@@ -45,8 +46,8 @@ interface VehicleFormProps {
 }
 
 export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
+  const [imageUrl, setImageUrl] = useState<string | null>(vehicle?.image_url || null)
   const [galleryUrls, setGalleryUrls] = useState<string[]>(vehicle?.gallery_urls || [])
-  const [newGalleryUrl, setNewGalleryUrl] = useState('')
 
   const {
     register,
@@ -64,24 +65,10 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
       description: vehicle?.description || '',
       features: vehicle?.features?.join(', ') || '',
       is_active: vehicle?.is_active ?? true,
-      image_url: vehicle?.image_url || '',
     },
   })
 
   const nameValue = watch('name')
-  const imageUrlValue = watch('image_url')
-
-  const addGalleryUrl = () => {
-    const url = newGalleryUrl.trim()
-    if (url && !galleryUrls.includes(url)) {
-      setGalleryUrls((prev) => [...prev, url])
-      setNewGalleryUrl('')
-    }
-  }
-
-  const removeGalleryUrl = (index: number) => {
-    setGalleryUrls((prev) => prev.filter((_, i) => i !== index))
-  }
 
   const onFormSubmit = (data: VehicleFormData) => {
     onSubmit({
@@ -95,7 +82,7 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
       description: data.description,
       features: data.features.split(',').map((f) => f.trim()).filter(Boolean),
       is_active: data.is_active,
-      image_url: data.image_url?.trim() || null,
+      image_url: imageUrl,
       gallery_urls: galleryUrls,
     })
   }
@@ -248,91 +235,20 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
             )}
           </div>
 
-          {/* Main Image URL */}
+          {/* Main Image */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-300">
-              Main Image URL
+              Main Image
             </label>
-            <input
-              {...register('image_url')}
-              className={inputClass}
-              placeholder="/images/fleet/vehicle.webp or https://..."
-            />
-            {imageUrlValue && (
-              <div className="mt-2 relative h-32 w-full overflow-hidden rounded-lg border border-dark-border bg-black">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={imageUrlValue}
-                  alt="Preview"
-                  className="h-full w-full object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                />
-              </div>
-            )}
+            <ImageUpload value={imageUrl} onChange={setImageUrl} />
           </div>
 
-          {/* Gallery URLs */}
+          {/* Gallery Images */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-300">
               Gallery Images
             </label>
-
-            {/* Existing gallery images */}
-            {galleryUrls.length > 0 && (
-              <div className="mb-3 grid grid-cols-3 gap-2">
-                {galleryUrls.map((url, i) => (
-                  <div key={i} className="group relative h-20 overflow-hidden rounded-lg border border-dark-border bg-black">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={url}
-                      alt={`Gallery ${i + 1}`}
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        const el = e.target as HTMLImageElement
-                        el.style.display = 'none'
-                        el.parentElement!.classList.add('flex', 'items-center', 'justify-center')
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeGalleryUrl(i)}
-                      className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-red-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-500/20"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                    <ImageIcon className="absolute inset-0 m-auto h-5 w-5 text-gray-600 -z-10" />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Add new gallery URL */}
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newGalleryUrl}
-                onChange={(e) => setNewGalleryUrl(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    addGalleryUrl()
-                  }
-                }}
-                className={`${inputClass} flex-1`}
-                placeholder="Paste image URL and click +"
-              />
-              <button
-                type="button"
-                onClick={addGalleryUrl}
-                disabled={!newGalleryUrl.trim()}
-                className="rounded-lg border border-dark-border px-3 py-3 text-gray-400 transition-all hover:border-gold/30 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
-            <p className="mt-1 text-xs text-gray-500">
-              {galleryUrls.length} image{galleryUrls.length !== 1 ? 's' : ''} in gallery
-            </p>
+            <GalleryUpload value={galleryUrls} onChange={setGalleryUrls} />
           </div>
 
           {/* Active toggle */}
