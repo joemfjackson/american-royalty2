@@ -124,7 +124,7 @@ export default function AboutPage() {
         </div>
 
         {/* See the Experience Gallery */}
-        <div className="mt-28">
+        <div className="mt-16 sm:mt-28">
           <div className="text-center">
             <SectionTag>Gallery</SectionTag>
             <h2 className="mt-3 text-2xl font-bold sm:text-3xl lg:text-4xl">
@@ -159,7 +159,7 @@ export default function AboutPage() {
         </div>
 
         {/* Why Choose Us */}
-        <div className="mt-28">
+        <div className="mt-16 sm:mt-28">
           <div className="text-center">
             <SectionTag>Why Choose Us</SectionTag>
             <h2 className="mt-3 text-2xl font-bold sm:text-3xl lg:text-4xl">
@@ -188,7 +188,7 @@ export default function AboutPage() {
         </div>
 
         {/* Our Values */}
-        <div className="mt-28">
+        <div className="mt-16 sm:mt-28">
           <div className="text-center">
             <SectionTag>Our Values</SectionTag>
             <h2 className="mt-3 text-2xl font-bold sm:text-3xl lg:text-4xl">
@@ -237,7 +237,7 @@ export default function AboutPage() {
         </div>
 
         {/* Service Areas */}
-        <div className="mt-28">
+        <div className="mt-16 sm:mt-28">
           <div className="text-center">
             <SectionTag>Service Areas</SectionTag>
             <h2 className="mt-3 text-2xl font-bold sm:text-3xl lg:text-4xl">
@@ -252,21 +252,21 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="mx-auto mt-10 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="mx-auto mt-10 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
             {SERVICE_AREAS.map((area) => (
               <div
                 key={area}
-                className="flex items-center gap-2 rounded-lg border border-dark-border bg-dark-card/50 px-4 py-3"
+                className="flex items-center gap-2 rounded-lg border border-dark-border bg-dark-card/50 px-3 py-2.5 sm:px-4 sm:py-3"
               >
                 <MapPin className="h-4 w-4 shrink-0 text-gold" aria-hidden="true" />
-                <span className="text-sm text-white/70">{area}</span>
+                <span className="truncate text-xs text-white/70 sm:text-sm">{area}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Licensing & Insurance */}
-        <div className="mx-auto mt-20 max-w-3xl rounded-xl border border-gold/10 bg-gold/5 p-8 text-center">
+        <div className="mx-auto mt-12 max-w-3xl rounded-xl border border-gold/10 bg-gold/5 p-6 text-center sm:mt-20 sm:p-8">
           <Shield className="mx-auto h-10 w-10 text-gold" aria-hidden="true" />
           <h3 className="mt-4 text-xl font-bold text-white">
             Licensed, Insured & DOT Compliant
@@ -281,7 +281,7 @@ export default function AboutPage() {
         </div>
 
         {/* CTA */}
-        <div className="mt-20 text-center">
+        <div className="mt-12 text-center sm:mt-20">
           <h2 className="text-2xl font-bold sm:text-3xl">
             Ready to{' '}
             <span className="gold-gradient-text">Ride Like Royalty</span>?

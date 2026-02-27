@@ -122,7 +122,7 @@ export function Navbar() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="relative z-50 flex h-10 w-10 items-center justify-center lg:hidden"
+            className="relative z-50 flex h-11 w-11 items-center justify-center lg:hidden"
             aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
           >
             {isMobileMenuOpen ? (

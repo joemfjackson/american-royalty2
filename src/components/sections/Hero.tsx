@@ -46,14 +46,14 @@ export function Hero() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="mb-8 flex justify-center"
+          className="mb-6 flex justify-center sm:mb-8"
         >
           <Image
             src="/images/logo.png"
             alt="American Royalty"
             width={280}
             height={112}
-            className="h-24 w-auto sm:h-28 md:h-32"
+            className="h-20 w-auto sm:h-28 md:h-32"
             priority
           />
         </motion.div>
@@ -63,11 +63,11 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
         >
-          <p className="section-tag mb-6">Las Vegas Premium Transportation</p>
+          <p className="section-tag mb-4 sm:mb-6">Las Vegas Premium Transportation</p>
         </motion.div>
 
         <motion.h1
-          className="mx-auto max-w-5xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
+          className="mx-auto max-w-5xl text-3xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.15, ease: 'easeOut' }}
@@ -78,7 +78,7 @@ export function Hero() {
         </motion.h1>
 
         <motion.p
-          className="mx-auto mt-4 text-xl font-light tracking-widest uppercase text-gold/80 sm:text-2xl"
+          className="mx-auto mt-3 text-lg font-light tracking-widest uppercase text-gold/80 sm:mt-4 sm:text-2xl"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.35, ease: 'easeOut' }}
@@ -87,7 +87,7 @@ export function Hero() {
         </motion.p>
 
         <motion.p
-          className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-white/60 sm:text-lg"
+          className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-white/60 sm:mt-6 sm:text-lg"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.5, ease: 'easeOut' }}
@@ -98,20 +98,20 @@ export function Hero() {
         </motion.p>
 
         <motion.div
-          className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+          className="mt-8 flex flex-col items-center justify-center gap-3 sm:mt-10 sm:flex-row sm:gap-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.65, ease: 'easeOut' }}
         >
           <Link
             href="/quote"
-            className="btn-gold text-base sm:text-lg lg:px-8 lg:py-4 lg:text-xl transition-shadow hover:shadow-[0_0_30px_rgba(214,192,138,0.4)]"
+            className="btn-gold w-full text-base sm:w-auto sm:text-lg lg:px-8 lg:py-4 lg:text-xl transition-shadow hover:shadow-[0_0_30px_rgba(214,192,138,0.4)]"
           >
             Get a Quote
           </Link>
           <Link
             href="/fleet"
-            className="btn-outline text-base sm:text-lg lg:px-8 lg:py-4 lg:text-xl transition-shadow hover:shadow-[0_0_30px_rgba(111,45,189,0.35)]"
+            className="btn-outline w-full text-base sm:w-auto sm:text-lg lg:px-8 lg:py-4 lg:text-xl transition-shadow hover:shadow-[0_0_30px_rgba(111,45,189,0.35)]"
           >
             View Our Fleet
           </Link>

@@ -120,21 +120,21 @@ export function Testimonials() {
             <button
               onClick={prev}
               aria-label="Previous testimonial"
-              className="rounded-full border border-dark-border bg-dark-card p-2 text-white/40 transition-colors hover:border-gold/30 hover:text-gold"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-dark-border bg-dark-card text-white/40 transition-colors hover:border-gold/30 hover:text-gold"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
             <button
               onClick={next}
               aria-label="Next testimonial"
-              className="rounded-full border border-dark-border bg-dark-card p-2 text-white/40 transition-colors hover:border-gold/30 hover:text-gold"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-dark-border bg-dark-card text-white/40 transition-colors hover:border-gold/30 hover:text-gold"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
 
           {/* Dots */}
-          <div className="mt-6 flex justify-center gap-2" role="tablist">
+          <div className="mt-6 flex justify-center gap-3 sm:gap-2" role="tablist">
             {testimonials.map((item, i) => (
               <button
                 key={item.id}
@@ -145,10 +145,10 @@ export function Testimonials() {
                   setDirection(i > current ? 1 : -1)
                   setCurrent(i)
                 }}
-                className={`h-2 rounded-full transition-all duration-300 ${
+                className={`h-2.5 rounded-full transition-all duration-300 sm:h-2 ${
                   i === current
-                    ? 'w-6 bg-gold'
-                    : 'w-2 bg-white/20 hover:bg-white/40'
+                    ? 'w-7 bg-gold sm:w-6'
+                    : 'w-2.5 bg-white/20 hover:bg-white/40 sm:w-2'
                 }`}
               />
             ))}

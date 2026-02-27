@@ -21,8 +21,8 @@ export function CTABanner() {
       <div className="absolute inset-0 bg-gradient-to-r from-royal/60 via-royal/40 to-gold/20" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40" />
 
-      <div className="container-max relative z-10 px-4 py-16 text-center sm:px-6 sm:py-20 lg:px-8">
-        <h2 className="text-3xl font-bold sm:text-4xl">
+      <div className="container-max relative z-10 px-4 py-12 text-center sm:px-6 sm:py-20 lg:px-8">
+        <h2 className="text-2xl font-bold sm:text-4xl">
           Ready to Ride Like{' '}
           <span className="gold-gradient-text">Royalty</span>?
         </h2>
@@ -39,16 +39,16 @@ export function CTABanner() {
           <div className="h-px w-12 bg-gradient-to-l from-transparent to-gold/60" />
         </div>
 
-        <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           <a
             href={`tel:${BRAND.phone.replace(/[^+\d]/g, '')}`}
-            className="btn-gold text-lg sm:text-xl lg:text-2xl lg:px-8 lg:py-4 font-bold"
+            className="btn-gold w-full text-lg font-bold sm:w-auto sm:text-xl lg:text-2xl lg:px-8 lg:py-4"
           >
             Call {BRAND.phone}
           </a>
           <Link
             href="/quote"
-            className="btn-outline border-white/30 text-white hover:border-white hover:bg-white/10 text-base sm:text-lg animate-pulse-glow"
+            className="btn-outline w-full border-white/30 text-white hover:border-white hover:bg-white/10 text-base sm:w-auto sm:text-lg animate-pulse-glow"
           >
             Get a Quote
           </Link>

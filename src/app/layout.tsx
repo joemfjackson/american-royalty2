@@ -3,6 +3,7 @@ import { Montserrat } from 'next/font/google'
 import '@/styles/globals.css'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+import { MobileCTA } from '@/components/layout/MobileCTA'
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -71,8 +72,9 @@ export default function RootLayout({
           Skip to content
         </a>
         <Navbar />
-        <main id="main-content" className="min-h-screen">{children}</main>
+        <main id="main-content" className="min-h-screen pb-14 sm:pb-0">{children}</main>
         <Footer />
+        <MobileCTA />
       </body>
     </html>
   )

@@ -116,8 +116,8 @@ export function FleetGrid({ vehicles }: { vehicles: Vehicle[] }) {
 
   return (
     <div>
-      {/* Filter Tabs */}
-      <div className="flex flex-wrap justify-center gap-3">
+      {/* Filter Tabs — horizontally scrollable on small screens */}
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:justify-center sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0">
         {FILTER_TABS.map((tab) => {
           const isActive = tab === activeFilter
           return (
@@ -126,8 +126,8 @@ export function FleetGrid({ vehicles }: { vehicles: Vehicle[] }) {
               onClick={() => setActiveFilter(tab)}
               className={
                 isActive
-                  ? 'rounded-lg bg-gold px-5 py-2.5 text-sm font-semibold text-black transition-all'
-                  : 'rounded-lg border border-gold/30 px-5 py-2.5 text-sm font-semibold text-gold transition-all hover:border-gold hover:bg-gold/10'
+                  ? 'shrink-0 rounded-lg bg-gold px-4 py-2.5 text-sm font-semibold text-black transition-all sm:px-5'
+                  : 'shrink-0 rounded-lg border border-gold/30 px-4 py-2.5 text-sm font-semibold text-gold transition-all hover:border-gold hover:bg-gold/10 sm:px-5'
               }
             >
               {tab}

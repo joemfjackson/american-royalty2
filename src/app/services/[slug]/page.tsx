@@ -341,7 +341,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
           </div>
 
           {/* ---- CTA Section ---- */}
-          <div className="mt-20 rounded-2xl border border-gold/20 bg-gradient-to-br from-dark-card via-royal/5 to-dark-card p-10 text-center sm:p-14">
+          <div className="mt-14 rounded-2xl border border-gold/20 bg-gradient-to-br from-dark-card via-royal/5 to-dark-card p-6 text-center sm:mt-20 sm:p-10 md:p-14">
             <Star className="mx-auto h-10 w-10 text-gold" aria-hidden="true" />
             <h2 className="mt-5 text-2xl font-bold sm:text-3xl lg:text-4xl">
               Ready to Book Your{' '}
@@ -352,16 +352,16 @@ export default async function ServiceDetailPage({ params }: PageProps) {
               we&apos;ll recommend the perfect vehicle and package for your
               group.
             </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4">
               <Link
                 href={`/quote?event=${service.slug}`}
-                className="btn-gold"
+                className="btn-gold w-full sm:w-auto"
               >
                 Get a Free Quote
               </Link>
               <a
                 href={`tel:${BRAND.phone.replace(/[^0-9+]/g, '')}`}
-                className="btn-outline"
+                className="btn-outline w-full sm:w-auto"
               >
                 Call {BRAND.phone}
               </a>

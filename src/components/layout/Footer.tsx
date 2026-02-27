@@ -59,8 +59,8 @@ export function Footer() {
       <div className="gold-line w-full" />
 
       {/* Main footer content */}
-      <div className="container-max mx-auto px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+      <div className="container-max mx-auto px-4 py-10 sm:px-6 sm:py-16 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4 lg:gap-8">
           {/* Brand Column */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="group inline-block">
@@ -87,7 +87,7 @@ export function Footer() {
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-dark-border text-white/60 transition-all duration-200 hover:border-gold/40 hover:text-gold hover:bg-gold/5"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-dark-border text-white/60 transition-all duration-200 hover:border-gold/40 hover:text-gold hover:bg-gold/5"
                 >
                   <social.icon className="h-4 w-4" />
                 </a>
@@ -114,14 +114,14 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Our Services */}
+          {/* Our Services — top 5 on mobile, all on desktop */}
           <div>
             <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-gold">
               Our Services
             </h3>
             <ul className="space-y-2.5">
-              {MOCK_SERVICES.map((service) => (
-                <li key={service.id} className="py-1">
+              {MOCK_SERVICES.map((service, i) => (
+                <li key={service.id} className={`py-1 ${i >= 5 ? 'hidden sm:block' : ''}`}>
                   <Link
                     href={`/services/${service.slug}`}
                     className="text-sm text-white/60 transition-colors hover:text-gold"
@@ -130,19 +130,29 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
+              {MOCK_SERVICES.length > 5 && (
+                <li className="py-1 sm:hidden">
+                  <Link
+                    href="/services"
+                    className="text-sm font-medium text-gold/70 transition-colors hover:text-gold"
+                  >
+                    View All Services &rarr;
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
 
-          {/* Service Areas */}
+          {/* Service Areas — 2-col grid on mobile for compactness */}
           <div>
             <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-gold">
               Service Areas
             </h3>
-            <ul className="space-y-2.5">
+            <ul className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-1 sm:space-y-2.5 sm:gap-0">
               {SERVICE_AREAS.map((area) => (
                 <li
                   key={area}
-                  className="text-sm text-white/60"
+                  className="truncate text-sm text-white/60"
                 >
                   {area}
                 </li>

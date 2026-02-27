@@ -118,7 +118,7 @@ function QuoteFormInner() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="card-dark mx-auto max-w-4xl p-8 sm:p-10">
+    <form onSubmit={handleSubmit(onSubmit)} className="card-dark mx-auto max-w-4xl p-5 sm:p-8 md:p-10">
       {/* Server error */}
       {serverError && (
         <div className="mb-8 flex items-center gap-3 rounded-lg border border-red-500/30 bg-red-500/10 px-5 py-4 text-red-300">
