@@ -55,8 +55,8 @@ export function Footer() {
 
   return (
     <footer className="border-t border-dark-border bg-[#0A0A0A]">
-      {/* Gold accent line */}
-      <div className="gold-line w-full" />
+      {/* Purple-gold accent line */}
+      <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #6F2DBD, #D6C08A, #6F2DBD)' }} />
 
       {/* Main footer content */}
       <div className="container-max mx-auto px-4 py-10 sm:px-6 sm:py-16 lg:px-8">
@@ -87,7 +87,7 @@ export function Footer() {
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-dark-border text-white/60 transition-all duration-200 hover:border-gold/40 hover:text-gold hover:bg-gold/5"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-dark-border text-white/60 transition-all duration-200 hover:border-royal/40 hover:text-gold hover:bg-royal/10 hover:shadow-[0_0_15px_rgba(111,45,189,0.2)]"
                 >
                   <social.icon className="h-4 w-4" />
                 </a>

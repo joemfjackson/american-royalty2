@@ -50,6 +50,8 @@ export function Testimonials() {
         </div>
 
         <div className="relative mx-auto mt-14 max-w-3xl">
+          {/* Purple ambient glow behind card */}
+          <div className="pointer-events-none absolute -inset-10 rounded-3xl bg-royal/[0.06] blur-[60px]" />
           {/* Previous / Next arrows */}
           <button
             onClick={prev}

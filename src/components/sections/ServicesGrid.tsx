@@ -28,7 +28,9 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
       viewport={{ once: true, margin: '-40px' }}
       transition={{ duration: 0.5, delay: index * 0.08 }}
     >
-      <div className="group flex h-full flex-col overflow-hidden rounded-xl border border-dark-border bg-dark-card transition-all duration-300 hover:-translate-y-1 hover:border-gold/30 hover:shadow-[0_0_40px_rgba(214,192,138,0.08)]">
+      <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-dark-border bg-dark-card transition-all duration-300 hover:-translate-y-1 hover:border-royal/30 hover:shadow-[0_0_30px_rgba(111,45,189,0.12),0_0_60px_rgba(214,192,138,0.06)]">
+        {/* Purple-gold gradient top accent */}
+        <div className="absolute top-0 left-0 right-0 z-10 h-0.5 bg-gradient-to-r from-royal via-gold/60 to-royal opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         {/* Service thumbnail */}
         {serviceImages[service.slug] && (
           <div className="relative aspect-video overflow-hidden">
@@ -78,8 +80,11 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
 
 export function ServicesGrid() {
   return (
-    <section className="section-padding bg-dark/50">
-      <div className="container-max">
+    <section className="section-padding bg-dark/50 relative overflow-hidden">
+      {/* Purple ambient glow */}
+      <div className="pointer-events-none absolute right-0 top-1/4 h-[500px] w-[500px] rounded-full bg-royal/[0.05] blur-[120px]" />
+      <div className="pointer-events-none absolute -left-20 bottom-0 h-[400px] w-[400px] rounded-full bg-royal/[0.04] blur-[100px]" />
+      <div className="container-max relative">
         <div className="text-center">
           <SectionTag>Our Services</SectionTag>
           <h2 className="mt-3 text-3xl font-bold sm:text-4xl">

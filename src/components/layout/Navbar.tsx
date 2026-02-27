@@ -97,7 +97,8 @@ export function Navbar() {
                 {isActive(link.href) && (
                   <motion.span
                     layoutId="navbar-active"
-                    className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gold"
+                    className="absolute -bottom-1 left-0 right-0 h-0.5"
+                    style={{ background: 'linear-gradient(90deg, #6F2DBD, #D6C08A, #6F2DBD)' }}
                     transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                   />
                 )}

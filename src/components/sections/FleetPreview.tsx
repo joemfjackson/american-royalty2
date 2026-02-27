@@ -25,7 +25,9 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.6, delay: index * 0.15 }}
     >
-      <div className="group flex h-full flex-col overflow-hidden rounded-xl border border-dark-border bg-dark-card transition-all duration-300 hover:border-gold/40 hover:shadow-[0_0_40px_rgba(214,192,138,0.08)]">
+      <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-dark-border bg-dark-card transition-all duration-300 hover:border-royal/30 hover:shadow-[0_0_30px_rgba(111,45,189,0.12),0_0_60px_rgba(214,192,138,0.06)]">
+        {/* Purple-gold gradient top accent */}
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-royal via-gold/60 to-royal opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         {/* Vehicle image */}
         <div className="relative h-52 overflow-hidden">
           <Image
@@ -85,8 +87,11 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
 
 export function FleetPreview() {
   return (
-    <section className="section-padding">
-      <div className="container-max">
+    <section className="section-padding relative overflow-hidden">
+      {/* Purple ambient glow */}
+      <div className="pointer-events-none absolute -left-40 top-1/3 h-[500px] w-[500px] rounded-full bg-royal/[0.06] blur-[120px]" />
+      <div className="pointer-events-none absolute -right-40 bottom-1/4 h-[400px] w-[400px] rounded-full bg-royal/[0.04] blur-[100px]" />
+      <div className="container-max relative">
         <div className="text-center">
           <SectionTag>Our Fleet</SectionTag>
           <h2 className="mt-3 text-3xl font-bold sm:text-4xl">

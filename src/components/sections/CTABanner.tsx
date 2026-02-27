@@ -32,11 +32,11 @@ export function CTABanner() {
           professional chauffeurs, unforgettable experiences.
         </p>
 
-        {/* Decorative gold line divider */}
+        {/* Decorative purple-gold line divider */}
         <div className="mx-auto mt-6 flex items-center justify-center gap-3">
-          <div className="h-px w-12 bg-gradient-to-r from-transparent to-gold/60" />
-          <div className="h-1.5 w-1.5 rotate-45 bg-gold/80" />
-          <div className="h-px w-12 bg-gradient-to-l from-transparent to-gold/60" />
+          <div className="h-px w-12 bg-gradient-to-r from-transparent via-royal/60 to-gold/60" />
+          <div className="h-1.5 w-1.5 rotate-45 bg-royal-light shadow-[0_0_6px_rgba(111,45,189,0.6)]" />
+          <div className="h-px w-12 bg-gradient-to-l from-transparent via-royal/60 to-gold/60" />
         </div>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">

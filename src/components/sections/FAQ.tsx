@@ -21,7 +21,7 @@ function FAQItem({
   return (
     <div
       className={`border-b border-dark-border transition-all duration-300 ${
-        isOpen ? 'border-l-2 border-l-gold pl-4' : 'border-l-2 border-l-transparent pl-4'
+        isOpen ? 'border-l-2 border-l-royal pl-4' : 'border-l-2 border-l-transparent pl-4'
       }`}
     >
       <button
@@ -69,8 +69,10 @@ export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <section className="section-padding bg-dark/50">
-      <div className="container-max">
+    <section className="section-padding bg-dark/50 relative overflow-hidden">
+      {/* Purple ambient glow */}
+      <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-royal/[0.04] blur-[120px]" />
+      <div className="container-max relative">
         <div className="text-center">
           <SectionTag>FAQ</SectionTag>
           <h2 className="mt-3 text-3xl font-bold sm:text-4xl">

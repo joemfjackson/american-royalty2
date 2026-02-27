@@ -58,12 +58,23 @@
     @apply rounded-xl border border-dark-border bg-dark-card;
   }
 
+  /* Card with purple-gold gradient top accent */
+  .card-accent {
+    @apply rounded-xl border border-dark-border bg-dark-card overflow-hidden;
+  }
+  .card-accent::before {
+    content: '';
+    display: block;
+    height: 2px;
+    background: linear-gradient(90deg, #6F2DBD, #D6C08A);
+  }
+
   .btn-gold {
     @apply inline-flex items-center justify-center rounded-lg bg-gold px-6 py-3 font-semibold text-black transition-all hover:bg-gold-light hover:shadow-lg hover:shadow-gold/20 focus:outline-none focus:ring-2 focus:ring-gold/50 focus:ring-offset-2 focus:ring-offset-black;
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center rounded-lg border border-gold/30 px-6 py-3 font-semibold text-gold transition-all hover:border-gold hover:bg-gold/10 focus:outline-none focus:ring-2 focus:ring-gold/50 focus:ring-offset-2 focus:ring-offset-black;
+    @apply inline-flex items-center justify-center rounded-lg border border-gold/30 px-6 py-3 font-semibold text-gold transition-all hover:border-gold hover:bg-gold/10 hover:shadow-[0_0_20px_rgba(111,45,189,0.15)] focus:outline-none focus:ring-2 focus:ring-gold/50 focus:ring-offset-2 focus:ring-offset-black;
   }
 
   .btn-royal {
@@ -71,7 +82,16 @@
   }
 
   .section-tag {
-    @apply inline-block text-[11px] font-bold uppercase tracking-[3px] text-gold;
+    @apply inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[3px] text-gold;
+  }
+  .section-tag::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: linear-gradient(135deg, #6F2DBD, #8B4FD4);
+    box-shadow: 0 0 8px rgba(111, 45, 189, 0.4);
   }
 
   .glow-gold {
@@ -80,6 +100,16 @@
 
   .glow-purple {
     box-shadow: 0 0 60px rgba(111, 45, 189, 0.15);
+  }
+
+  /* Combined purple-gold hover glow for cards */
+  .glow-hover {
+    @apply transition-shadow duration-300;
+  }
+  .glow-hover:hover {
+    box-shadow:
+      0 0 30px rgba(111, 45, 189, 0.12),
+      0 0 60px rgba(214, 192, 138, 0.06);
   }
 }
 

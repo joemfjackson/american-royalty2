@@ -77,13 +77,14 @@ export function TrustSignals() {
       ref={sectionRef}
       className="relative overflow-hidden"
     >
-      {/* Gold gradient top border */}
-      <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, transparent, #D6C08A40, #D6C08A, #D6C08A40, transparent)' }} />
+      {/* Purple-gold gradient top border */}
+      <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, transparent, #6F2DBD60, #D6C08A, #6F2DBD60, transparent)' }} />
 
       {/* Radial glow background */}
       <div className="absolute inset-0 bg-dark-card/50" />
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-1/2 h-[400px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold/[0.03] blur-[80px]" />
+        <div className="absolute left-1/3 top-1/2 h-[400px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-royal/[0.05] blur-[100px]" />
+        <div className="absolute right-1/3 top-1/2 h-[400px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold/[0.03] blur-[80px]" />
       </div>
 
       <div className="container-max relative z-10 px-4 py-12 sm:px-6 lg:px-8">
@@ -108,8 +109,8 @@ export function TrustSignals() {
         </div>
       </div>
 
-      {/* Gold gradient bottom border */}
-      <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, transparent, #D6C08A40, #D6C08A, #D6C08A40, transparent)' }} />
+      {/* Purple-gold gradient bottom border */}
+      <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, transparent, #6F2DBD60, #D6C08A, #6F2DBD60, transparent)' }} />
     </section>
   )
 }
