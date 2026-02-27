@@ -55,7 +55,7 @@ export function Hero() {
             alt="American Royalty"
             width={280}
             height={112}
-            className="h-20 w-auto sm:h-28 md:h-32"
+            className="h-24 w-auto sm:h-32 md:h-36"
             priority
           />
         </div>
