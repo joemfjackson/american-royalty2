@@ -163,7 +163,7 @@ export function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-dark-border">
+      <div className="border-t border-dark-border pb-16 sm:pb-0">
         <div className="container-max mx-auto flex flex-col items-center gap-3 px-4 py-6 sm:flex-row sm:justify-between sm:px-6 lg:px-8">
           <p className="text-xs text-white/60">
             &copy; {currentYear} {BRAND.name}. All rights reserved.
@@ -184,6 +184,17 @@ export function Footer() {
             </a>
           </div>
         </div>
+        <p className="pb-4 text-center text-[11px] text-white/30">
+          Website designed by{' '}
+          <a
+            href="https://www.stage1labs.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white/40 transition-colors hover:text-gold"
+          >
+            Stage1Labs
+          </a>
+        </p>
       </div>
     </footer>
   )
