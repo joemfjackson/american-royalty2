@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 
         await resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
-          to: process.env.NEXT_PUBLIC_EMAIL || 'info@americanroyaltylv.com',
+          to: process.env.NEXT_PUBLIC_EMAIL || 'info@americanroyaltylasvegas.com',
           subject: `New Quote Request: ${data.event_type} — ${data.name}`,
           html: `
             <h2>New Quote Request</h2>

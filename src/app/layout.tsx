@@ -9,7 +9,7 @@ const montserrat = Montserrat({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylv.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'),
   title: {
     default: 'American Royalty | Las Vegas Party Bus & Limousine Service',
     template: '%s | American Royalty Las Vegas',

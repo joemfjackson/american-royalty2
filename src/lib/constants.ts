@@ -2,8 +2,8 @@ export const BRAND = {
   name: 'American Royalty',
   tagline: 'Ride Like Royalty',
   phone: process.env.NEXT_PUBLIC_PHONE || '(702) 666-4037',
-  email: process.env.NEXT_PUBLIC_EMAIL || 'info@americanroyaltylv.com',
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylv.com',
+  email: process.env.NEXT_PUBLIC_EMAIL || 'info@americanroyaltylasvegas.com',
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com',
   address: 'Las Vegas, NV',
 } as const
 

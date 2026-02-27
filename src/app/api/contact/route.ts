@@ -30,7 +30,7 @@ export async function POST(request: Request) {
 
         await resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
-          to: process.env.NEXT_PUBLIC_EMAIL || 'info@americanroyaltylv.com',
+          to: process.env.NEXT_PUBLIC_EMAIL || 'info@americanroyaltylasvegas.com',
           subject: `Contact Form: ${data.name}`,
           html: `
             <h2>New Contact Message</h2>
