@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Pencil, Trash2, Users, DollarSign, Clock, GripVertical } from 'lucide-react'
+import { Plus, Pencil, Trash2, Users, DollarSign, Clock, ChevronUp, ChevronDown } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { VehicleForm } from '@/components/admin/VehicleForm'
-import { getAdminVehicles, createVehicle, updateVehicle, deleteVehicle } from '@/lib/actions/admin'
+import { getAdminVehicles, createVehicle, updateVehicle, deleteVehicle, reorderVehicles } from '@/lib/actions/admin'
 import { formatCurrency } from '@/lib/utils'
 import type { Vehicle } from '@/types'
 
@@ -93,6 +93,22 @@ export default function AdminFleetPage() {
     }
   }
 
+  const handleMove = async (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1
+    if (newIndex < 0 || newIndex >= vehicles.length) return
+
+    const reordered = [...vehicles]
+    const [moved] = reordered.splice(index, 1)
+    reordered.splice(newIndex, 0, moved)
+    setVehicles(reordered)
+
+    try {
+      await reorderVehicles(reordered.map((v) => v.id))
+    } catch (err) {
+      console.error('Failed to reorder vehicles:', err)
+    }
+  }
+
   const typeColor: Record<string, string> = {
     'Party Bus': 'gold',
     'Sprinter Limo': 'purple',
@@ -136,10 +152,25 @@ export default function AdminFleetPage() {
           >
             <Card className="transition-all duration-300 hover:border-gold/20">
               <div className="flex items-start gap-4">
-                {/* Order number / grip */}
-                <div className="flex flex-col items-center gap-1 pt-1">
-                  <GripVertical className="h-4 w-4 text-gray-600 cursor-grab" />
+                {/* Order controls */}
+                <div className="flex flex-col items-center gap-0.5 pt-1">
+                  <button
+                    onClick={() => handleMove(index, 'up')}
+                    disabled={index === 0}
+                    className="rounded p-0.5 text-gray-500 transition-colors hover:bg-gold/10 hover:text-gold disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-gray-500"
+                    title="Move up"
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                  </button>
                   <span className="text-xs font-bold text-gray-500">#{index + 1}</span>
+                  <button
+                    onClick={() => handleMove(index, 'down')}
+                    disabled={index === vehicles.length - 1}
+                    className="rounded p-0.5 text-gray-500 transition-colors hover:bg-gold/10 hover:text-gold disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-gray-500"
+                    title="Move down"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
                 </div>
 
                 {/* Vehicle image placeholder */}

@@ -365,6 +365,22 @@ export async function updateVehicle(
   return mapVehicle(vehicle)
 }
 
+export async function reorderVehicles(orderedIds: string[]) {
+  await requireAdmin()
+
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      prisma.vehicle.update({
+        where: { id },
+        data: { displayOrder: index },
+      })
+    )
+  )
+
+  revalidatePath('/admin/fleet')
+  revalidatePath('/fleet')
+}
+
 export async function deleteVehicle(id: string) {
   await requireAdmin()
 
