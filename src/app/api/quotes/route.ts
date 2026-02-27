@@ -22,13 +22,23 @@ export async function POST(request: Request) {
     const body = await request.json()
     const data = quoteSchema.parse(body)
 
+    // Resolve vehicle slug to ID
+    let vehicleId: string | null = null
+    if (data.preferred_vehicle) {
+      const vehicle = await prisma.vehicle.findUnique({
+        where: { slug: data.preferred_vehicle },
+        select: { id: true },
+      })
+      vehicleId = vehicle?.id || null
+    }
+
     await prisma.quote.create({
       data: {
         name: data.name,
         email: data.email,
         phone: data.phone,
         eventType: data.event_type,
-        preferredVehicleId: data.preferred_vehicle || null,
+        preferredVehicleId: vehicleId,
         eventDate: data.event_date,
         pickupTime: data.pickup_time || null,
         guestCount: data.guest_count || null,
