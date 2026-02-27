@@ -69,7 +69,7 @@ export function Testimonials() {
           </button>
 
           {/* Testimonial card */}
-          <div className="relative overflow-hidden rounded-xl border border-royal/25 bg-dark-card shadow-[0_8px_35px_rgba(111,45,189,0.18),0_2px_8px_rgba(0,0,0,0.4)]">
+          <div className="relative overflow-hidden rounded-xl border border-royal/25 bg-dark-card shadow-[0_10px_45px_rgba(111,45,189,0.35),0_4px_15px_rgba(111,45,189,0.2),0_2px_6px_rgba(0,0,0,0.5)]">
             {/* Gold gradient top border */}
             <div
               className="h-0.5 w-full"
