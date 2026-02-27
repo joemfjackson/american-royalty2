@@ -32,8 +32,8 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
       transition={{ duration: 0.4, delay: index * 0.08 }}
     >
       <Card hover className="group relative flex h-full flex-col overflow-hidden p-0">
-        {/* Purple-gold gradient top accent on hover */}
-        <div className="absolute top-0 left-0 right-0 z-10 h-0.5 bg-gradient-to-r from-royal via-gold/60 to-royal opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        {/* Purple-gold gradient top accent — always visible on mobile */}
+        <div className="absolute top-0 left-0 right-0 z-10 h-0.5 bg-gradient-to-r from-royal via-gold/60 to-royal sm:opacity-0 sm:transition-opacity sm:duration-300 sm:group-hover:opacity-100" />
         {/* Vehicle image */}
         <div className="relative h-56 overflow-hidden">
           <Image

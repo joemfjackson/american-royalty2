@@ -25,9 +25,9 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.6, delay: index * 0.15 }}
     >
-      <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-dark-border bg-dark-card transition-all duration-300 hover:border-royal/30 hover:shadow-[0_0_30px_rgba(111,45,189,0.12),0_0_60px_rgba(214,192,138,0.06)]">
-        {/* Purple-gold gradient top accent */}
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-royal via-gold/60 to-royal opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-royal/20 bg-dark-card shadow-[0_0_25px_rgba(111,45,189,0.1)] transition-all duration-300 sm:border-dark-border sm:shadow-none sm:hover:border-royal/30 sm:hover:shadow-[0_0_30px_rgba(111,45,189,0.12),0_0_60px_rgba(214,192,138,0.06)]">
+        {/* Purple-gold gradient top accent — always visible on mobile */}
+        <div className="absolute top-0 left-0 right-0 z-10 h-0.5 bg-gradient-to-r from-royal via-gold/60 to-royal sm:opacity-0 sm:transition-opacity sm:duration-300 sm:group-hover:opacity-100" />
         {/* Vehicle image */}
         <div className="relative h-52 overflow-hidden">
           <Image
