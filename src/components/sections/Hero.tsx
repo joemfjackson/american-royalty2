@@ -6,7 +6,7 @@ import { ChevronDown } from 'lucide-react'
 
 export function Hero() {
   return (
-    <section className="relative flex min-h-[calc(100svh+60px)] items-center justify-center overflow-hidden sm:min-h-screen">
+    <section className="relative flex min-h-svh items-center justify-center overflow-hidden pb-24 sm:min-h-screen sm:pb-0">
       {/* Background photo — mobile-optimized srcSet */}
       <picture>
         <source
