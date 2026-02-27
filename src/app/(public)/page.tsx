@@ -2,7 +2,6 @@ export const revalidate = 60
 
 import dynamic from 'next/dynamic'
 import { Hero } from '@/components/sections/Hero'
-import { DiscoLights } from '@/components/sections/DiscoLights'
 import { TrustSignals } from '@/components/sections/TrustSignals'
 import { FleetPreview } from '@/components/sections/FleetPreview'
 import { ServicesGrid } from '@/components/sections/ServicesGrid'
@@ -91,7 +90,6 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Hero />
-      <DiscoLights />
       <TrustSignals />
       <FleetPreview vehicles={vehicles} />
       <ServicesGrid services={services} />
