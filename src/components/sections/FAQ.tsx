@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { SectionTag } from '@/components/ui/SectionTag'
 import { GoldLine } from '@/components/ui/GoldLine'
@@ -47,20 +47,15 @@ function FAQItem({
         </motion.span>
       </button>
 
-      <AnimatePresence initial={false}>
-        {isOpen && (
-          <motion.div
-            key="content"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="overflow-hidden"
-          >
-            <p className="pb-5 leading-relaxed text-white/60">{answer}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Answer always in DOM for SEO, animated open/close visually */}
+      <motion.div
+        initial={false}
+        animate={{ height: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        className="overflow-hidden"
+      >
+        <p className="pb-5 leading-relaxed text-white/60">{answer}</p>
+      </motion.div>
     </div>
   )
 }
