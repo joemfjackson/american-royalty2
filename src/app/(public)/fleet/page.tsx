@@ -1,3 +1,5 @@
+export const revalidate = 60
+
 import type { Metadata } from 'next'
 import { getVehicles } from '@/lib/data'
 import { SectionTag } from '@/components/ui/SectionTag'
