@@ -143,9 +143,10 @@ export default function TermsPage() {
 
           {/* Website Use */}
           <div>
-            <h2 className="mb-3 text-xl font-semibold text-white">10. Website Use</h2>
+            <h2 className="mb-3 text-xl font-semibold text-white">10. Website Use &amp; Intellectual Property</h2>
             <ul className="list-disc space-y-2 pl-6">
-              <li>All content on this website, including text, images, logos, and graphics, is the property of {BRAND.name} and is protected by copyright laws.</li>
+              <li>The domain <span className="text-white/80">{BRAND.siteUrl.replace('https://', '')}</span> and all brand content, including text, images, logos, and graphics, are the property of {BRAND.name} and are protected by copyright laws.</li>
+              <li>The website source code, software, and underlying technology are the property of <span className="text-white/80">Stage1Labs</span> and are licensed for use by {BRAND.name}. Unauthorized reproduction, modification, or distribution of the software is prohibited.</li>
               <li>You may not reproduce, distribute, or use our content without prior written permission.</li>
               <li>We make every effort to ensure the accuracy of information on our website but do not guarantee that all content is error-free.</li>
               <li>Vehicle images are representative and actual vehicles may vary slightly in appearance.</li>
