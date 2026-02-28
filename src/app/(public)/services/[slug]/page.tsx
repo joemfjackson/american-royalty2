@@ -165,7 +165,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
             alt={`${service.title} party bus service in Las Vegas`}
             fill
             sizes="100vw"
-            className="object-cover object-[center_70%]"
+            className="object-cover object-top"
             priority
             quality={80}
           />
