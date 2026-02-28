@@ -169,6 +169,14 @@ export async function Footer() {
         <div className="container-max mx-auto flex flex-col items-center gap-3 px-4 py-6 sm:flex-row sm:justify-between sm:px-6 lg:px-8">
           <p className="text-xs text-white/60">
             &copy; {currentYear} {BRAND.name}. All rights reserved.
+            <span className="mx-2">|</span>
+            <Link href="/privacy-policy" className="transition-colors hover:text-gold">
+              Privacy Policy
+            </Link>
+            <span className="mx-2">|</span>
+            <Link href="/terms" className="transition-colors hover:text-gold">
+              Terms &amp; Conditions
+            </Link>
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-white/60">
             <span>{BRAND.address}</span>
