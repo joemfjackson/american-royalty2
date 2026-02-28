@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 import type { Quote } from '@/types'
 import { Badge } from '@/components/ui/Badge'
-import { updateQuote } from '@/lib/actions/admin'
+import { updateQuote, convertQuoteToBooking } from '@/lib/actions/admin'
 import { formatDate, formatCurrency } from '@/lib/utils'
 
 type QuoteStatus = Quote['status']
@@ -70,11 +70,16 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
   const handleSave = async () => {
     setSaving(true)
     try {
+      // Save quote fields first
       const updated = await updateQuote(quote.id, {
         status,
         admin_notes: adminNotes || null,
         quoted_amount: quotedAmount ? parseFloat(quotedAmount) : null,
       })
+      // If status changed to booked, also create a Booking record
+      if (status === 'booked' && quote.status !== 'booked') {
+        await convertQuoteToBooking(quote.id)
+      }
       onUpdateQuote(updated)
     } catch (err) {
       console.error('Failed to save quote:', err)
@@ -86,6 +91,16 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
   const handleQuickAction = async (newStatus: QuoteStatus) => {
     setStatus(newStatus)
     try {
+      if (newStatus === 'booked') {
+        // Save any pending changes first, then create a real Booking record
+        await updateQuote(quote.id, {
+          admin_notes: adminNotes || null,
+          quoted_amount: quotedAmount ? parseFloat(quotedAmount) : null,
+        })
+        await convertQuoteToBooking(quote.id)
+        onUpdateQuote({ ...quote, status: 'booked' })
+        return
+      }
       const updated = await updateQuote(quote.id, {
         status: newStatus,
         admin_notes: adminNotes || null,

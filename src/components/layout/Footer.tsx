@@ -171,6 +171,8 @@ export async function Footer() {
             &copy; {currentYear} {BRAND.name}. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-white/60">
+            <span>{BRAND.address}</span>
+            <span className="hidden sm:inline">|</span>
             <a
               href={`tel:${BRAND.phone.replace(/[^0-9+]/g, '')}`}
               className="transition-colors hover:text-gold"

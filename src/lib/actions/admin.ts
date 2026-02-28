@@ -253,6 +253,48 @@ export async function updateQuote(
   return mapQuote(updated)
 }
 
+// ─── Convert Quote to Booking ───────────────────────────
+
+export async function convertQuoteToBooking(quoteId: string): Promise<Booking> {
+  await requireAdmin()
+
+  const quote = await prisma.quote.findUnique({ where: { id: quoteId } })
+  if (!quote) throw new Error('Quote not found')
+
+  // Create booking from quote data
+  const booking = await prisma.booking.create({
+    data: {
+      quoteId: quote.id,
+      clientName: quote.name,
+      clientEmail: quote.email,
+      clientPhone: quote.phone,
+      eventType: quote.eventType,
+      vehicleId: quote.preferredVehicleId,
+      bookingDate: quote.eventDate,
+      startTime: quote.pickupTime || 'TBD',
+      durationHours: quote.durationHours,
+      pickupLocation: quote.pickupLocation,
+      dropoffLocation: quote.dropoffLocation,
+      guestCount: quote.guestCount,
+      totalAmount: quote.quotedAmount,
+      status: 'CONFIRMED',
+      notes: quote.adminNotes,
+    },
+  })
+
+  // Update quote status to booked
+  await prisma.quote.update({
+    where: { id: quoteId },
+    data: { status: 'BOOKED' },
+  })
+
+  revalidatePath('/admin/quotes')
+  revalidatePath('/admin/bookings')
+  revalidatePath('/admin/calendar')
+  revalidatePath('/admin')
+  return mapBooking(booking)
+}
+
 // ─── Bookings ───────────────────────────────────────────
 
 export async function getBookings(): Promise<Booking[]> {
