@@ -188,28 +188,30 @@ export default function AdminQuotesPage() {
             animate={{ opacity: 1, y: 0 }}
           >
             <Card
-              className="cursor-pointer transition-all hover:border-gold/20 active:scale-[0.99]"
+              className="cursor-pointer !p-4 transition-all hover:border-gold/20 active:scale-[0.99]"
               onClick={() => handleRowClick(quote)}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
                     {quote.name.charAt(0)}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-medium text-white truncate">{quote.name}</p>
+                    <p className="font-medium text-white text-sm truncate">{quote.name}</p>
                     <p className="text-xs text-gray-400 truncate">{quote.email}</p>
                   </div>
                 </div>
-                <Badge variant={statusBadgeVariant[quote.status] || 'outline'} className="shrink-0">
+                <Badge variant={statusBadgeVariant[quote.status] || 'outline'} className="shrink-0 text-[10px]">
                   {quote.status}
                 </Badge>
               </div>
-              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-400">
-                <span>{quote.event_type}</span>
-                <span className="text-right">{formatDate(quote.event_date)}</span>
-                <span className="truncate">{quote.phone}</span>
-                <span className="text-right text-gray-500">{formatDate(quote.created_at)}</span>
+              <div className="mt-2.5 flex items-center justify-between text-xs text-gray-400">
+                <span className="truncate">{quote.event_type}</span>
+                <span className="shrink-0 ml-2">{formatDate(quote.event_date)}</span>
+              </div>
+              <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
+                <span>{quote.phone}</span>
+                <span className="shrink-0 ml-2">{formatDate(quote.created_at)}</span>
               </div>
             </Card>
           </motion.div>

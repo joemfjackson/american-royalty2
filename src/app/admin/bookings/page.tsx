@@ -165,31 +165,33 @@ export default function AdminBookingsPage() {
             animate={{ opacity: 1, y: 0 }}
           >
             <Card
-              className="cursor-pointer transition-all hover:border-gold/20 active:scale-[0.99]"
+              className="cursor-pointer !p-4 transition-all hover:border-gold/20 active:scale-[0.99]"
               onClick={() => {
                 setSelectedBooking(booking)
                 setDetailOpen(true)
               }}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
                     {booking.client_name.charAt(0)}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-medium text-white truncate">{booking.client_name}</p>
+                    <p className="font-medium text-white text-sm truncate">{booking.client_name}</p>
                     <p className="text-xs text-gray-400">{booking.event_type}</p>
                   </div>
                 </div>
-                <Badge variant={statusBadgeVariant[booking.status] || 'outline'} className="shrink-0">
+                <Badge variant={statusBadgeVariant[booking.status] || 'outline'} className="shrink-0 text-[10px]">
                   {booking.status.replace('_', ' ')}
                 </Badge>
               </div>
-              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-400">
+              <div className="mt-2.5 flex items-center justify-between text-xs text-gray-400">
                 <span>{formatDate(booking.booking_date)}</span>
-                <span className="text-right">{booking.start_time}</span>
+                <span className="shrink-0">{booking.start_time}</span>
+              </div>
+              <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
                 <span className="truncate">{getVehicleName(booking.vehicle_id)}</span>
-                <span className="text-right font-semibold text-gold">
+                <span className="shrink-0 ml-2 font-semibold text-gold">
                   {booking.total_amount ? formatCurrency(booking.total_amount) : '-'}
                 </span>
               </div>
