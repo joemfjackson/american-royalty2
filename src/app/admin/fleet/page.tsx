@@ -151,39 +151,41 @@ export default function AdminFleetPage() {
             transition={{ delay: index * 0.05 }}
           >
             <Card className="transition-all duration-300 hover:border-gold/20">
-              <div className="flex items-start gap-4">
-                {/* Order controls */}
-                <div className="flex flex-col items-center gap-0.5 pt-1">
-                  <button
-                    onClick={() => handleMove(index, 'up')}
-                    disabled={index === 0}
-                    className="rounded p-0.5 text-gray-500 transition-colors hover:bg-gold/10 hover:text-gold disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-gray-500"
-                    title="Move up"
-                  >
-                    <ChevronUp className="h-4 w-4" />
-                  </button>
-                  <span className="text-xs font-bold text-gray-500">#{index + 1}</span>
-                  <button
-                    onClick={() => handleMove(index, 'down')}
-                    disabled={index === vehicles.length - 1}
-                    className="rounded p-0.5 text-gray-500 transition-colors hover:bg-gold/10 hover:text-gold disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-gray-500"
-                    title="Move down"
-                  >
-                    <ChevronDown className="h-4 w-4" />
-                  </button>
-                </div>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  {/* Order controls */}
+                  <div className="flex flex-col items-center gap-0.5 pt-1">
+                    <button
+                      onClick={() => handleMove(index, 'up')}
+                      disabled={index === 0}
+                      className="rounded p-1.5 text-gray-500 transition-colors hover:bg-gold/10 hover:text-gold disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-gray-500"
+                      title="Move up"
+                    >
+                      <ChevronUp className="h-5 w-5" />
+                    </button>
+                    <span className="text-xs font-bold text-gray-500">#{index + 1}</span>
+                    <button
+                      onClick={() => handleMove(index, 'down')}
+                      disabled={index === vehicles.length - 1}
+                      className="rounded p-1.5 text-gray-500 transition-colors hover:bg-gold/10 hover:text-gold disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-gray-500"
+                      title="Move down"
+                    >
+                      <ChevronDown className="h-5 w-5" />
+                    </button>
+                  </div>
 
-                {/* Vehicle image placeholder */}
-                <div className="hidden sm:flex h-20 w-28 shrink-0 items-center justify-center rounded-lg border border-dark-border bg-black/50">
-                  <span className="text-2xl">
-                    {vehicle.type === 'Party Bus' ? '🚌' : vehicle.type === 'Sprinter Limo' ? '🚐' : vehicle.type === 'SUV' ? '🚙' : '🚗'}
-                  </span>
+                  {/* Vehicle image placeholder */}
+                  <div className="hidden sm:flex h-20 w-28 shrink-0 items-center justify-center rounded-lg border border-dark-border bg-black/50">
+                    <span className="text-2xl">
+                      {vehicle.type === 'Party Bus' ? '🚌' : vehicle.type === 'Sprinter Limo' ? '🚐' : vehicle.type === 'SUV' ? '🚙' : '🚗'}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Vehicle info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-lg font-semibold text-white">{vehicle.name}</h3>
+                    <h3 className="text-base font-semibold text-white sm:text-lg">{vehicle.name}</h3>
                     <Badge variant={(typeColor[vehicle.type] as 'gold' | 'purple' | 'green') || 'outline'}>
                       {vehicle.type}
                     </Badge>
@@ -194,10 +196,10 @@ export default function AdminFleetPage() {
                   <p className="mt-1 text-sm text-gray-400 line-clamp-2">{vehicle.description}</p>
 
                   {/* Stats */}
-                  <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-300">
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-gray-300 sm:gap-4">
                     <span className="flex items-center gap-1.5">
                       <Users className="h-4 w-4 text-gray-500" />
-                      {vehicle.capacity} passengers
+                      {vehicle.capacity}
                     </span>
                     <span className="flex items-center gap-1.5">
                       <DollarSign className="h-4 w-4 text-gray-500" />
@@ -209,8 +211,8 @@ export default function AdminFleetPage() {
                     </span>
                   </div>
 
-                  {/* Features */}
-                  <div className="mt-2 flex flex-wrap gap-1.5">
+                  {/* Features - hide on mobile */}
+                  <div className="mt-2 hidden flex-wrap gap-1.5 sm:flex">
                     {vehicle.features.slice(0, 4).map((feature) => (
                       <span
                         key={feature}
@@ -228,26 +230,26 @@ export default function AdminFleetPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 self-end sm:self-start">
                   <button
                     onClick={() => handleEdit(vehicle)}
-                    className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gold/10 hover:text-gold"
+                    className="rounded-lg p-2.5 text-gray-400 transition-colors hover:bg-gold/10 hover:text-gold"
                     title="Edit vehicle"
                   >
                     <Pencil className="h-4 w-4" />
                   </button>
 
                   {deleteConfirm === vehicle.id ? (
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handleDelete(vehicle.id)}
-                        className="rounded-lg bg-red-500/10 px-2.5 py-1.5 text-xs font-medium text-red-400 transition-all hover:bg-red-500/20"
+                        className="rounded-lg bg-red-500/10 px-3 py-2 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20"
                       >
                         Confirm
                       </button>
                       <button
                         onClick={() => setDeleteConfirm(null)}
-                        className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-400 transition-all hover:bg-white/5"
+                        className="rounded-lg px-3 py-2 text-sm font-medium text-gray-400 transition-all hover:bg-white/5"
                       >
                         Cancel
                       </button>
@@ -255,7 +257,7 @@ export default function AdminFleetPage() {
                   ) : (
                     <button
                       onClick={() => setDeleteConfirm(vehicle.id)}
-                      className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                      className="rounded-lg p-2.5 text-gray-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
                       title="Delete vehicle"
                     >
                       <Trash2 className="h-4 w-4" />

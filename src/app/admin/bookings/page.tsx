@@ -145,19 +145,68 @@ export default function AdminBookingsPage() {
       </div>
 
       {/* Search */}
-      <div className="relative max-w-md">
+      <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by client name, email, or phone..."
-          className="w-full rounded-lg border border-dark-border bg-dark-card py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+          className="w-full rounded-lg border border-dark-border bg-dark-card py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20 sm:max-w-md"
         />
       </div>
 
-      {/* Table */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+      {/* Mobile card view */}
+      <div className="space-y-3 sm:hidden">
+        {filteredBookings.map((booking) => (
+          <motion.div
+            key={booking.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card
+              className="cursor-pointer transition-all hover:border-gold/20 active:scale-[0.99]"
+              onClick={() => {
+                setSelectedBooking(booking)
+                setDetailOpen(true)
+              }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
+                    {booking.client_name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-white truncate">{booking.client_name}</p>
+                    <p className="text-xs text-gray-400">{booking.event_type}</p>
+                  </div>
+                </div>
+                <Badge variant={statusBadgeVariant[booking.status] || 'outline'} className="shrink-0">
+                  {booking.status.replace('_', ' ')}
+                </Badge>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-400">
+                <span>{formatDate(booking.booking_date)}</span>
+                <span className="text-right">{booking.start_time}</span>
+                <span className="truncate">{getVehicleName(booking.vehicle_id)}</span>
+                <span className="text-right font-semibold text-gold">
+                  {booking.total_amount ? formatCurrency(booking.total_amount) : '-'}
+                </span>
+              </div>
+            </Card>
+          </motion.div>
+        ))}
+        {filteredBookings.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+            <Filter className="mb-2 h-8 w-8" />
+            <p className="font-medium">No bookings found</p>
+            <p className="mt-1 text-sm">Try adjusting your search or filter</p>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop table view */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="hidden sm:block">
         <Card className="overflow-hidden p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -259,9 +308,9 @@ export default function AdminBookingsPage() {
                 </div>
                 <button
                   onClick={() => setDetailOpen(false)}
-                  className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
+                  className="rounded-lg p-2.5 text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-6 w-6" />
                 </button>
               </div>
 

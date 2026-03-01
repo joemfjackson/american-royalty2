@@ -168,7 +168,35 @@ export default function AdminDashboardPage() {
               </Link>
             </div>
 
-            <div className="overflow-x-auto -mx-6 px-6">
+            {/* Mobile card list */}
+            <div className="space-y-3 sm:hidden">
+              {recentQuotes.map((quote) => (
+                <Link
+                  key={quote.id}
+                  href="/admin/quotes"
+                  className="flex items-center gap-3 rounded-lg border border-dark-border p-3 transition-all hover:border-gold/20"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
+                    {quote.name.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-medium text-white truncate">{quote.name}</p>
+                      <Badge variant={statusBadgeVariant[quote.status] || 'outline'} className="shrink-0">
+                        {quote.status}
+                      </Badge>
+                    </div>
+                    <p className="mt-0.5 text-xs text-gray-400">{quote.event_type} &middot; {formatDate(quote.event_date)}</p>
+                  </div>
+                </Link>
+              ))}
+              {recentQuotes.length === 0 && (
+                <p className="py-8 text-center text-gray-400">No quotes yet</p>
+              )}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden sm:block overflow-x-auto -mx-6 px-6">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-dark-border text-left">

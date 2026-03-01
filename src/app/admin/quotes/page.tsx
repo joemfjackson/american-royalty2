@@ -168,21 +168,66 @@ export default function AdminQuotesPage() {
       </div>
 
       {/* Search */}
-      <div className="relative max-w-md">
+      <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name, email, or phone..."
-          className="w-full rounded-lg border border-dark-border bg-dark-card py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+          className="w-full rounded-lg border border-dark-border bg-dark-card py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20 sm:max-w-md"
         />
       </div>
 
-      {/* Table */}
+      {/* Mobile card view */}
+      <div className="space-y-3 sm:hidden">
+        {filteredQuotes.map((quote) => (
+          <motion.div
+            key={quote.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card
+              className="cursor-pointer transition-all hover:border-gold/20 active:scale-[0.99]"
+              onClick={() => handleRowClick(quote)}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
+                    {quote.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-white truncate">{quote.name}</p>
+                    <p className="text-xs text-gray-400 truncate">{quote.email}</p>
+                  </div>
+                </div>
+                <Badge variant={statusBadgeVariant[quote.status] || 'outline'} className="shrink-0">
+                  {quote.status}
+                </Badge>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-400">
+                <span>{quote.event_type}</span>
+                <span className="text-right">{formatDate(quote.event_date)}</span>
+                <span className="truncate">{quote.phone}</span>
+                <span className="text-right text-gray-500">{formatDate(quote.created_at)}</span>
+              </div>
+            </Card>
+          </motion.div>
+        ))}
+        {filteredQuotes.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+            <Filter className="mb-2 h-8 w-8" />
+            <p className="font-medium">No quotes found</p>
+            <p className="mt-1 text-sm">Try adjusting your search or filter</p>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop table view */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
+        className="hidden sm:block"
       >
         <Card className="overflow-hidden p-0">
           <div className="overflow-x-auto">
