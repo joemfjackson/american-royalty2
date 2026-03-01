@@ -196,13 +196,13 @@ export async function Footer() {
             </a>
           </div>
         </div>
-        <p className="pb-4 text-center text-[11px] text-white/30">
+        <p className="pb-4 text-center text-[11px] text-white/60">
           Website designed by{' '}
           <a
             href="https://www.stage1labs.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-white/40 transition-colors hover:text-gold"
+            className="text-white/60 underline transition-colors hover:text-gold"
           >
             Stage1Labs
           </a>
