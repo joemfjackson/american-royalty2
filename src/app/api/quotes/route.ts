@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
+import { Resend } from 'resend'
 
 const quoteSchema = z.object({
   name: z.string().min(2),
@@ -50,11 +51,9 @@ export async function POST(request: Request) {
       },
     })
 
-    // Optional: send notification email via Resend
+    // Send notification email via Resend
     if (process.env.RESEND_API_KEY) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { Resend } = require('resend') as { Resend: new (key: string) => { emails: { send: (opts: Record<string, unknown>) => Promise<unknown> } } }
         const resend = new Resend(process.env.RESEND_API_KEY)
 
         await resend.emails.send({

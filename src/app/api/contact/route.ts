@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { Resend } from 'resend'
 
 const contactSchema = z.object({
   name: z.string().min(2),
@@ -21,11 +22,9 @@ export async function POST(request: Request) {
       message: data.message.substring(0, 100),
     })
 
-    // Send email notification via Resend if configured
+    // Send email notification via Resend
     if (process.env.RESEND_API_KEY) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { Resend } = require('resend') as { Resend: new (key: string) => { emails: { send: (opts: Record<string, unknown>) => Promise<unknown> } } }
         const resend = new Resend(process.env.RESEND_API_KEY)
 
         await resend.emails.send({
