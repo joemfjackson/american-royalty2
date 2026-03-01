@@ -22,31 +22,35 @@ export async function POST(request: Request) {
       message: data.message.substring(0, 100),
     })
 
-    // Send email notification via Resend
+    // Send notification emails via Resend (separate calls so one failure doesn't block the other)
     if (process.env.RESEND_API_KEY) {
-      try {
-        const resend = new Resend(process.env.RESEND_API_KEY)
-
-        await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
-          to: [
-            process.env.NEXT_PUBLIC_EMAIL || 'admin@americanroyaltylasvegas.com',
-            'americanroyalty@americanroyaltylasvegas.com',
-          ],
-          subject: `Contact Form: ${data.name}`,
-          html: `
-            <h2>New Contact Message</h2>
-            <p><strong>Name:</strong> ${data.name}</p>
-            <p><strong>Email:</strong> ${data.email}</p>
-            <p><strong>Phone:</strong> ${data.phone || 'Not provided'}</p>
-            <hr />
-            <p><strong>Message:</strong></p>
-            <p>${data.message.replace(/\n/g, '<br />')}</p>
-          `,
-        })
-      } catch (emailError) {
-        console.error('Email notification failed:', emailError)
+      const resend = new Resend(process.env.RESEND_API_KEY)
+      const emailPayload = {
+        from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
+        subject: `Contact Form: ${data.name}`,
+        html: `
+          <h2>New Contact Message</h2>
+          <p><strong>Name:</strong> ${data.name}</p>
+          <p><strong>Email:</strong> ${data.email}</p>
+          <p><strong>Phone:</strong> ${data.phone || 'Not provided'}</p>
+          <hr />
+          <p><strong>Message:</strong></p>
+          <p>${data.message.replace(/\n/g, '<br />')}</p>
+        `,
       }
+
+      const recipients = [
+        process.env.NEXT_PUBLIC_EMAIL || 'admin@americanroyaltylasvegas.com',
+        'americanroyalty@americanroyaltylasvegas.com',
+      ]
+
+      await Promise.allSettled(
+        recipients.map((to) =>
+          resend.emails.send({ ...emailPayload, to }).catch((err) => {
+            console.error(`Email to ${to} failed:`, err)
+          })
+        )
+      )
     }
 
     return NextResponse.json({ success: true, message: 'Message received' })
