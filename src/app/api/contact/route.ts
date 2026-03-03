@@ -31,7 +31,7 @@ export async function POST(request: Request) {
           from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
           to: [
             process.env.NEXT_PUBLIC_EMAIL || 'admin@americanroyaltylasvegas.com',
-            'americanroyalty@americanroyaltylasvegas.com',
+            'dispatch@americanroyaltylasvegas.com',
           ],
           subject: `Contact Form: ${data.name}`,
           html: `
