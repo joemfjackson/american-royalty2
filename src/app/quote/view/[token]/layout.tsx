@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 
 export const metadata: Metadata = {
   title: 'Your Quote — American Royalty',
@@ -10,9 +11,15 @@ export default function QuoteViewLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-black text-white">
       {/* Brand header */}
       <header className="border-b border-dark-border py-6">
-        <div className="mx-auto max-w-2xl px-4 text-center">
-          <h1 className="text-2xl font-bold tracking-widest text-gold">AMERICAN ROYALTY</h1>
-          <p className="mt-1 text-xs tracking-[0.3em] text-gray-500">RIDE LIKE ROYALTY</p>
+        <div className="mx-auto max-w-2xl px-4 flex justify-center">
+          <Image
+            src="/images/logo.png"
+            alt="American Royalty"
+            width={160}
+            height={160}
+            className="h-auto w-[160px]"
+            priority
+          />
         </div>
       </header>
 

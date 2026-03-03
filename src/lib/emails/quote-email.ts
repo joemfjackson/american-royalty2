@@ -44,11 +44,10 @@ export function buildQuoteEmailHtml(data: QuoteEmailData): string {
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-          <!-- Header -->
+          <!-- Header with Logo -->
           <tr>
             <td style="text-align:center;padding:0 0 32px;">
-              <h1 style="margin:0;font-size:28px;font-weight:700;color:#D6C08A;letter-spacing:2px;">AMERICAN ROYALTY</h1>
-              <p style="margin:4px 0 0;font-size:13px;color:#999;letter-spacing:3px;">RIDE LIKE ROYALTY</p>
+              <img src="${data.quoteUrl.split('/quote/')[0]}/images/logo.png" alt="American Royalty" width="180" height="180" style="display:block;margin:0 auto;width:180px;height:auto;" />
             </td>
           </tr>
 
