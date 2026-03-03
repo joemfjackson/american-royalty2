@@ -51,6 +51,7 @@ export default function AdminDashboardPage() {
   const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([])
   const [vehicleNames, setVehicleNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -67,6 +68,7 @@ export default function AdminDashboardPage() {
         setVehicleNames(vn)
       } catch (err) {
         console.error('Failed to load dashboard:', err)
+        setError('Failed to load dashboard data. Please try refreshing the page.')
       } finally {
         setLoading(false)
       }
@@ -74,10 +76,24 @@ export default function AdminDashboardPage() {
     load()
   }, [])
 
-  if (loading || !stats) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (error || !stats) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <p className="text-red-400 font-medium">{error || 'Failed to load dashboard data.'}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 rounded-lg bg-gold/10 px-4 py-2 text-sm font-medium text-gold hover:bg-gold/20 transition-colors"
+        >
+          Refresh Page
+        </button>
       </div>
     )
   }

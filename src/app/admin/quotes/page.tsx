@@ -39,6 +39,7 @@ export default function AdminQuotesPage() {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [vehicleNames, setVehicleNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<QuoteStatus | 'all'>('all')
   const [sortField, setSortField] = useState<SortField>('created_at')
@@ -54,6 +55,7 @@ export default function AdminQuotesPage() {
         setVehicleNames(vn)
       } catch (err) {
         console.error('Failed to load quotes:', err)
+        setError('Failed to load quotes. Please try refreshing the page.')
       } finally {
         setLoading(false)
       }
@@ -133,6 +135,20 @@ export default function AdminQuotesPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <p className="text-red-400 font-medium">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 rounded-lg bg-gold/10 px-4 py-2 text-sm font-medium text-gold hover:bg-gold/20 transition-colors"
+        >
+          Refresh Page
+        </button>
       </div>
     )
   }

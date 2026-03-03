@@ -13,6 +13,7 @@ import type { Vehicle } from '@/types'
 export default function AdminFleetPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
@@ -24,6 +25,7 @@ export default function AdminFleetPage() {
         setVehicles(v)
       } catch (err) {
         console.error('Failed to load vehicles:', err)
+        setError('Failed to load vehicles. Please try refreshing the page.')
       } finally {
         setLoading(false)
       }
@@ -120,6 +122,20 @@ export default function AdminFleetPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <p className="text-red-400 font-medium">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 rounded-lg bg-gold/10 px-4 py-2 text-sm font-medium text-gold hover:bg-gold/20 transition-colors"
+        >
+          Refresh Page
+        </button>
       </div>
     )
   }
