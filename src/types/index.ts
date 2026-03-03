@@ -45,7 +45,7 @@ export interface Quote {
   pickup_location: string | null
   dropoff_location: string | null
   details: string | null
-  status: 'new' | 'contacted' | 'quoted' | 'booked' | 'completed' | 'cancelled'
+  status: 'new' | 'contacted' | 'quoted' | 'invoiced' | 'booked' | 'completed' | 'cancelled'
   quoted_amount: number | null
   admin_notes: string | null
   created_at: string
@@ -76,6 +76,26 @@ export interface Booking {
   created_at: string
   updated_at: string
   vehicle?: Vehicle
+}
+
+export interface Invoice {
+  id: string
+  quote_id: string
+  total_amount: number
+  deposit_amount: number
+  deposit_percent: number
+  status: 'draft' | 'sent' | 'viewed' | 'paid' | 'cancelled'
+  payment_method: 'stripe' | 'manual' | null
+  stripe_session_id: string | null
+  stripe_payment_id: string | null
+  paid_at: string | null
+  paid_by: string | null
+  token: string
+  sent_at: string | null
+  viewed_at: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface Testimonial {

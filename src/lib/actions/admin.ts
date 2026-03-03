@@ -4,12 +4,17 @@ import { prisma } from '@/lib/db'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
-import type { Quote, Booking, Testimonial, Vehicle } from '@/types'
+import type { Quote, Booking, Testimonial, Vehicle, Invoice } from '@/types'
 import type {
   Quote as PrismaQuote,
   Booking as PrismaBooking,
   Vehicle as PrismaVehicle,
+  Invoice as PrismaInvoice,
 } from '@prisma/client'
+import { Resend } from 'resend'
+import { buildInvoiceEmailHtml } from '@/lib/emails/invoice-email'
+import { BRAND } from '@/lib/constants'
+import { formatCurrency, formatDate } from '@/lib/utils'
 
 // ─── Auth guard ─────────────────────────────────────────
 
@@ -41,6 +46,7 @@ const QUOTE_STATUS_MAP: Record<string, string> = {
   NEW: 'new',
   CONTACTED: 'contacted',
   QUOTED: 'quoted',
+  INVOICED: 'invoiced',
   BOOKED: 'booked',
   COMPLETED: 'completed',
   CANCELLED: 'cancelled',
@@ -50,9 +56,18 @@ const QUOTE_STATUS_REVERSE: Record<string, string> = {
   new: 'NEW',
   contacted: 'CONTACTED',
   quoted: 'QUOTED',
+  invoiced: 'INVOICED',
   booked: 'BOOKED',
   completed: 'COMPLETED',
   cancelled: 'CANCELLED',
+}
+
+const INVOICE_STATUS_MAP: Record<string, string> = {
+  DRAFT: 'draft',
+  SENT: 'sent',
+  VIEWED: 'viewed',
+  PAID: 'paid',
+  CANCELLED: 'cancelled',
 }
 
 const BOOKING_STATUS_MAP: Record<string, string> = {
@@ -152,6 +167,28 @@ function mapTestimonial(t: { id: string; name: string; eventType: string | null;
     is_featured: t.isFeatured,
     is_active: t.isActive,
     created_at: t.createdAt.toISOString(),
+  }
+}
+
+function mapInvoice(i: PrismaInvoice): Invoice {
+  return {
+    id: i.id,
+    quote_id: i.quoteId,
+    total_amount: Number(i.totalAmount),
+    deposit_amount: Number(i.depositAmount),
+    deposit_percent: i.depositPercent,
+    status: (INVOICE_STATUS_MAP[i.status] || 'draft') as Invoice['status'],
+    payment_method: i.paymentMethod?.toLowerCase() as Invoice['payment_method'] || null,
+    stripe_session_id: i.stripeSessionId || null,
+    stripe_payment_id: i.stripePaymentId || null,
+    paid_at: i.paidAt?.toISOString() || null,
+    paid_by: i.paidBy || null,
+    token: i.token,
+    sent_at: i.sentAt?.toISOString() || null,
+    viewed_at: i.viewedAt?.toISOString() || null,
+    notes: i.notes || null,
+    created_at: i.createdAt.toISOString(),
+    updated_at: i.updatedAt.toISOString(),
   }
 }
 
@@ -293,6 +330,199 @@ export async function convertQuoteToBooking(quoteId: string): Promise<Booking> {
   revalidatePath('/admin/calendar')
   revalidatePath('/admin')
   return mapBooking(booking)
+}
+
+// ─── Shared: Create Booking from Quote ──────────────────
+
+async function createBookingFromQuote(quoteId: string, depositAmount: number): Promise<PrismaBooking> {
+  const quote = await prisma.quote.findUnique({ where: { id: quoteId } })
+  if (!quote) throw new Error('Quote not found')
+
+  const booking = await prisma.booking.create({
+    data: {
+      quoteId: quote.id,
+      clientName: quote.name,
+      clientEmail: quote.email,
+      clientPhone: quote.phone,
+      eventType: quote.eventType,
+      vehicleId: quote.preferredVehicleId,
+      bookingDate: quote.eventDate,
+      startTime: quote.pickupTime || 'TBD',
+      durationHours: quote.durationHours,
+      pickupLocation: quote.pickupLocation,
+      dropoffLocation: quote.dropoffLocation,
+      guestCount: quote.guestCount,
+      totalAmount: quote.quotedAmount,
+      depositAmount,
+      depositPaid: true,
+      status: 'DEPOSIT_PAID',
+      notes: quote.adminNotes,
+    },
+  })
+
+  await prisma.quote.update({
+    where: { id: quoteId },
+    data: { status: 'BOOKED' },
+  })
+
+  revalidatePath('/admin/quotes')
+  revalidatePath('/admin/bookings')
+  revalidatePath('/admin/calendar')
+  revalidatePath('/admin')
+
+  return booking
+}
+
+// ─── Invoices ───────────────────────────────────────────
+
+export async function createAndSendInvoice(
+  quoteId: string,
+  depositPercent: number = 50
+): Promise<Invoice> {
+  await requireAdmin()
+
+  const quote = await prisma.quote.findUnique({
+    where: { id: quoteId },
+    include: { preferredVehicle: { select: { name: true } } },
+  })
+  if (!quote) throw new Error('Quote not found')
+  if (!quote.quotedAmount) throw new Error('Quote has no amount set')
+
+  const totalAmount = Number(quote.quotedAmount)
+  const depositAmount = Math.round(totalAmount * depositPercent / 100)
+
+  // Cancel any existing non-paid invoices for this quote
+  await prisma.invoice.updateMany({
+    where: { quoteId, status: { in: ['DRAFT', 'SENT', 'VIEWED'] } },
+    data: { status: 'CANCELLED' },
+  })
+
+  const invoice = await prisma.invoice.create({
+    data: {
+      quoteId,
+      totalAmount,
+      depositAmount,
+      depositPercent,
+      status: 'SENT',
+      sentAt: new Date(),
+    },
+  })
+
+  // Update quote status
+  await prisma.quote.update({
+    where: { id: quoteId },
+    data: { status: 'INVOICED' },
+  })
+
+  // Send email
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
+  const invoiceUrl = `${siteUrl}/invoice/${invoice.token}`
+
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY)
+      await resend.emails.send({
+        from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
+        to: [quote.email],
+        subject: `Your Invoice from American Royalty — ${quote.eventType} on ${quote.eventDate}`,
+        html: buildInvoiceEmailHtml({
+          clientName: quote.name,
+          eventType: quote.eventType,
+          eventDate: quote.eventDate,
+          vehicleName: quote.preferredVehicle?.name || null,
+          totalAmount: formatCurrency(totalAmount),
+          depositAmount: formatCurrency(depositAmount),
+          depositPercent,
+          invoiceUrl,
+          brandPhone: BRAND.phone,
+          brandEmail: BRAND.email,
+        }),
+      })
+    } catch (emailError) {
+      console.error('Invoice email failed:', emailError)
+    }
+  }
+
+  revalidatePath('/admin/quotes')
+  revalidatePath('/admin')
+  return { ...mapInvoice(invoice), token: invoice.token }
+}
+
+export async function getInvoiceByQuoteId(quoteId: string): Promise<Invoice | null> {
+  await requireAdmin()
+
+  const invoice = await prisma.invoice.findFirst({
+    where: { quoteId, status: { not: 'CANCELLED' } },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  return invoice ? mapInvoice(invoice) : null
+}
+
+export async function markInvoicePaidManually(invoiceId: string): Promise<Invoice> {
+  const session = await requireAdmin()
+
+  const invoice = await prisma.invoice.findUnique({
+    where: { id: invoiceId },
+  })
+  if (!invoice) throw new Error('Invoice not found')
+  if (invoice.status === 'PAID') throw new Error('Invoice already paid')
+  if (invoice.status === 'CANCELLED') throw new Error('Invoice is cancelled')
+
+  const updated = await prisma.invoice.update({
+    where: { id: invoiceId },
+    data: {
+      status: 'PAID',
+      paymentMethod: 'MANUAL',
+      paidAt: new Date(),
+      paidBy: session.user.id || session.user.email || 'admin',
+    },
+  })
+
+  await createBookingFromQuote(invoice.quoteId, Number(invoice.depositAmount))
+
+  revalidatePath('/admin/quotes')
+  revalidatePath('/admin/bookings')
+  revalidatePath('/admin')
+  return mapInvoice(updated)
+}
+
+export async function cancelInvoice(invoiceId: string): Promise<Invoice> {
+  await requireAdmin()
+
+  const invoice = await prisma.invoice.findUnique({ where: { id: invoiceId } })
+  if (!invoice) throw new Error('Invoice not found')
+  if (invoice.status === 'PAID') throw new Error('Cannot cancel a paid invoice')
+
+  const updated = await prisma.invoice.update({
+    where: { id: invoiceId },
+    data: { status: 'CANCELLED' },
+  })
+
+  // Revert quote to QUOTED so admin can re-issue
+  await prisma.quote.update({
+    where: { id: invoice.quoteId },
+    data: { status: 'QUOTED' },
+  })
+
+  revalidatePath('/admin/quotes')
+  revalidatePath('/admin')
+  return mapInvoice(updated)
+}
+
+export async function getInvoiceLink(quoteId: string): Promise<string | null> {
+  await requireAdmin()
+
+  const invoice = await prisma.invoice.findFirst({
+    where: { quoteId, status: { not: 'CANCELLED' } },
+    orderBy: { createdAt: 'desc' },
+    select: { token: true },
+  })
+
+  if (!invoice) return null
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
+  return `${siteUrl}/invoice/${invoice.token}`
 }
 
 // ─── Bookings ───────────────────────────────────────────

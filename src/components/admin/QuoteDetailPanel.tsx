@@ -10,16 +10,27 @@ import {
   Clock,
   MapPin,
   Users,
-  Car,
   DollarSign,
   MessageSquare,
   Send,
   CheckCircle,
   XCircle,
+  FileText,
+  Copy,
+  CreditCard,
+  Link as LinkIcon,
 } from 'lucide-react'
-import type { Quote } from '@/types'
+import type { Quote, Invoice } from '@/types'
 import { Badge } from '@/components/ui/Badge'
-import { updateQuote, convertQuoteToBooking } from '@/lib/actions/admin'
+import {
+  updateQuote,
+  convertQuoteToBooking,
+  createAndSendInvoice,
+  getInvoiceByQuoteId,
+  markInvoicePaidManually,
+  cancelInvoice,
+  getInvoiceLink,
+} from '@/lib/actions/admin'
 import { formatDate, formatCurrency } from '@/lib/utils'
 
 type QuoteStatus = Quote['status']
@@ -28,6 +39,7 @@ const statusBadgeVariant: Record<string, 'yellow' | 'gold' | 'purple' | 'green' 
   new: 'yellow',
   contacted: 'gold',
   quoted: 'purple',
+  invoiced: 'gold',
   booked: 'green',
   completed: 'green',
   cancelled: 'red',
@@ -37,6 +49,7 @@ const STATUS_OPTIONS: { value: QuoteStatus; label: string }[] = [
   { value: 'new', label: 'New' },
   { value: 'contacted', label: 'Contacted' },
   { value: 'quoted', label: 'Quoted' },
+  { value: 'invoiced', label: 'Invoiced' },
   { value: 'booked', label: 'Booked' },
   { value: 'completed', label: 'Completed' },
   { value: 'cancelled', label: 'Cancelled' },
@@ -55,6 +68,13 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
   const [adminNotes, setAdminNotes] = useState(quote?.admin_notes || '')
   const [quotedAmount, setQuotedAmount] = useState(quote?.quoted_amount?.toString() || '')
   const [saving, setSaving] = useState(false)
+  const [depositPercent, setDepositPercent] = useState(50)
+  const [showInvoiceForm, setShowInvoiceForm] = useState(false)
+  const [sendingInvoice, setSendingInvoice] = useState(false)
+  const [invoice, setInvoice] = useState<Invoice | null>(null)
+  const [invoiceLink, setInvoiceLink] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+  const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   // Update local state when quote changes
   useEffect(() => {
@@ -62,6 +82,18 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
       setStatus(quote.status)
       setAdminNotes(quote.admin_notes || '')
       setQuotedAmount(quote.quoted_amount?.toString() || '')
+      setShowInvoiceForm(false)
+      setActionMessage(null)
+      setCopied(false)
+
+      // Load existing invoice if quote is invoiced
+      if (quote.status === 'invoiced') {
+        getInvoiceByQuoteId(quote.id).then(setInvoice).catch(() => {})
+        getInvoiceLink(quote.id).then(setInvoiceLink).catch(() => {})
+      } else {
+        setInvoice(null)
+        setInvoiceLink(null)
+      }
     }
   }, [quote])
 
@@ -70,19 +102,20 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
   const handleSave = async () => {
     setSaving(true)
     try {
-      // Save quote fields first
       const updated = await updateQuote(quote.id, {
         status,
         admin_notes: adminNotes || null,
         quoted_amount: quotedAmount ? parseFloat(quotedAmount) : null,
       })
-      // If status changed to booked, also create a Booking record
+      // If status changed to booked directly (legacy path), create booking
       if (status === 'booked' && quote.status !== 'booked') {
         await convertQuoteToBooking(quote.id)
       }
       onUpdateQuote(updated)
+      setActionMessage({ type: 'success', text: 'Changes saved' })
     } catch (err) {
       console.error('Failed to save quote:', err)
+      setActionMessage({ type: 'error', text: 'Failed to save changes' })
     } finally {
       setSaving(false)
     }
@@ -92,7 +125,6 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
     setStatus(newStatus)
     try {
       if (newStatus === 'booked') {
-        // Save any pending changes first, then create a real Booking record
         await updateQuote(quote.id, {
           admin_notes: adminNotes || null,
           quoted_amount: quotedAmount ? parseFloat(quotedAmount) : null,
@@ -111,6 +143,78 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
       console.error('Failed to update quote status:', err)
     }
   }
+
+  const handleSendInvoice = async () => {
+    setSendingInvoice(true)
+    setActionMessage(null)
+    try {
+      // Save quoted amount first
+      if (quotedAmount) {
+        await updateQuote(quote.id, {
+          admin_notes: adminNotes || null,
+          quoted_amount: parseFloat(quotedAmount),
+        })
+      }
+      const inv = await createAndSendInvoice(quote.id, depositPercent)
+      setInvoice(inv)
+      setShowInvoiceForm(false)
+      onUpdateQuote({ ...quote, status: 'invoiced', quoted_amount: parseFloat(quotedAmount) })
+
+      const link = await getInvoiceLink(quote.id)
+      setInvoiceLink(link)
+
+      setActionMessage({ type: 'success', text: `Invoice sent to ${quote.email}` })
+    } catch (err) {
+      console.error('Failed to send invoice:', err)
+      setActionMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to send invoice' })
+    } finally {
+      setSendingInvoice(false)
+    }
+  }
+
+  const handleMarkPaid = async () => {
+    if (!invoice) return
+    setSaving(true)
+    setActionMessage(null)
+    try {
+      await markInvoicePaidManually(invoice.id)
+      onUpdateQuote({ ...quote, status: 'booked' })
+      setActionMessage({ type: 'success', text: 'Marked as paid — booking created' })
+    } catch (err) {
+      console.error('Failed to mark invoice paid:', err)
+      setActionMessage({ type: 'error', text: 'Failed to mark as paid' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCancelInvoice = async () => {
+    if (!invoice) return
+    setSaving(true)
+    setActionMessage(null)
+    try {
+      await cancelInvoice(invoice.id)
+      setInvoice(null)
+      setInvoiceLink(null)
+      onUpdateQuote({ ...quote, status: 'quoted' })
+      setActionMessage({ type: 'success', text: 'Invoice cancelled — quote reverted to Quoted' })
+    } catch (err) {
+      console.error('Failed to cancel invoice:', err)
+      setActionMessage({ type: 'error', text: 'Failed to cancel invoice' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCopyLink = async () => {
+    if (!invoiceLink) return
+    await navigator.clipboard.writeText(invoiceLink)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const amount = quotedAmount ? parseFloat(quotedAmount) : 0
+  const depositAmount = Math.round(amount * depositPercent / 100)
 
   return (
     <AnimatePresence>
@@ -151,6 +255,17 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
 
             {/* Content - scrollable */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              {/* Action message */}
+              {actionMessage && (
+                <div className={`rounded-lg px-4 py-3 text-sm font-medium ${
+                  actionMessage.type === 'success'
+                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                    : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                }`}>
+                  {actionMessage.text}
+                </div>
+              )}
+
               {/* Client info */}
               <div>
                 <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
@@ -269,6 +384,49 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                 </div>
               )}
 
+              {/* Invoice info (when invoiced) */}
+              {quote.status === 'invoiced' && invoice && (
+                <div>
+                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
+                    Invoice Status
+                  </h3>
+                  <div className="rounded-lg border border-dark-border bg-black/50 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">Status</span>
+                      <Badge variant={invoice.status === 'viewed' ? 'gold' : 'purple'}>
+                        {invoice.status === 'viewed' ? 'Viewed by client' : 'Sent'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">Total</span>
+                      <span className="text-sm font-medium text-white">{formatCurrency(invoice.total_amount)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">Deposit ({invoice.deposit_percent}%)</span>
+                      <span className="text-sm font-bold text-gold">{formatCurrency(invoice.deposit_amount)}</span>
+                    </div>
+                    {invoiceLink && (
+                      <button
+                        onClick={handleCopyLink}
+                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-dark-border bg-black px-3 py-2 text-xs font-medium text-gray-300 transition-all hover:border-gold/30 hover:text-gold"
+                      >
+                        {copied ? (
+                          <>
+                            <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
+                            <span className="text-emerald-400">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-3.5 w-3.5" />
+                            Copy Invoice Link
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Status change */}
               <div>
                 <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
@@ -304,6 +462,59 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                 </div>
               </div>
 
+              {/* Send Invoice form (inline) */}
+              {showInvoiceForm && amount > 0 && (
+                <div className="rounded-lg border border-gold/20 bg-gold/5 p-4 space-y-4">
+                  <h3 className="text-sm font-semibold text-gold flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Send Invoice
+                  </h3>
+                  <div>
+                    <label className="text-xs text-gray-400 block mb-1.5">Deposit Percentage</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="number"
+                        min={10}
+                        max={100}
+                        value={depositPercent}
+                        onChange={(e) => setDepositPercent(Math.min(100, Math.max(10, parseInt(e.target.value) || 50)))}
+                        className="w-24 rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+                      />
+                      <span className="text-sm text-gray-400">%</span>
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-dark-border bg-black/50 p-3 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Total</span>
+                      <span className="text-white">{formatCurrency(amount)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Deposit ({depositPercent}%)</span>
+                      <span className="font-bold text-gold">{formatCurrency(depositAmount)}</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400">
+                    Invoice will be emailed to <span className="text-white">{quote.email}</span>
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSendInvoice}
+                      disabled={sendingInvoice}
+                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-gold px-4 py-2.5 text-sm font-semibold text-black transition-all hover:bg-gold-light disabled:opacity-50"
+                    >
+                      <Send className="h-4 w-4" />
+                      {sendingInvoice ? 'Sending...' : 'Send Invoice'}
+                    </button>
+                    <button
+                      onClick={() => setShowInvoiceForm(false)}
+                      className="rounded-lg border border-dark-border px-4 py-2.5 text-sm font-medium text-gray-400 transition-all hover:bg-white/5 hover:text-white"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Admin notes */}
               <div>
                 <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
@@ -321,36 +532,76 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
 
             {/* Footer actions */}
             <div className="border-t border-dark-border p-4 space-y-3">
-              {/* Quick action buttons */}
+              {/* Quick action buttons — contextual based on status */}
               <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => handleQuickAction('contacted')}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-gold/10 px-3 py-2 text-xs font-medium text-gold transition-all hover:bg-gold/20"
-                >
-                  <MessageSquare className="h-3.5 w-3.5" />
-                  Mark Contacted
-                </button>
-                <button
-                  onClick={() => handleQuickAction('quoted')}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-royal/10 px-3 py-2 text-xs font-medium text-royal-light transition-all hover:bg-royal/20"
-                >
-                  <Send className="h-3.5 w-3.5" />
-                  Send Quote
-                </button>
-                <button
-                  onClick={() => handleQuickAction('booked')}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-400 transition-all hover:bg-emerald-500/20"
-                >
-                  <CheckCircle className="h-3.5 w-3.5" />
-                  Convert to Booking
-                </button>
-                <button
-                  onClick={() => handleQuickAction('cancelled')}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-red-500/10 px-3 py-2 text-xs font-medium text-red-400 transition-all hover:bg-red-500/20"
-                >
-                  <XCircle className="h-3.5 w-3.5" />
-                  Cancel
-                </button>
+                {(quote.status === 'new' || quote.status === 'contacted') && (
+                  <>
+                    <button
+                      onClick={() => handleQuickAction('contacted')}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-gold/10 px-3 py-2 text-xs font-medium text-gold transition-all hover:bg-gold/20"
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      Mark Contacted
+                    </button>
+                    <button
+                      onClick={() => handleQuickAction('quoted')}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-royal/10 px-3 py-2 text-xs font-medium text-royal-light transition-all hover:bg-royal/20"
+                    >
+                      <DollarSign className="h-3.5 w-3.5" />
+                      Mark Quoted
+                    </button>
+                  </>
+                )}
+
+                {(quote.status === 'quoted') && amount > 0 && !showInvoiceForm && (
+                  <button
+                    onClick={() => setShowInvoiceForm(true)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-gold/10 px-3 py-2 text-xs font-medium text-gold transition-all hover:bg-gold/20"
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    Send Invoice
+                  </button>
+                )}
+
+                {quote.status === 'invoiced' && invoice && (
+                  <>
+                    <button
+                      onClick={handleMarkPaid}
+                      disabled={saving}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-400 transition-all hover:bg-emerald-500/20 disabled:opacity-50"
+                    >
+                      <CreditCard className="h-3.5 w-3.5" />
+                      {saving ? 'Processing...' : 'Mark Paid (Manual)'}
+                    </button>
+                    {invoiceLink && (
+                      <button
+                        onClick={handleCopyLink}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-3 py-2 text-xs font-medium text-gray-300 transition-all hover:bg-white/10 hover:text-white"
+                      >
+                        {copied ? <CheckCircle className="h-3.5 w-3.5 text-emerald-400" /> : <LinkIcon className="h-3.5 w-3.5" />}
+                        {copied ? 'Copied!' : 'Copy Link'}
+                      </button>
+                    )}
+                    <button
+                      onClick={handleCancelInvoice}
+                      disabled={saving}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-red-500/10 px-3 py-2 text-xs font-medium text-red-400 transition-all hover:bg-red-500/20 disabled:opacity-50"
+                    >
+                      <XCircle className="h-3.5 w-3.5" />
+                      Cancel Invoice
+                    </button>
+                  </>
+                )}
+
+                {quote.status !== 'booked' && quote.status !== 'completed' && quote.status !== 'cancelled' && quote.status !== 'invoiced' && (
+                  <button
+                    onClick={() => handleQuickAction('cancelled')}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-500/10 px-3 py-2 text-xs font-medium text-red-400 transition-all hover:bg-red-500/20"
+                  >
+                    <XCircle className="h-3.5 w-3.5" />
+                    Cancel
+                  </button>
+                )}
               </div>
 
               {/* Save button */}

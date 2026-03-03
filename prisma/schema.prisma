@@ -99,6 +99,7 @@ enum QuoteStatus {
   NEW
   CONTACTED
   QUOTED
+  INVOICED
   BOOKED
   COMPLETED
   CANCELLED
@@ -126,6 +127,7 @@ model Quote {
   updatedAt          DateTime    @updatedAt
 
   bookings Booking[]
+  invoices Invoice[]
 
   @@map("quotes")
 }
@@ -167,4 +169,42 @@ model Booking {
   updatedAt       DateTime      @updatedAt
 
   @@map("bookings")
+}
+
+// ─── Invoices ────────────────────────────────────────
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  VIEWED
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  STRIPE
+  MANUAL
+}
+
+model Invoice {
+  id              String        @id @default(cuid())
+  quoteId         String
+  quote           Quote         @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  totalAmount     Decimal       @db.Decimal(10, 2)
+  depositAmount   Decimal       @db.Decimal(10, 2)
+  depositPercent  Int           @default(50)
+  status          InvoiceStatus @default(DRAFT)
+  paymentMethod   PaymentMethod?
+  stripeSessionId String?
+  stripePaymentId String?
+  paidAt          DateTime?
+  paidBy          String?
+  token           String        @unique @default(cuid())
+  sentAt          DateTime?
+  viewedAt        DateTime?
+  notes           String?       @db.Text
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("invoices")
 }
