@@ -59,6 +59,7 @@ export interface Quote {
   status: 'new' | 'contacted' | 'quoted' | 'invoiced' | 'booked' | 'completed' | 'cancelled'
   quoted_amount: number | null
   admin_notes: string | null
+  deposit_percent: number
   quote_token: string | null
   quote_sent_at: string | null
   created_at: string

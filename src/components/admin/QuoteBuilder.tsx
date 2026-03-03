@@ -55,6 +55,7 @@ export function QuoteBuilder({ quote, vehicle, existingItems, onSaved, onCancel 
   })
   const [saving, setSaving] = useState(false)
   const [sending, setSending] = useState(false)
+  const [depositPercent, setDepositPercent] = useState(quote.deposit_percent || 50)
 
   const usedPresetKeys = items.filter((i) => i.isPreset).map((i) => i.presetKey)
 
@@ -192,7 +193,7 @@ export function QuoteBuilder({ quote, vehicle, existingItems, onSaved, onCancel 
     if (items.length === 0) return
     setSending(true)
     try {
-      const updated = await buildAndSendQuote(quote.id, serializeItems())
+      const updated = await buildAndSendQuote(quote.id, serializeItems(), depositPercent)
       onSaved(updated)
     } catch (err) {
       console.error('Failed to send quote:', err)
@@ -338,7 +339,7 @@ export function QuoteBuilder({ quote, vehicle, existingItems, onSaved, onCancel 
         Add Custom Item
       </button>
 
-      {/* Totals */}
+      {/* Totals + Deposit */}
       {items.length > 0 && (
         <div className="rounded-lg border border-dark-border bg-black/50 p-3 space-y-2">
           {items.some((i) => i.presetKey === 'gratuity') && (
@@ -350,6 +351,26 @@ export function QuoteBuilder({ quote, vehicle, existingItems, onSaved, onCancel 
           <div className="flex justify-between text-base">
             <span className="font-semibold text-white">Total</span>
             <span className="font-bold text-gold">{formatCurrency(total)}</span>
+          </div>
+          <div className="border-t border-dark-border pt-2 mt-2 space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-gray-400">Deposit %</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={10}
+                  max={100}
+                  value={depositPercent}
+                  onChange={(e) => setDepositPercent(Math.min(100, Math.max(10, parseInt(e.target.value) || 50)))}
+                  className="w-16 rounded border border-dark-border bg-black px-2 py-1 text-center text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/20"
+                />
+                <span className="text-xs text-gray-500">%</span>
+              </div>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-400">Deposit to book</span>
+              <span className="text-gold font-semibold">{formatCurrency(Math.round(total * depositPercent / 100))}</span>
+            </div>
           </div>
         </div>
       )}

@@ -5,6 +5,8 @@ interface QuoteEmailData {
   vehicleName: string | null
   lineItems: { description: string; quantity: number; unitPrice: number }[]
   totalAmount: string
+  depositPercent: number
+  depositAmount: string
   quoteUrl: string
   brandPhone: string
   brandEmail: string
@@ -121,6 +123,16 @@ export function buildQuoteEmailHtml(data: QuoteEmailData): string {
                         <td style="padding:12px 0 0;"></td>
                         <td style="padding:12px 0 0;font-size:20px;color:#D6C08A;text-align:right;font-weight:700;">${data.totalAmount}</td>
                       </tr>
+                      <tr>
+                        <td colspan="3" style="padding:8px 0 0;">
+                          <div style="height:1px;background-color:#1E1E1E;"></div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 0 0;font-size:14px;color:#ccc;">Deposit to Book (${data.depositPercent}%)</td>
+                        <td style="padding:8px 0 0;"></td>
+                        <td style="padding:8px 0 0;font-size:16px;color:#D6C08A;text-align:right;font-weight:700;">${data.depositAmount}</td>
+                      </tr>
                     </table>
                   </td>
                 </tr>
@@ -132,7 +144,7 @@ export function buildQuoteEmailHtml(data: QuoteEmailData): string {
           <tr>
             <td style="text-align:center;padding:0 0 32px;">
               <a href="${data.quoteUrl}" style="display:inline-block;background-color:#D6C08A;color:#000000;font-size:16px;font-weight:700;text-decoration:none;padding:16px 48px;border-radius:8px;letter-spacing:0.5px;">
-                VIEW FULL QUOTE
+                VIEW QUOTE &amp; BOOK
               </a>
             </td>
           </tr>
@@ -141,7 +153,7 @@ export function buildQuoteEmailHtml(data: QuoteEmailData): string {
           <tr>
             <td style="text-align:center;padding:0 0 32px;">
               <p style="margin:0;font-size:13px;color:#999;line-height:1.5;">
-                This quote is valid for 14 days.<br>
+                This quote is valid for 14 days. Book now by paying your deposit online.<br>
                 Have questions? We&rsquo;d love to hear from you.
               </p>
             </td>

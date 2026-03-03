@@ -123,6 +123,7 @@ model Quote {
   status             QuoteStatus @default(NEW)
   quotedAmount       Decimal?    @db.Decimal(10, 2)
   adminNotes         String?     @db.Text
+  depositPercent     Int         @default(50)
   quoteToken         String?     @unique
   quoteSentAt        DateTime?
   createdAt          DateTime    @default(now())

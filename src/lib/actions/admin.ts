@@ -108,6 +108,7 @@ function mapQuote(q: PrismaQuote & { preferredVehicle?: PrismaVehicle | null; li
     status: (QUOTE_STATUS_MAP[q.status] || 'new') as Quote['status'],
     quoted_amount: q.quotedAmount ? Number(q.quotedAmount) : null,
     admin_notes: q.adminNotes,
+    deposit_percent: q.depositPercent,
     quote_token: q.quoteToken,
     quote_sent_at: q.quoteSentAt?.toISOString() || null,
     created_at: q.createdAt.toISOString(),
@@ -611,7 +612,8 @@ export async function saveQuoteLineItems(
 
 export async function buildAndSendQuote(
   quoteId: string,
-  items: { description: string; quantity: number; unitPrice: number; sortOrder: number; isPreset: boolean; presetKey: string | null }[]
+  items: { description: string; quantity: number; unitPrice: number; sortOrder: number; isPreset: boolean; presetKey: string | null }[],
+  depositPercent: number = 50
 ): Promise<Quote> {
   await requireAdmin()
 
@@ -645,6 +647,7 @@ export async function buildAndSendQuote(
       where: { id: quoteId },
       data: {
         quotedAmount: total,
+        depositPercent,
         status: 'QUOTED',
         quoteToken,
         quoteSentAt: new Date(),
@@ -674,6 +677,8 @@ export async function buildAndSendQuote(
             unitPrice: i.unitPrice,
           })),
           totalAmount: formatCurrency(total),
+          depositPercent,
+          depositAmount: formatCurrency(Math.round(total * depositPercent / 100)),
           quoteUrl,
           brandPhone: BRAND.phone,
           brandEmail: BRAND.email,
