@@ -4,15 +4,17 @@ import { prisma } from '@/lib/db'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
-import type { Quote, Booking, Testimonial, Vehicle, Invoice } from '@/types'
+import type { Quote, QuoteLineItem, Booking, Testimonial, Vehicle, Invoice } from '@/types'
 import type {
   Quote as PrismaQuote,
   Booking as PrismaBooking,
   Vehicle as PrismaVehicle,
   Invoice as PrismaInvoice,
+  QuoteLineItem as PrismaQuoteLineItem,
 } from '@prisma/client'
 import { Resend } from 'resend'
 import { buildInvoiceEmailHtml } from '@/lib/emails/invoice-email'
+import { buildQuoteEmailHtml } from '@/lib/emails/quote-email'
 import { BRAND } from '@/lib/constants'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
@@ -88,7 +90,7 @@ const BOOKING_STATUS_REVERSE: Record<string, string> = {
   cancelled: 'CANCELLED',
 }
 
-function mapQuote(q: PrismaQuote & { preferredVehicle?: PrismaVehicle | null }): Quote {
+function mapQuote(q: PrismaQuote & { preferredVehicle?: PrismaVehicle | null; lineItems?: PrismaQuoteLineItem[] }): Quote {
   return {
     id: q.id,
     name: q.name,
@@ -106,8 +108,24 @@ function mapQuote(q: PrismaQuote & { preferredVehicle?: PrismaVehicle | null }):
     status: (QUOTE_STATUS_MAP[q.status] || 'new') as Quote['status'],
     quoted_amount: q.quotedAmount ? Number(q.quotedAmount) : null,
     admin_notes: q.adminNotes,
+    quote_token: q.quoteToken,
+    quote_sent_at: q.quoteSentAt?.toISOString() || null,
     created_at: q.createdAt.toISOString(),
     updated_at: q.updatedAt.toISOString(),
+    line_items: q.lineItems?.map(mapQuoteLineItem),
+  }
+}
+
+function mapQuoteLineItem(li: PrismaQuoteLineItem): QuoteLineItem {
+  return {
+    id: li.id,
+    quote_id: li.quoteId,
+    description: li.description,
+    quantity: li.quantity,
+    unit_price: Number(li.unitPrice),
+    sort_order: li.sortOrder,
+    is_preset: li.isPreset,
+    preset_key: li.presetKey,
   }
 }
 
@@ -523,6 +541,171 @@ export async function getInvoiceLink(quoteId: string): Promise<string | null> {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
   return `${siteUrl}/invoice/${invoice.token}`
+}
+
+// ─── Quote Builder ──────────────────────────────────────
+
+export async function getQuoteWithLineItems(quoteId: string): Promise<{ quote: Quote; line_items: QuoteLineItem[] }> {
+  await requireAdmin()
+
+  const quote = await prisma.quote.findUnique({
+    where: { id: quoteId },
+    include: {
+      preferredVehicle: true,
+      lineItems: { orderBy: { sortOrder: 'asc' } },
+    },
+  })
+  if (!quote) throw new Error('Quote not found')
+
+  return {
+    quote: mapQuote(quote),
+    line_items: quote.lineItems.map(mapQuoteLineItem),
+  }
+}
+
+export async function getVehicleForQuote(vehicleId: string): Promise<Vehicle | null> {
+  await requireAdmin()
+
+  const vehicle = await prisma.vehicle.findUnique({ where: { id: vehicleId } })
+  return vehicle ? mapVehicle(vehicle) : null
+}
+
+export async function saveQuoteLineItems(
+  quoteId: string,
+  items: { description: string; quantity: number; unitPrice: number; sortOrder: number; isPreset: boolean; presetKey: string | null }[]
+): Promise<Quote> {
+  await requireAdmin()
+
+  const total = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0)
+
+  await prisma.$transaction([
+    prisma.quoteLineItem.deleteMany({ where: { quoteId } }),
+    ...items.map((item) =>
+      prisma.quoteLineItem.create({
+        data: {
+          quoteId,
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          sortOrder: item.sortOrder,
+          isPreset: item.isPreset,
+          presetKey: item.presetKey,
+        },
+      })
+    ),
+    prisma.quote.update({
+      where: { id: quoteId },
+      data: { quotedAmount: total },
+    }),
+  ])
+
+  const updated = await prisma.quote.findUnique({
+    where: { id: quoteId },
+    include: { lineItems: { orderBy: { sortOrder: 'asc' } } },
+  })
+
+  revalidatePath('/admin/quotes')
+  revalidatePath('/admin')
+  return mapQuote(updated!)
+}
+
+export async function buildAndSendQuote(
+  quoteId: string,
+  items: { description: string; quantity: number; unitPrice: number; sortOrder: number; isPreset: boolean; presetKey: string | null }[]
+): Promise<Quote> {
+  await requireAdmin()
+
+  const quote = await prisma.quote.findUnique({
+    where: { id: quoteId },
+    include: { preferredVehicle: { select: { name: true } } },
+  })
+  if (!quote) throw new Error('Quote not found')
+
+  const total = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0)
+
+  // Generate quoteToken if not already set
+  const quoteToken = quote.quoteToken || require('crypto').randomUUID()
+
+  await prisma.$transaction([
+    prisma.quoteLineItem.deleteMany({ where: { quoteId } }),
+    ...items.map((item) =>
+      prisma.quoteLineItem.create({
+        data: {
+          quoteId,
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          sortOrder: item.sortOrder,
+          isPreset: item.isPreset,
+          presetKey: item.presetKey,
+        },
+      })
+    ),
+    prisma.quote.update({
+      where: { id: quoteId },
+      data: {
+        quotedAmount: total,
+        status: 'QUOTED',
+        quoteToken,
+        quoteSentAt: new Date(),
+      },
+    }),
+  ])
+
+  // Send email
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
+  const quoteUrl = `${siteUrl}/quote/view/${quoteToken}`
+
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY)
+      await resend.emails.send({
+        from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
+        to: [quote.email],
+        subject: `Your Quote from American Royalty — ${quote.eventType} on ${quote.eventDate}`,
+        html: buildQuoteEmailHtml({
+          clientName: quote.name,
+          eventType: quote.eventType,
+          eventDate: quote.eventDate,
+          vehicleName: quote.preferredVehicle?.name || null,
+          lineItems: items.map((i) => ({
+            description: i.description,
+            quantity: i.quantity,
+            unitPrice: i.unitPrice,
+          })),
+          totalAmount: formatCurrency(total),
+          quoteUrl,
+          brandPhone: BRAND.phone,
+          brandEmail: BRAND.email,
+        }),
+      })
+    } catch (emailError) {
+      console.error('Quote email failed:', emailError)
+    }
+  }
+
+  const updated = await prisma.quote.findUnique({
+    where: { id: quoteId },
+    include: { lineItems: { orderBy: { sortOrder: 'asc' } } },
+  })
+
+  revalidatePath('/admin/quotes')
+  revalidatePath('/admin')
+  return mapQuote(updated!)
+}
+
+export async function getQuotePublicLink(quoteId: string): Promise<string | null> {
+  await requireAdmin()
+
+  const quote = await prisma.quote.findUnique({
+    where: { id: quoteId },
+    select: { quoteToken: true },
+  })
+
+  if (!quote?.quoteToken) return null
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
+  return `${siteUrl}/quote/view/${quote.quoteToken}`
 }
 
 // ─── Bookings ───────────────────────────────────────────

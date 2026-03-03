@@ -31,6 +31,17 @@ export interface Service {
   created_at: string
 }
 
+export interface QuoteLineItem {
+  id: string
+  quote_id: string
+  description: string
+  quantity: number
+  unit_price: number
+  sort_order: number
+  is_preset: boolean
+  preset_key: string | null
+}
+
 export interface Quote {
   id: string
   name: string
@@ -48,9 +59,12 @@ export interface Quote {
   status: 'new' | 'contacted' | 'quoted' | 'invoiced' | 'booked' | 'completed' | 'cancelled'
   quoted_amount: number | null
   admin_notes: string | null
+  quote_token: string | null
+  quote_sent_at: string | null
   created_at: string
   updated_at: string
   vehicle?: Vehicle
+  line_items?: QuoteLineItem[]
 }
 
 export interface Booking {

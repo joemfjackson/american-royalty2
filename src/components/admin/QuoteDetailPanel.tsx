@@ -20,7 +20,7 @@ import {
   CreditCard,
   Link as LinkIcon,
 } from 'lucide-react'
-import type { Quote, Invoice } from '@/types'
+import type { Quote, QuoteLineItem, Invoice, Vehicle } from '@/types'
 import { Badge } from '@/components/ui/Badge'
 import {
   updateQuote,
@@ -30,8 +30,12 @@ import {
   markInvoicePaidManually,
   cancelInvoice,
   getInvoiceLink,
+  getQuoteWithLineItems,
+  getQuotePublicLink,
+  getVehicleForQuote,
 } from '@/lib/actions/admin'
 import { formatDate, formatCurrency } from '@/lib/utils'
+import { QuoteBuilder } from '@/components/admin/QuoteBuilder'
 
 type QuoteStatus = Quote['status']
 
@@ -75,6 +79,11 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
   const [invoiceLink, setInvoiceLink] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [showQuoteBuilder, setShowQuoteBuilder] = useState(false)
+  const [lineItems, setLineItems] = useState<QuoteLineItem[]>([])
+  const [quoteLink, setQuoteLink] = useState<string | null>(null)
+  const [quoteLinkCopied, setQuoteLinkCopied] = useState(false)
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null)
 
   // Update local state when quote changes
   useEffect(() => {
@@ -83,8 +92,31 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
       setAdminNotes(quote.admin_notes || '')
       setQuotedAmount(quote.quoted_amount?.toString() || '')
       setShowInvoiceForm(false)
+      setShowQuoteBuilder(false)
       setActionMessage(null)
       setCopied(false)
+      setQuoteLinkCopied(false)
+
+      // Load line items
+      getQuoteWithLineItems(quote.id)
+        .then((data) => setLineItems(data.line_items))
+        .catch(() => setLineItems([]))
+
+      // Load vehicle for pricing
+      if (quote.preferred_vehicle_id) {
+        getVehicleForQuote(quote.preferred_vehicle_id)
+          .then(setVehicle)
+          .catch(() => setVehicle(null))
+      } else {
+        setVehicle(null)
+      }
+
+      // Load quote link if quote has been sent
+      if (quote.quote_sent_at) {
+        getQuotePublicLink(quote.id).then(setQuoteLink).catch(() => setQuoteLink(null))
+      } else {
+        setQuoteLink(null)
+      }
 
       // Load existing invoice if quote is invoiced
       if (quote.status === 'invoiced') {
@@ -212,6 +244,36 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
+
+  const handleCopyQuoteLink = async () => {
+    if (!quoteLink) return
+    await navigator.clipboard.writeText(quoteLink)
+    setQuoteLinkCopied(true)
+    setTimeout(() => setQuoteLinkCopied(false), 2000)
+  }
+
+  const handleQuoteSaved = (updatedQuote: Quote) => {
+    onUpdateQuote(updatedQuote)
+    setShowQuoteBuilder(false)
+    if (updatedQuote.line_items) {
+      setLineItems(updatedQuote.line_items)
+    }
+    if (updatedQuote.quoted_amount) {
+      setQuotedAmount(updatedQuote.quoted_amount.toString())
+    }
+    if (updatedQuote.quote_sent_at) {
+      setActionMessage({ type: 'success', text: `Quote sent to ${quote.email}` })
+      getQuotePublicLink(quote.id).then(setQuoteLink).catch(() => {})
+    } else {
+      setActionMessage({ type: 'success', text: 'Draft saved' })
+    }
+    // Reload line items from server
+    getQuoteWithLineItems(quote.id)
+      .then((data) => setLineItems(data.line_items))
+      .catch(() => {})
+  }
+
+  const hasLineItems = lineItems.length > 0
 
   const amount = quotedAmount ? parseFloat(quotedAmount) : 0
   const depositAmount = Math.round(amount * depositPercent / 100)
@@ -445,22 +507,103 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                 </select>
               </div>
 
-              {/* Quoted amount */}
-              <div>
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                  Quoted Amount
-                </h3>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                  <input
-                    type="number"
-                    value={quotedAmount}
-                    onChange={(e) => setQuotedAmount(e.target.value)}
-                    placeholder="0.00"
-                    className="w-full rounded-lg border border-dark-border bg-black py-2.5 pl-9 pr-4 text-sm text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
-                  />
+              {/* Quote Sent status card */}
+              {quote.quote_sent_at && !showQuoteBuilder && (
+                <div>
+                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
+                    Quote Sent
+                  </h3>
+                  <div className="rounded-lg border border-dark-border bg-black/50 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">Sent</span>
+                      <span className="text-sm text-white">{formatDate(quote.quote_sent_at)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">Total</span>
+                      <span className="text-sm font-bold text-gold">{formatCurrency(amount)}</span>
+                    </div>
+                    {hasLineItems && (
+                      <div className="border-t border-dark-border pt-2">
+                        <p className="text-xs text-gray-500 mb-1">{lineItems.length} line item{lineItems.length > 1 ? 's' : ''}</p>
+                        {lineItems.slice(0, 3).map((li) => (
+                          <div key={li.id} className="flex justify-between text-xs text-gray-400">
+                            <span className="truncate mr-2">{li.description}</span>
+                            <span>${(li.quantity * li.unit_price).toLocaleString()}</span>
+                          </div>
+                        ))}
+                        {lineItems.length > 3 && (
+                          <p className="text-xs text-gray-500 mt-1">+{lineItems.length - 3} more</p>
+                        )}
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      {quoteLink && (
+                        <button
+                          onClick={handleCopyQuoteLink}
+                          className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-dark-border bg-black px-3 py-2 text-xs font-medium text-gray-300 transition-all hover:border-gold/30 hover:text-gold"
+                        >
+                          {quoteLinkCopied ? (
+                            <>
+                              <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
+                              <span className="text-emerald-400">Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3.5 w-3.5" />
+                              Copy Quote Link
+                            </>
+                          )}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setShowQuoteBuilder(true)}
+                        className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-dark-border bg-black px-3 py-2 text-xs font-medium text-gray-300 transition-all hover:border-gold/30 hover:text-gold"
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                        Edit Quote
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Quote Builder */}
+              {showQuoteBuilder && (
+                <QuoteBuilder
+                  quote={quote}
+                  vehicle={vehicle}
+                  existingItems={lineItems}
+                  onSaved={handleQuoteSaved}
+                  onCancel={() => setShowQuoteBuilder(false)}
+                />
+              )}
+
+              {/* Quoted amount */}
+              {!showQuoteBuilder && (
+                <div>
+                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
+                    Quoted Amount
+                  </h3>
+                  {hasLineItems ? (
+                    <div className="flex items-center gap-2 rounded-lg border border-dark-border bg-black/50 px-4 py-2.5">
+                      <DollarSign className="h-4 w-4 text-gold" />
+                      <span className="text-sm font-medium text-white">{formatCurrency(amount)}</span>
+                      <span className="text-xs text-gray-500">(from {lineItems.length} line items)</span>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                      <input
+                        type="number"
+                        value={quotedAmount}
+                        onChange={(e) => setQuotedAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="w-full rounded-lg border border-dark-border bg-black py-2.5 pl-9 pr-4 text-sm text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Send Invoice form (inline) */}
               {showInvoiceForm && amount > 0 && (
@@ -543,14 +686,17 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                       <MessageSquare className="h-3.5 w-3.5" />
                       Mark Contacted
                     </button>
-                    <button
-                      onClick={() => handleQuickAction('quoted')}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-royal/10 px-3 py-2 text-xs font-medium text-royal-light transition-all hover:bg-royal/20"
-                    >
-                      <DollarSign className="h-3.5 w-3.5" />
-                      Mark Quoted
-                    </button>
                   </>
+                )}
+
+                {(quote.status === 'new' || quote.status === 'contacted' || quote.status === 'quoted') && !showQuoteBuilder && (
+                  <button
+                    onClick={() => setShowQuoteBuilder(true)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-royal/10 px-3 py-2 text-xs font-medium text-royal-light transition-all hover:bg-royal/20"
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    Build Quote
+                  </button>
                 )}
 
                 {(quote.status === 'quoted') && amount > 0 && !showInvoiceForm && (
