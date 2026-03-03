@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getStripe } from '@/lib/stripe'
+import { getStripe, getConnectedAccountId } from '@/lib/stripe'
 
 export async function POST(request: Request) {
   try {
@@ -82,6 +82,7 @@ export async function POST(request: Request) {
     }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
+    const connectedAccountId = getConnectedAccountId()
     const vehicleName = quote.preferredVehicle?.name || 'Luxury Vehicle'
     const description = `Deposit — ${quote.eventType} on ${quote.eventDate} (${vehicleName})`
 
@@ -99,7 +100,26 @@ export async function POST(request: Request) {
           },
           quantity: 1,
         },
+        ...(connectedAccountId ? [{
+          price_data: {
+            currency: 'usd' as const,
+            unit_amount: 500,
+            product_data: {
+              name: 'Booking Fee',
+              description: 'Non-refundable processing fee',
+            },
+          },
+          quantity: 1,
+        }] : []),
       ],
+      ...(connectedAccountId ? {
+        payment_intent_data: {
+          application_fee_amount: 500,
+          transfer_data: {
+            destination: connectedAccountId,
+          },
+        },
+      } : {}),
       metadata: {
         invoiceId: invoice.id,
         quoteId: quote.id,

@@ -18,3 +18,7 @@ export function getStripe(): Stripe | null {
 export function isStripeConfigured(): boolean {
   return !!process.env.STRIPE_SECRET_KEY
 }
+
+export function getConnectedAccountId(): string | null {
+  return process.env.STRIPE_CONNECTED_ACCOUNT_ID || null
+}
