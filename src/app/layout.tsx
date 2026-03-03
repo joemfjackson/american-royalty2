@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Montserrat } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/next'
 import '@/styles/globals.css'
 
 const montserrat = Montserrat({
@@ -80,6 +81,7 @@ export default function RootLayout({
       </head>
       <body className="font-body">
         {children}
+        <Analytics />
       </body>
     </html>
   )
