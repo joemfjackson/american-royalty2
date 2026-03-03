@@ -55,7 +55,7 @@ export function QuoteBuilder({ quote, vehicle, existingItems, onSaved, onCancel 
   })
   const [saving, setSaving] = useState(false)
   const [sending, setSending] = useState(false)
-  const [depositPercent, setDepositPercent] = useState(quote.deposit_percent || 50)
+  const [depositPercent, setDepositPercent] = useState(quote.deposit_percent || 20)
 
   const usedPresetKeys = items.filter((i) => i.isPreset).map((i) => i.presetKey)
 

@@ -396,7 +396,7 @@ async function createBookingFromQuote(quoteId: string, depositAmount: number): P
 
 export async function createAndSendInvoice(
   quoteId: string,
-  depositPercent: number = 50
+  depositPercent: number = 20
 ): Promise<Invoice> {
   await requireAdmin()
 
@@ -613,7 +613,7 @@ export async function saveQuoteLineItems(
 export async function buildAndSendQuote(
   quoteId: string,
   items: { description: string; quantity: number; unitPrice: number; sortOrder: number; isPreset: boolean; presetKey: string | null }[],
-  depositPercent: number = 50
+  depositPercent: number = 20
 ): Promise<Quote> {
   await requireAdmin()
 

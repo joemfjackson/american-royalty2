@@ -72,7 +72,7 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
   const [adminNotes, setAdminNotes] = useState(quote?.admin_notes || '')
   const [quotedAmount, setQuotedAmount] = useState(quote?.quoted_amount?.toString() || '')
   const [saving, setSaving] = useState(false)
-  const [depositPercent, setDepositPercent] = useState(50)
+  const [depositPercent, setDepositPercent] = useState(20)
   const [showInvoiceForm, setShowInvoiceForm] = useState(false)
   const [sendingInvoice, setSendingInvoice] = useState(false)
   const [invoice, setInvoice] = useState<Invoice | null>(null)
