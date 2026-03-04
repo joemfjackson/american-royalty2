@@ -13,11 +13,13 @@ import {
   MapPin,
   Users,
   Car,
+  Plus,
 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { getBookings, getVehicleNames, updateBookingStatus } from '@/lib/actions/admin'
+import { getBookings, getVehicleNames, updateBookingStatus, createBooking } from '@/lib/actions/admin'
 import { formatDate, formatCurrency } from '@/lib/utils'
+import { EVENT_TYPES } from '@/lib/constants'
 import type { Booking } from '@/types'
 
 type BookingStatus = Booking['status']
@@ -41,6 +43,28 @@ const statusBadgeVariant: Record<string, 'yellow' | 'gold' | 'purple' | 'green' 
   cancelled: 'red',
 }
 
+const EMPTY_FORM = {
+  clientName: '',
+  clientEmail: '',
+  clientPhone: '',
+  eventType: EVENT_TYPES[0] as string,
+  bookingDate: '',
+  startTime: '',
+  endTime: '',
+  durationHours: '',
+  vehicleId: '',
+  pickupLocation: '',
+  dropoffLocation: '',
+  guestCount: '',
+  totalAmount: '',
+  depositAmount: '',
+  depositPaid: false,
+  notes: '',
+}
+
+const inputClass =
+  'w-full rounded-lg border border-dark-border bg-black px-4 py-3 text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20'
+
 export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [vehicleNames, setVehicleNames] = useState<Record<string, string>>({})
@@ -49,6 +73,10 @@ export default function AdminBookingsPage() {
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all')
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [createLoading, setCreateLoading] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
+  const [form, setForm] = useState(EMPTY_FORM)
 
   useEffect(() => {
     async function load() {
@@ -103,6 +131,39 @@ export default function AdminBookingsPage() {
     }
   }
 
+  const handleCreateBooking = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setCreateLoading(true)
+    setCreateError(null)
+    try {
+      const created = await createBooking({
+        clientName: form.clientName,
+        clientEmail: form.clientEmail || null,
+        clientPhone: form.clientPhone || null,
+        eventType: form.eventType,
+        bookingDate: form.bookingDate,
+        startTime: form.startTime,
+        endTime: form.endTime || null,
+        durationHours: form.durationHours ? parseInt(form.durationHours) : null,
+        vehicleId: form.vehicleId || null,
+        pickupLocation: form.pickupLocation || null,
+        dropoffLocation: form.dropoffLocation || null,
+        guestCount: form.guestCount ? parseInt(form.guestCount) : null,
+        totalAmount: form.totalAmount ? parseFloat(form.totalAmount) : null,
+        depositAmount: form.depositAmount ? parseFloat(form.depositAmount) : null,
+        depositPaid: form.depositPaid,
+        notes: form.notes || null,
+      })
+      setBookings((prev) => [created, ...prev])
+      setCreateOpen(false)
+      setForm(EMPTY_FORM)
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : 'Failed to create booking')
+    } finally {
+      setCreateLoading(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -114,11 +175,20 @@ export default function AdminBookingsPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">Bookings</h1>
-        <p className="mt-1 text-sm text-gray-400">
-          {bookings.length} total bookings
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Bookings</h1>
+          <p className="mt-1 text-sm text-gray-400">
+            {bookings.length} total bookings
+          </p>
+        </div>
+        <button
+          onClick={() => { setCreateOpen(true); setCreateError(null) }}
+          className="inline-flex items-center gap-2 rounded-lg bg-gold px-4 py-2.5 text-sm font-semibold text-black transition-all hover:bg-gold-light hover:shadow-lg hover:shadow-gold/20"
+        >
+          <Plus className="h-4 w-4" />
+          Add Booking
+        </button>
       </div>
 
       {/* Status filter tabs */}
@@ -482,6 +552,282 @@ export default function AdminBookingsPage() {
                   </select>
                 </div>
               </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Create booking modal */}
+      <AnimatePresence>
+        {createOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+              onClick={() => { setCreateOpen(false); setForm(EMPTY_FORM); setCreateError(null) }}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 max-h-[90vh] overflow-y-auto rounded-2xl border border-dark-border bg-dark-card p-6 shadow-2xl"
+            >
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-white">New Booking</h2>
+                <button
+                  onClick={() => { setCreateOpen(false); setForm(EMPTY_FORM); setCreateError(null) }}
+                  className="rounded-lg p-1 text-gray-400 hover:bg-white/5 hover:text-white"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateBooking} className="space-y-6">
+                {/* Client Info */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Client Info</h3>
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                      Full Name <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={form.clientName}
+                      onChange={(e) => setForm((f) => ({ ...f, clientName: e.target.value }))}
+                      className={inputClass}
+                      placeholder="Jane Smith"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-gray-300">Email</label>
+                      <input
+                        type="email"
+                        value={form.clientEmail}
+                        onChange={(e) => setForm((f) => ({ ...f, clientEmail: e.target.value }))}
+                        className={inputClass}
+                        placeholder="jane@example.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-gray-300">Phone</label>
+                      <input
+                        type="tel"
+                        value={form.clientPhone}
+                        onChange={(e) => setForm((f) => ({ ...f, clientPhone: e.target.value }))}
+                        className={inputClass}
+                        placeholder="(702) 555-0100"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Event Details */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Event Details</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                        Event Type <span className="text-red-400">*</span>
+                      </label>
+                      <select
+                        required
+                        value={form.eventType}
+                        onChange={(e) => setForm((f) => ({ ...f, eventType: e.target.value }))}
+                        className={inputClass}
+                      >
+                        {EVENT_TYPES.map((t) => (
+                          <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                        Date <span className="text-red-400">*</span>
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={form.bookingDate}
+                        onChange={(e) => setForm((f) => ({ ...f, bookingDate: e.target.value }))}
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                        Start Time <span className="text-red-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={form.startTime}
+                        onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))}
+                        className={inputClass}
+                        placeholder="6:00 PM"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-gray-300">End Time</label>
+                      <input
+                        type="text"
+                        value={form.endTime}
+                        onChange={(e) => setForm((f) => ({ ...f, endTime: e.target.value }))}
+                        className={inputClass}
+                        placeholder="10:00 PM"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-gray-300">Duration (hours)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={form.durationHours}
+                        onChange={(e) => setForm((f) => ({ ...f, durationHours: e.target.value }))}
+                        className={inputClass}
+                        placeholder="3"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-gray-300">Guest Count</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={form.guestCount}
+                        onChange={(e) => setForm((f) => ({ ...f, guestCount: e.target.value }))}
+                        className={inputClass}
+                        placeholder="20"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Vehicle */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Vehicle</h3>
+                  <select
+                    value={form.vehicleId}
+                    onChange={(e) => setForm((f) => ({ ...f, vehicleId: e.target.value }))}
+                    className={inputClass}
+                  >
+                    <option value="">Not specified</option>
+                    {Object.entries(vehicleNames).map(([id, name]) => (
+                      <option key={id} value={id}>{name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Locations */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Locations</h3>
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-gray-300">Pickup Location</label>
+                    <input
+                      type="text"
+                      value={form.pickupLocation}
+                      onChange={(e) => setForm((f) => ({ ...f, pickupLocation: e.target.value }))}
+                      className={inputClass}
+                      placeholder="MGM Grand, Las Vegas Strip"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-gray-300">Dropoff Location</label>
+                    <input
+                      type="text"
+                      value={form.dropoffLocation}
+                      onChange={(e) => setForm((f) => ({ ...f, dropoffLocation: e.target.value }))}
+                      className={inputClass}
+                      placeholder="Wynn Las Vegas"
+                    />
+                  </div>
+                </div>
+
+                {/* Payment */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Payment</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-gray-300">Total Amount ($)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={form.totalAmount}
+                        onChange={(e) => setForm((f) => ({ ...f, totalAmount: e.target.value }))}
+                        className={inputClass}
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-gray-300">Deposit Amount ($)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={form.depositAmount}
+                        onChange={(e) => setForm((f) => ({ ...f, depositAmount: e.target.value }))}
+                        className={inputClass}
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        type="checkbox"
+                        checked={form.depositPaid}
+                        onChange={(e) => setForm((f) => ({ ...f, depositPaid: e.target.checked }))}
+                        className="peer sr-only"
+                      />
+                      <div className="h-6 w-11 rounded-full border border-dark-border bg-black peer-checked:bg-gold/30 peer-focus:ring-2 peer-focus:ring-gold/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-dark-border after:bg-dark-card after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-gold/50 peer-checked:after:bg-gold" />
+                    </label>
+                    <span className="text-sm text-gray-300">Deposit already paid</span>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-300">Notes</label>
+                  <textarea
+                    rows={3}
+                    value={form.notes}
+                    onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                    className={`${inputClass} resize-y`}
+                    placeholder="Special requests, internal notes..."
+                  />
+                </div>
+
+                {/* Error */}
+                {createError && (
+                  <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                    {createError}
+                  </p>
+                )}
+
+                {/* Footer */}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => { setCreateOpen(false); setForm(EMPTY_FORM); setCreateError(null) }}
+                    className="flex-1 rounded-lg border border-dark-border px-4 py-3 text-sm font-medium text-gray-400 transition-all hover:bg-white/5 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={createLoading}
+                    className="flex-1 rounded-lg bg-gold px-4 py-3 text-sm font-semibold text-black transition-all hover:bg-gold-light disabled:opacity-50"
+                  >
+                    {createLoading ? 'Creating...' : 'Create Booking'}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </>
         )}

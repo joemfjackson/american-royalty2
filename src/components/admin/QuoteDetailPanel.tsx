@@ -28,6 +28,7 @@ import {
   createAndSendInvoice,
   getInvoiceByQuoteId,
   markInvoicePaidManually,
+  markDepositPaidOffPlatform,
   cancelInvoice,
   getInvoiceLink,
   getQuoteWithLineItems,
@@ -84,6 +85,9 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
   const [quoteLink, setQuoteLink] = useState<string | null>(null)
   const [quoteLinkCopied, setQuoteLinkCopied] = useState(false)
   const [vehicle, setVehicle] = useState<Vehicle | null>(null)
+  const [showDepositConfirm, setShowDepositConfirm] = useState(false)
+  const [depositPaymentMethod, setDepositPaymentMethod] = useState('Zelle')
+  const [depositProcessing, setDepositProcessing] = useState(false)
 
   // Update local state when quote changes
   useEffect(() => {
@@ -250,6 +254,22 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
     await navigator.clipboard.writeText(quoteLink)
     setQuoteLinkCopied(true)
     setTimeout(() => setQuoteLinkCopied(false), 2000)
+  }
+
+  const handleDepositPaidOffPlatform = async () => {
+    setDepositProcessing(true)
+    setActionMessage(null)
+    try {
+      await markDepositPaidOffPlatform(quote.id, depositPaymentMethod)
+      onUpdateQuote({ ...quote, status: 'booked' })
+      setShowDepositConfirm(false)
+      setActionMessage({ type: 'success', text: `Deposit marked paid via ${depositPaymentMethod} — booking created` })
+    } catch (err) {
+      console.error('Failed to mark deposit paid:', err)
+      setActionMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to process' })
+    } finally {
+      setDepositProcessing(false)
+    }
   }
 
   const handleQuoteSaved = (updatedQuote: Quote) => {
@@ -739,6 +759,16 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                   </>
                 )}
 
+                {(quote.status === 'quoted' || quote.status === 'invoiced') && amount > 0 && (
+                  <button
+                    onClick={() => setShowDepositConfirm(true)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-400 transition-all hover:bg-emerald-500/20"
+                  >
+                    <DollarSign className="h-3.5 w-3.5" />
+                    Deposit Paid (Zelle/Venmo/CashApp)
+                  </button>
+                )}
+
                 {quote.status !== 'booked' && quote.status !== 'completed' && quote.status !== 'cancelled' && quote.status !== 'invoiced' && (
                   <button
                     onClick={() => handleQuickAction('cancelled')}
@@ -760,6 +790,72 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
               </button>
             </div>
           </motion.div>
+
+          {/* Deposit paid confirmation popup */}
+          {showDepositConfirm && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[60] bg-black/60"
+                onClick={() => setShowDepositConfirm(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="fixed left-1/2 top-1/2 z-[60] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-dark-border bg-dark-card p-6 shadow-2xl"
+              >
+                <h3 className="text-lg font-semibold text-white">Confirm Deposit Payment</h3>
+                <p className="mt-2 text-sm text-gray-400">
+                  This will mark the deposit as paid and create a booking for <span className="font-medium text-white">{quote.name}</span>.
+                </p>
+
+                <div className="mt-4 rounded-lg border border-dark-border bg-black/50 p-3 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Total</span>
+                    <span className="text-white">{formatCurrency(amount)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Deposit ({quote.deposit_percent}%)</span>
+                    <span className="font-bold text-gold">{formatCurrency(depositAmount)}</span>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label className="mb-1.5 block text-sm font-medium text-gray-300">Payment Method</label>
+                  <select
+                    value={depositPaymentMethod}
+                    onChange={(e) => setDepositPaymentMethod(e.target.value)}
+                    className="w-full rounded-lg border border-dark-border bg-black px-4 py-2.5 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+                  >
+                    <option value="Zelle">Zelle</option>
+                    <option value="Venmo">Venmo</option>
+                    <option value="CashApp">CashApp</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div className="mt-6 flex gap-3">
+                  <button
+                    onClick={() => setShowDepositConfirm(false)}
+                    className="flex-1 rounded-lg border border-dark-border px-4 py-2.5 text-sm font-medium text-gray-400 transition-all hover:bg-white/5 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDepositPaidOffPlatform}
+                    disabled={depositProcessing}
+                    className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-500 disabled:opacity-50"
+                  >
+                    {depositProcessing ? 'Processing...' : 'Confirm Paid'}
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
         </>
       )}
     </AnimatePresence>

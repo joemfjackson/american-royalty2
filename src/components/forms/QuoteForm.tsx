@@ -89,6 +89,7 @@ function QuoteFormInner({ vehicleOptions = [] }: QuoteFormProps) {
       }
 
       setSubmitted(true)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
       setServerError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     }

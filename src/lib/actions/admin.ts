@@ -351,6 +351,49 @@ export async function convertQuoteToBooking(quoteId: string): Promise<Booking> {
   return mapBooking(booking)
 }
 
+export async function markDepositPaidOffPlatform(quoteId: string, paymentMethod: string): Promise<Booking> {
+  await requireAdmin()
+
+  const quote = await prisma.quote.findUnique({ where: { id: quoteId } })
+  if (!quote) throw new Error('Quote not found')
+  if (!quote.quotedAmount) throw new Error('Quote has no quoted amount')
+
+  const depositAmount = Math.round(Number(quote.quotedAmount) * quote.depositPercent / 100)
+
+  const booking = await prisma.booking.create({
+    data: {
+      quoteId: quote.id,
+      clientName: quote.name,
+      clientEmail: quote.email,
+      clientPhone: quote.phone,
+      eventType: quote.eventType,
+      vehicleId: quote.preferredVehicleId,
+      bookingDate: quote.eventDate,
+      startTime: quote.pickupTime || 'TBD',
+      durationHours: quote.durationHours,
+      pickupLocation: quote.pickupLocation,
+      dropoffLocation: quote.dropoffLocation,
+      guestCount: quote.guestCount,
+      totalAmount: quote.quotedAmount,
+      depositAmount,
+      depositPaid: true,
+      status: 'DEPOSIT_PAID',
+      notes: `${quote.adminNotes ? quote.adminNotes + '\n' : ''}Deposit paid via ${paymentMethod}`,
+    },
+  })
+
+  await prisma.quote.update({
+    where: { id: quoteId },
+    data: { status: 'BOOKED' },
+  })
+
+  revalidatePath('/admin/quotes')
+  revalidatePath('/admin/bookings')
+  revalidatePath('/admin/calendar')
+  revalidatePath('/admin')
+  return mapBooking(booking)
+}
+
 // ─── Shared: Create Booking from Quote ──────────────────
 
 async function createBookingFromQuote(quoteId: string, depositAmount: number): Promise<PrismaBooking> {
@@ -734,6 +777,55 @@ export async function updateBookingStatus(id: string, status: string) {
   revalidatePath('/admin/bookings')
   revalidatePath('/admin')
   return mapBooking(updated)
+}
+
+export async function createBooking(data: {
+  clientName: string
+  clientEmail?: string | null
+  clientPhone?: string | null
+  eventType: string
+  bookingDate: string
+  startTime: string
+  endTime?: string | null
+  durationHours?: number | null
+  vehicleId?: string | null
+  pickupLocation?: string | null
+  dropoffLocation?: string | null
+  guestCount?: number | null
+  totalAmount?: number | null
+  depositAmount?: number | null
+  depositPaid?: boolean
+  notes?: string | null
+}): Promise<Booking> {
+  await requireAdmin()
+
+  const booking = await prisma.booking.create({
+    data: {
+      quoteId: null,
+      clientName: data.clientName,
+      clientEmail: data.clientEmail || null,
+      clientPhone: data.clientPhone || null,
+      eventType: data.eventType,
+      vehicleId: data.vehicleId || null,
+      bookingDate: data.bookingDate,
+      startTime: data.startTime,
+      endTime: data.endTime || null,
+      durationHours: data.durationHours || null,
+      pickupLocation: data.pickupLocation || null,
+      dropoffLocation: data.dropoffLocation || null,
+      guestCount: data.guestCount || null,
+      totalAmount: data.totalAmount || null,
+      depositAmount: data.depositAmount || null,
+      depositPaid: data.depositPaid ?? false,
+      status: 'CONFIRMED',
+      notes: data.notes || null,
+    },
+  })
+
+  revalidatePath('/admin/bookings')
+  revalidatePath('/admin/calendar')
+  revalidatePath('/admin')
+  return mapBooking(booking)
 }
 
 // ─── Fleet ──────────────────────────────────────────────
