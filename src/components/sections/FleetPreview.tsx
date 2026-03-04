@@ -79,7 +79,7 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
 }
 
 export function FleetPreview({ vehicles }: { vehicles: Vehicle[] }) {
-  const topVehicles = vehicles.slice(0, 3)
+  const topVehicles = vehicles.slice(0, 6)
 
   return (
     <section className="section-padding relative overflow-hidden">
