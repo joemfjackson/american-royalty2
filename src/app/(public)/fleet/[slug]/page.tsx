@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation'
 import { Check, Users, Clock, ChevronRight, Phone } from 'lucide-react'
 import { getVehicleBySlug, getVehicles } from '@/lib/data'
 import { BRAND } from '@/lib/constants'
+import { VehicleGallery } from '@/components/VehicleGallery'
 import { SectionTag } from '@/components/ui/SectionTag'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { Badge } from '@/components/ui/Badge'
@@ -122,44 +123,12 @@ export default async function VehicleDetailPage({ params }: PageProps) {
           {/* ---- Hero Section ---- */}
           <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
             {/* Left: Vehicle Image + Gallery */}
-            <div className="space-y-4">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-dark-border">
-                <Image
-                  src={vehicle.image_url || FALLBACK_IMAGE}
-                  alt={`${vehicle.name} - ${vehicle.type} in Las Vegas`}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover"
-                  priority
-                  quality={80}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-                <div className="absolute left-4 top-4">
-                  <Badge variant="gold">{vehicle.type}</Badge>
-                </div>
-              </div>
-
-              {/* Gallery thumbnails */}
-              {vehicle.gallery_urls.length > 0 && (
-                <div className="grid grid-cols-4 gap-2">
-                  {vehicle.gallery_urls.map((img, i) => (
-                    <div
-                      key={i}
-                      className="relative aspect-square overflow-hidden rounded-lg border border-dark-border"
-                    >
-                      <Image
-                        src={img}
-                        alt={`${vehicle.name} gallery photo ${i + 1}`}
-                        fill
-                        sizes="(max-width: 1024px) 25vw, 12vw"
-                        className="object-cover transition-transform duration-300 hover:scale-110"
-                        loading="lazy"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <VehicleGallery
+              imageUrl={vehicle.image_url}
+              galleryUrls={vehicle.gallery_urls}
+              vehicleName={vehicle.name}
+              vehicleType={vehicle.type}
+            />
 
             {/* Right: Vehicle Info */}
             <div>
