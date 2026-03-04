@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
 import { Plus, Pencil, Trash2, Users, DollarSign, Clock, ChevronUp, ChevronDown } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -190,11 +191,21 @@ export default function AdminFleetPage() {
                     </button>
                   </div>
 
-                  {/* Vehicle image placeholder */}
-                  <div className="hidden sm:flex h-20 w-28 shrink-0 items-center justify-center rounded-lg border border-dark-border bg-black/50">
-                    <span className="text-2xl">
-                      {vehicle.type === 'Party Bus' ? '🚌' : vehicle.type === 'Sprinter Limo' ? '🚐' : vehicle.type === 'SUV' ? '🚙' : '🚗'}
-                    </span>
+                  {/* Vehicle image */}
+                  <div className="hidden sm:flex h-20 w-28 shrink-0 items-center justify-center rounded-lg border border-dark-border bg-black/50 overflow-hidden">
+                    {vehicle.image_url ? (
+                      <Image
+                        src={vehicle.image_url}
+                        alt={vehicle.name}
+                        width={112}
+                        height={80}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-2xl">
+                        {vehicle.type === 'Party Bus' ? '🚌' : vehicle.type === 'Sprinter Limo' ? '🚐' : vehicle.type === 'SUV' ? '🚙' : '🚗'}
+                      </span>
+                    )}
                   </div>
                 </div>
 
