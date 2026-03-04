@@ -782,6 +782,7 @@ export async function createVehicle(data: {
 
   revalidatePath('/admin/fleet')
   revalidatePath('/fleet')
+  revalidatePath('/quote')
   return mapVehicle(vehicle)
 }
 
@@ -822,6 +823,7 @@ export async function updateVehicle(
 
   revalidatePath('/admin/fleet')
   revalidatePath('/fleet')
+  revalidatePath('/quote')
   return mapVehicle(vehicle)
 }
 
@@ -839,6 +841,7 @@ export async function reorderVehicles(orderedIds: string[]) {
 
   revalidatePath('/admin/fleet')
   revalidatePath('/fleet')
+  revalidatePath('/quote')
 }
 
 export async function deleteVehicle(id: string) {
@@ -848,6 +851,7 @@ export async function deleteVehicle(id: string) {
 
   revalidatePath('/admin/fleet')
   revalidatePath('/fleet')
+  revalidatePath('/quote')
 }
 
 // ─── Testimonials ───────────────────────────────────────
