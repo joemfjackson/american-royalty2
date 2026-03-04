@@ -82,7 +82,7 @@ export async function POST(request: Request) {
     }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
-    const connectedAccountId = getConnectedAccountId()
+    const connectedAccountId = await getConnectedAccountId()
     const vehicleName = quote.preferredVehicle?.name || 'Luxury Vehicle'
     const description = `Deposit — ${quote.eventType} on ${quote.eventDate} (${vehicleName})`
 

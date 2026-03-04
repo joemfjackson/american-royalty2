@@ -13,6 +13,7 @@ import {
   Car,
   Star,
   ClipboardList,
+  Settings,
   LogOut,
   Menu,
   X,
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
   { label: 'Calendar', href: '/admin/calendar', icon: CalendarDays },
   { label: 'Fleet', href: '/admin/fleet', icon: Car },
   { label: 'Testimonials', href: '/admin/testimonials', icon: Star },
+  { label: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {

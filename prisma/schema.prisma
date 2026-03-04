@@ -228,3 +228,13 @@ model Invoice {
 
   @@map("invoices")
 }
+
+// ─── Settings ──────────────────────────────────────────
+
+model Setting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
