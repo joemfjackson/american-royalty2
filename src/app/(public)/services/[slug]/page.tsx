@@ -75,18 +75,6 @@ const serviceImages: Record<string, string> = {
 }
 
 // ---------------------------------------------------------------------------
-// Vehicle image mapping
-// ---------------------------------------------------------------------------
-const vehicleImages: Record<string, string> = {
-  'the-sovereign': '/images/fleet/white-bus-casino.webp',
-  'the-crown-jewel': '/images/fleet/black-bus-mgm.webp',
-  'royal-sprinter': '/images/fleet/interior-pink-blue.webp',
-  'the-monarch': '/images/fleet/interior-blue-led.webp',
-  'black-diamond': '/images/fleet/interior-rainbow.webp',
-  'the-empire': '/images/fleet/white-bus-valet.webp',
-}
-
-// ---------------------------------------------------------------------------
 // Page component
 // ---------------------------------------------------------------------------
 type PageProps = { params: Promise<{ slug: string }> }
@@ -297,7 +285,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
                     {/* Vehicle image */}
                     <div className="relative h-44 overflow-hidden">
                       <Image
-                        src={vehicleImages[vehicle.slug] || '/images/fleet/white-bus-casino.webp'}
+                        src={vehicle.image_url || '/images/fleet/white-bus-casino.webp'}
                         alt={`${vehicle.name} - ${vehicle.type}`}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
