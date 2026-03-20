@@ -32,27 +32,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  // Handle Stripe Connect deauthorization
-  if (event.type === 'account.application.deauthorized') {
-    try {
-      await prisma.setting.deleteMany({
-        where: {
-          key: {
-            in: [
-              'stripe_connected_account_id',
-              'stripe_connected_account_name',
-              'stripe_connected_account_email',
-              'stripe_connected_livemode',
-            ],
-          },
-        },
-      })
-      console.log('Stripe connected account deauthorized — settings cleaned up')
-    } catch (cleanupError) {
-      console.error('Failed to clean up deauthorized settings:', cleanupError)
-    }
-  }
-
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
 
