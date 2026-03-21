@@ -336,10 +336,10 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
             </div>
 
             {/* Content - scrollable */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {/* Action message */}
               {actionMessage && (
-                <div className={`rounded-lg px-4 py-3 text-sm font-medium ${
+                <div className={`rounded-lg px-3 py-2 text-sm font-medium ${
                   actionMessage.type === 'success'
                     ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                     : 'bg-red-500/10 text-red-400 border border-red-500/20'
@@ -348,119 +348,88 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                 </div>
               )}
 
-              {/* Client info */}
-              <div>
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                  Client Information
-                </h3>
-                <div className="space-y-2.5">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
-                      {quote.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-medium text-white">{quote.name}</p>
-                      <Badge variant={statusBadgeVariant[quote.status] || 'outline'}>
-                        {quote.status}
-                      </Badge>
-                    </div>
+              {/* Client info — compact row */}
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
+                  {quote.name.charAt(0)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-white truncate">{quote.name}</p>
+                    <Badge variant={statusBadgeVariant[quote.status] || 'outline'}>
+                      {quote.status}
+                    </Badge>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-300">
-                    <Mail className="h-4 w-4 text-gray-500" />
-                    <a href={`mailto:${quote.email}`} className="hover:text-gold">{quote.email}</a>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-300">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <a href={`tel:${quote.phone}`} className="hover:text-gold">{quote.phone}</a>
+                  <div className="flex items-center gap-4 text-sm text-gray-400">
+                    <a href={`mailto:${quote.email}`} className="flex items-center gap-1 hover:text-gold truncate">
+                      <Mail className="h-3.5 w-3.5 shrink-0" />
+                      {quote.email}
+                    </a>
+                    <a href={`tel:${quote.phone}`} className="flex items-center gap-1 hover:text-gold shrink-0">
+                      <Phone className="h-3.5 w-3.5" />
+                      {quote.phone}
+                    </a>
                   </div>
                 </div>
               </div>
 
-              {/* Event details */}
-              <div>
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                  Event Details
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-lg border border-dark-border p-3">
-                    <p className="text-xs text-gray-400">Event Type</p>
-                    <p className="mt-1 text-sm font-medium text-white">{quote.event_type}</p>
-                  </div>
-                  <div className="rounded-lg border border-dark-border p-3">
-                    <p className="text-xs text-gray-400">Vehicle</p>
-                    <p className="mt-1 text-sm font-medium text-white">
-                      {quote.preferred_vehicle_id ? vehicleNames[quote.preferred_vehicle_id] || 'Unknown' : 'Not specified'}
-                    </p>
-                  </div>
-                  <div className="rounded-lg border border-dark-border p-3">
-                    <div className="flex items-center gap-1 text-xs text-gray-400">
-                      <Calendar className="h-3 w-3" />
-                      Date
-                    </div>
-                    <p className="mt-1 text-sm font-medium text-white">{formatDate(quote.event_date)}</p>
-                  </div>
-                  <div className="rounded-lg border border-dark-border p-3">
-                    <div className="flex items-center gap-1 text-xs text-gray-400">
-                      <Clock className="h-3 w-3" />
-                      Time
-                    </div>
-                    <p className="mt-1 text-sm font-medium text-white">{quote.pickup_time || 'TBD'}</p>
-                  </div>
-                  <div className="rounded-lg border border-dark-border p-3">
-                    <div className="flex items-center gap-1 text-xs text-gray-400">
-                      <Users className="h-3 w-3" />
-                      Guests
-                    </div>
-                    <p className="mt-1 text-sm font-medium text-white">{quote.guest_count || 'TBD'}</p>
-                  </div>
-                  <div className="rounded-lg border border-dark-border p-3">
-                    <div className="flex items-center gap-1 text-xs text-gray-400">
-                      <Clock className="h-3 w-3" />
-                      Duration
-                    </div>
-                    <p className="mt-1 text-sm font-medium text-white">
-                      {quote.duration_hours ? `${quote.duration_hours} hours` : 'TBD'}
-                    </p>
-                  </div>
+              {/* Event details — 3-col grid */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="rounded-lg border border-dark-border p-2.5">
+                  <p className="text-xs text-gray-500">Event</p>
+                  <p className="text-sm font-medium text-white">{quote.event_type}</p>
+                </div>
+                <div className="rounded-lg border border-dark-border p-2.5">
+                  <p className="text-xs text-gray-500">Vehicle</p>
+                  <p className="text-sm font-medium text-white truncate">
+                    {quote.preferred_vehicle_id ? vehicleNames[quote.preferred_vehicle_id] || 'Unknown' : 'N/A'}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-dark-border p-2.5">
+                  <p className="text-xs text-gray-500">Date</p>
+                  <p className="text-sm font-medium text-white">{formatDate(quote.event_date)}</p>
+                </div>
+                <div className="rounded-lg border border-dark-border p-2.5">
+                  <p className="text-xs text-gray-500">Time</p>
+                  <p className="text-sm font-medium text-white">{quote.pickup_time || 'TBD'}</p>
+                </div>
+                <div className="rounded-lg border border-dark-border p-2.5">
+                  <p className="text-xs text-gray-500">Guests</p>
+                  <p className="text-sm font-medium text-white">{quote.guest_count || 'TBD'}</p>
+                </div>
+                <div className="rounded-lg border border-dark-border p-2.5">
+                  <p className="text-xs text-gray-500">Duration</p>
+                  <p className="text-sm font-medium text-white">
+                    {quote.duration_hours ? `${quote.duration_hours}h` : 'TBD'}
+                  </p>
                 </div>
               </div>
 
-              {/* Locations */}
+              {/* Locations — inline */}
               {(quote.pickup_location || quote.dropoff_location) && (
-                <div>
-                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                    Locations
-                  </h3>
-                  <div className="space-y-2">
-                    {quote.pickup_location && (
-                      <div className="flex items-start gap-2 text-sm">
-                        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
-                        <div>
-                          <span className="text-gray-400">Pickup: </span>
-                          <span className="text-white">{quote.pickup_location}</span>
-                        </div>
-                      </div>
-                    )}
-                    {quote.dropoff_location && (
-                      <div className="flex items-start gap-2 text-sm">
-                        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
-                        <div>
-                          <span className="text-gray-400">Dropoff: </span>
-                          <span className="text-white">{quote.dropoff_location}</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                <div className="flex flex-col gap-1.5 text-sm">
+                  {quote.pickup_location && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                      <span className="text-gray-500">Pickup:</span>
+                      <span className="text-white truncate">{quote.pickup_location}</span>
+                    </div>
+                  )}
+                  {quote.dropoff_location && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-3.5 w-3.5 shrink-0 text-red-400" />
+                      <span className="text-gray-500">Dropoff:</span>
+                      <span className="text-white truncate">{quote.dropoff_location}</span>
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Client message */}
               {quote.details && (
                 <div>
-                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                    Client Message
-                  </h3>
-                  <p className="rounded-lg border border-dark-border bg-black/50 p-3 text-sm text-gray-300">
+                  <p className="mb-1 text-xs font-medium text-gray-500">Client Message</p>
+                  <p className="rounded-lg border border-dark-border bg-black/50 p-2.5 text-sm text-gray-300">
                     {quote.details}
                   </p>
                 </div>
@@ -468,31 +437,115 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
 
               {/* Invoice info (when invoiced) */}
               {quote.status === 'invoiced' && invoice && (
+                <div className="rounded-lg border border-dark-border bg-black/50 p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-gray-500">Invoice</span>
+                    <Badge variant={invoice.status === 'viewed' ? 'gold' : 'purple'}>
+                      {invoice.status === 'viewed' ? 'Viewed' : 'Sent'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">Total</span>
+                    <span className="font-medium text-white">{formatCurrency(invoice.total_amount)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">Deposit ({invoice.deposit_percent}%)</span>
+                    <span className="font-bold text-gold">{formatCurrency(invoice.deposit_amount)}</span>
+                  </div>
+                  {invoiceLink && (
+                    <button
+                      onClick={handleCopyLink}
+                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-dark-border bg-black px-3 py-2 text-xs font-medium text-gray-300 transition-all hover:border-gold/30 hover:text-gold"
+                    >
+                      {copied ? (
+                        <>
+                          <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
+                          <span className="text-emerald-400">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5" />
+                          Copy Invoice Link
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Status + Amount row */}
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                    Invoice Status
-                  </h3>
-                  <div className="rounded-lg border border-dark-border bg-black/50 p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">Status</span>
-                      <Badge variant={invoice.status === 'viewed' ? 'gold' : 'purple'}>
-                        {invoice.status === 'viewed' ? 'Viewed by client' : 'Sent'}
-                      </Badge>
+                  <p className="mb-1 text-xs font-medium text-gray-500">Status</p>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as QuoteStatus)}
+                    className="w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+                  >
+                    {STATUS_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {!showQuoteBuilder && (
+                  <div>
+                    <p className="mb-1 text-xs font-medium text-gray-500">Quoted Amount</p>
+                    {hasLineItems ? (
+                      <div className="flex items-center gap-2 rounded-lg border border-dark-border bg-black/50 px-3 py-2">
+                        <DollarSign className="h-4 w-4 text-gold" />
+                        <span className="text-sm font-medium text-white">{formatCurrency(amount)}</span>
+                        <span className="text-xs text-gray-500">({lineItems.length} items)</span>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                        <input
+                          type="number"
+                          value={quotedAmount}
+                          onChange={(e) => setQuotedAmount(e.target.value)}
+                          placeholder="0.00"
+                          className="w-full rounded-lg border border-dark-border bg-black py-2 pl-9 pr-3 text-sm text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Quote Sent status card */}
+              {quote.quote_sent_at && !showQuoteBuilder && (
+                <div className="rounded-lg border border-dark-border bg-black/50 p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-gray-500">Quote Sent</span>
+                    <span className="text-xs text-gray-400">{formatDate(quote.quote_sent_at)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">Total</span>
+                    <span className="font-bold text-gold">{formatCurrency(amount)}</span>
+                  </div>
+                  {hasLineItems && (
+                    <div className="border-t border-dark-border pt-2">
+                      <p className="text-xs text-gray-500 mb-1">{lineItems.length} line item{lineItems.length > 1 ? 's' : ''}</p>
+                      {lineItems.slice(0, 3).map((li) => (
+                        <div key={li.id} className="flex justify-between text-xs text-gray-400">
+                          <span className="truncate mr-2">{li.description}</span>
+                          <span>${(li.quantity * li.unit_price).toLocaleString()}</span>
+                        </div>
+                      ))}
+                      {lineItems.length > 3 && (
+                        <p className="text-xs text-gray-500 mt-1">+{lineItems.length - 3} more</p>
+                      )}
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">Total</span>
-                      <span className="text-sm font-medium text-white">{formatCurrency(invoice.total_amount)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">Deposit ({invoice.deposit_percent}%)</span>
-                      <span className="text-sm font-bold text-gold">{formatCurrency(invoice.deposit_amount)}</span>
-                    </div>
-                    {invoiceLink && (
+                  )}
+                  <div className="flex gap-2">
+                    {quoteLink && (
                       <button
-                        onClick={handleCopyLink}
-                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-dark-border bg-black px-3 py-2 text-xs font-medium text-gray-300 transition-all hover:border-gold/30 hover:text-gold"
+                        onClick={handleCopyQuoteLink}
+                        className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-dark-border bg-black px-3 py-2 text-xs font-medium text-gray-300 transition-all hover:border-gold/30 hover:text-gold"
                       >
-                        {copied ? (
+                        {quoteLinkCopied ? (
                           <>
                             <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
                             <span className="text-emerald-400">Copied!</span>
@@ -500,89 +553,18 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                         ) : (
                           <>
                             <Copy className="h-3.5 w-3.5" />
-                            Copy Invoice Link
+                            Copy Quote Link
                           </>
                         )}
                       </button>
                     )}
-                  </div>
-                </div>
-              )}
-
-              {/* Status change */}
-              <div>
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                  Update Status
-                </h3>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as QuoteStatus)}
-                  className="w-full rounded-lg border border-dark-border bg-black px-4 py-2.5 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
-                >
-                  {STATUS_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Quote Sent status card */}
-              {quote.quote_sent_at && !showQuoteBuilder && (
-                <div>
-                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                    Quote Sent
-                  </h3>
-                  <div className="rounded-lg border border-dark-border bg-black/50 p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">Sent</span>
-                      <span className="text-sm text-white">{formatDate(quote.quote_sent_at)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">Total</span>
-                      <span className="text-sm font-bold text-gold">{formatCurrency(amount)}</span>
-                    </div>
-                    {hasLineItems && (
-                      <div className="border-t border-dark-border pt-2">
-                        <p className="text-xs text-gray-500 mb-1">{lineItems.length} line item{lineItems.length > 1 ? 's' : ''}</p>
-                        {lineItems.slice(0, 3).map((li) => (
-                          <div key={li.id} className="flex justify-between text-xs text-gray-400">
-                            <span className="truncate mr-2">{li.description}</span>
-                            <span>${(li.quantity * li.unit_price).toLocaleString()}</span>
-                          </div>
-                        ))}
-                        {lineItems.length > 3 && (
-                          <p className="text-xs text-gray-500 mt-1">+{lineItems.length - 3} more</p>
-                        )}
-                      </div>
-                    )}
-                    <div className="flex gap-2">
-                      {quoteLink && (
-                        <button
-                          onClick={handleCopyQuoteLink}
-                          className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-dark-border bg-black px-3 py-2 text-xs font-medium text-gray-300 transition-all hover:border-gold/30 hover:text-gold"
-                        >
-                          {quoteLinkCopied ? (
-                            <>
-                              <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
-                              <span className="text-emerald-400">Copied!</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="h-3.5 w-3.5" />
-                              Copy Quote Link
-                            </>
-                          )}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => setShowQuoteBuilder(true)}
-                        className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-dark-border bg-black px-3 py-2 text-xs font-medium text-gray-300 transition-all hover:border-gold/30 hover:text-gold"
-                      >
-                        <FileText className="h-3.5 w-3.5" />
-                        Edit Quote
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => setShowQuoteBuilder(true)}
+                      className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-dark-border bg-black px-3 py-2 text-xs font-medium text-gray-300 transition-all hover:border-gold/30 hover:text-gold"
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      Edit Quote
+                    </button>
                   </div>
                 </div>
               )}
@@ -598,55 +580,28 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                 />
               )}
 
-              {/* Quoted amount */}
-              {!showQuoteBuilder && (
-                <div>
-                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                    Quoted Amount
-                  </h3>
-                  {hasLineItems ? (
-                    <div className="flex items-center gap-2 rounded-lg border border-dark-border bg-black/50 px-4 py-2.5">
-                      <DollarSign className="h-4 w-4 text-gold" />
-                      <span className="text-sm font-medium text-white">{formatCurrency(amount)}</span>
-                      <span className="text-xs text-gray-500">(from {lineItems.length} line items)</span>
-                    </div>
-                  ) : (
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                      <input
-                        type="number"
-                        value={quotedAmount}
-                        onChange={(e) => setQuotedAmount(e.target.value)}
-                        placeholder="0.00"
-                        className="w-full rounded-lg border border-dark-border bg-black py-2.5 pl-9 pr-4 text-sm text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-
               {/* Send Invoice form (inline) */}
               {showInvoiceForm && amount > 0 && (
-                <div className="rounded-lg border border-gold/20 bg-gold/5 p-4 space-y-4">
+                <div className="rounded-lg border border-gold/20 bg-gold/5 p-3 space-y-3">
                   <h3 className="text-sm font-semibold text-gold flex items-center gap-2">
                     <FileText className="h-4 w-4" />
                     Send Invoice
                   </h3>
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1.5">Deposit Percentage</label>
-                    <div className="flex items-center gap-3">
+                    <label className="text-xs text-gray-400 block mb-1">Deposit Percentage</label>
+                    <div className="flex items-center gap-2">
                       <input
                         type="number"
                         min={10}
                         max={100}
                         value={depositPercent}
                         onChange={(e) => setDepositPercent(Math.min(100, Math.max(10, parseInt(e.target.value) || 50)))}
-                        className="w-24 rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+                        className="w-20 rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
                       />
                       <span className="text-sm text-gray-400">%</span>
                     </div>
                   </div>
-                  <div className="rounded-lg border border-dark-border bg-black/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-dark-border bg-black/50 p-2.5 space-y-1">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-400">Total</span>
                       <span className="text-white">{formatCurrency(amount)}</span>
@@ -680,15 +635,13 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
 
               {/* Admin notes */}
               <div>
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                  Admin Notes
-                </h3>
+                <p className="mb-1 text-xs font-medium text-gray-500">Admin Notes</p>
                 <textarea
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
                   placeholder="Internal notes about this quote..."
-                  rows={3}
-                  className="w-full rounded-lg border border-dark-border bg-black px-4 py-3 text-sm text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20 resize-y"
+                  rows={2}
+                  className="w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20 resize-y"
                 />
               </div>
             </div>
@@ -698,23 +651,21 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
               {/* Quick action buttons — contextual based on status */}
               <div className="flex flex-wrap gap-2">
                 {(quote.status === 'new' || quote.status === 'contacted') && (
-                  <>
-                    <button
-                      onClick={() => handleQuickAction('contacted')}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-gold/10 px-3 py-2 text-xs font-medium text-gold transition-all hover:bg-gold/20"
-                    >
-                      <MessageSquare className="h-3.5 w-3.5" />
-                      Mark Contacted
-                    </button>
-                  </>
+                  <button
+                    onClick={() => handleQuickAction('contacted')}
+                    className="inline-flex items-center gap-2 rounded-lg border border-gold/40 bg-gold/10 px-4 py-2.5 text-sm font-semibold text-gold transition-all hover:bg-gold/20"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    Mark Contacted
+                  </button>
                 )}
 
                 {(quote.status === 'new' || quote.status === 'contacted' || quote.status === 'quoted') && !showQuoteBuilder && (
                   <button
                     onClick={() => setShowQuoteBuilder(true)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-royal/10 px-3 py-2 text-xs font-medium text-royal-light transition-all hover:bg-royal/20"
+                    className="inline-flex items-center gap-2 rounded-lg border border-royal/40 bg-royal/10 px-4 py-2.5 text-sm font-semibold text-royal-light transition-all hover:bg-royal/20"
                   >
-                    <FileText className="h-3.5 w-3.5" />
+                    <FileText className="h-4 w-4" />
                     Build Quote
                   </button>
                 )}
@@ -722,9 +673,9 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                 {(quote.status === 'quoted') && amount > 0 && !showInvoiceForm && (
                   <button
                     onClick={() => setShowInvoiceForm(true)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-gold/10 px-3 py-2 text-xs font-medium text-gold transition-all hover:bg-gold/20"
+                    className="inline-flex items-center gap-2 rounded-lg bg-gold px-4 py-2.5 text-sm font-semibold text-black transition-all hover:bg-gold-light"
                   >
-                    <FileText className="h-3.5 w-3.5" />
+                    <FileText className="h-4 w-4" />
                     Send Invoice
                   </button>
                 )}
@@ -734,26 +685,26 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                     <button
                       onClick={handleMarkPaid}
                       disabled={saving}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-400 transition-all hover:bg-emerald-500/20 disabled:opacity-50"
+                      className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-500 disabled:opacity-50"
                     >
-                      <CreditCard className="h-3.5 w-3.5" />
+                      <CreditCard className="h-4 w-4" />
                       {saving ? 'Processing...' : 'Mark Paid (Manual)'}
                     </button>
                     {invoiceLink && (
                       <button
                         onClick={handleCopyLink}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-3 py-2 text-xs font-medium text-gray-300 transition-all hover:bg-white/10 hover:text-white"
+                        className="inline-flex items-center gap-2 rounded-lg border border-dark-border bg-white/5 px-4 py-2.5 text-sm font-semibold text-gray-300 transition-all hover:bg-white/10 hover:text-white"
                       >
-                        {copied ? <CheckCircle className="h-3.5 w-3.5 text-emerald-400" /> : <LinkIcon className="h-3.5 w-3.5" />}
+                        {copied ? <CheckCircle className="h-4 w-4 text-emerald-400" /> : <LinkIcon className="h-4 w-4" />}
                         {copied ? 'Copied!' : 'Copy Link'}
                       </button>
                     )}
                     <button
                       onClick={handleCancelInvoice}
                       disabled={saving}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-red-500/10 px-3 py-2 text-xs font-medium text-red-400 transition-all hover:bg-red-500/20 disabled:opacity-50"
+                      className="inline-flex items-center gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-400 transition-all hover:bg-red-500/20 disabled:opacity-50"
                     >
-                      <XCircle className="h-3.5 w-3.5" />
+                      <XCircle className="h-4 w-4" />
                       Cancel Invoice
                     </button>
                   </>
@@ -762,9 +713,9 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                 {(quote.status === 'quoted' || quote.status === 'invoiced') && amount > 0 && (
                   <button
                     onClick={() => setShowDepositConfirm(true)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-400 transition-all hover:bg-emerald-500/20"
+                    className="inline-flex items-center gap-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2.5 text-sm font-semibold text-emerald-400 transition-all hover:bg-emerald-500/20"
                   >
-                    <DollarSign className="h-3.5 w-3.5" />
+                    <DollarSign className="h-4 w-4" />
                     Deposit Paid (Zelle/Venmo/CashApp)
                   </button>
                 )}
@@ -772,9 +723,9 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                 {quote.status !== 'booked' && quote.status !== 'completed' && quote.status !== 'cancelled' && quote.status !== 'invoiced' && (
                   <button
                     onClick={() => handleQuickAction('cancelled')}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-500/10 px-3 py-2 text-xs font-medium text-red-400 transition-all hover:bg-red-500/20"
+                    className="inline-flex items-center gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-400 transition-all hover:bg-red-500/20"
                   >
-                    <XCircle className="h-3.5 w-3.5" />
+                    <XCircle className="h-4 w-4" />
                     Cancel
                   </button>
                 )}

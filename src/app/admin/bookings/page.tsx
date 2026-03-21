@@ -387,161 +387,125 @@ export default function AdminBookingsPage() {
               </div>
 
               {/* Content */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-6">
-                {/* Client info */}
-                <div>
-                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                    Client
-                  </h3>
-                  <div className="space-y-2.5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
-                        {selectedBooking.client_name.charAt(0)}
-                      </div>
-                      <p className="font-medium text-white">{selectedBooking.client_name}</p>
-                    </div>
-                    {selectedBooking.client_email && (
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
-                        <Mail className="h-4 w-4 text-gray-500" />
-                        {selectedBooking.client_email}
-                      </div>
-                    )}
-                    {selectedBooking.client_phone && (
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
-                        <Phone className="h-4 w-4 text-gray-500" />
-                        {selectedBooking.client_phone}
-                      </div>
-                    )}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {/* Client info — compact row */}
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
+                    {selectedBooking.client_name.charAt(0)}
                   </div>
-                </div>
-
-                {/* Booking details grid */}
-                <div>
-                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                    Details
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-lg border border-dark-border p-3">
-                      <div className="flex items-center gap-1 text-xs text-gray-400">
-                        <Calendar className="h-3 w-3" /> Date
-                      </div>
-                      <p className="mt-1 text-sm font-medium text-white">
-                        {formatDate(selectedBooking.booking_date)}
-                      </p>
-                    </div>
-                    <div className="rounded-lg border border-dark-border p-3">
-                      <div className="flex items-center gap-1 text-xs text-gray-400">
-                        <Clock className="h-3 w-3" /> Time
-                      </div>
-                      <p className="mt-1 text-sm font-medium text-white">
-                        {selectedBooking.start_time} - {selectedBooking.end_time || 'TBD'}
-                      </p>
-                    </div>
-                    <div className="rounded-lg border border-dark-border p-3">
-                      <div className="flex items-center gap-1 text-xs text-gray-400">
-                        <Car className="h-3 w-3" /> Vehicle
-                      </div>
-                      <p className="mt-1 text-sm font-medium text-white">
-                        {getVehicleName(selectedBooking.vehicle_id)}
-                      </p>
-                    </div>
-                    <div className="rounded-lg border border-dark-border p-3">
-                      <div className="flex items-center gap-1 text-xs text-gray-400">
-                        <Users className="h-3 w-3" /> Guests
-                      </div>
-                      <p className="mt-1 text-sm font-medium text-white">
-                        {selectedBooking.guest_count || 'N/A'}
-                      </p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-white truncate">{selectedBooking.client_name}</p>
+                    <div className="flex items-center gap-4 text-sm text-gray-400">
+                      {selectedBooking.client_email && (
+                        <span className="flex items-center gap-1 truncate">
+                          <Mail className="h-3.5 w-3.5 shrink-0" />
+                          {selectedBooking.client_email}
+                        </span>
+                      )}
+                      {selectedBooking.client_phone && (
+                        <span className="flex items-center gap-1 shrink-0">
+                          <Phone className="h-3.5 w-3.5" />
+                          {selectedBooking.client_phone}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                {/* Locations */}
-                {(selectedBooking.pickup_location || selectedBooking.dropoff_location) && (
-                  <div>
-                    <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                      Locations
-                    </h3>
-                    <div className="space-y-2">
-                      {selectedBooking.pickup_location && (
-                        <div className="flex items-start gap-2 text-sm">
-                          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
-                          <span className="text-gray-300">
-                            <span className="text-gray-500">Pickup:</span> {selectedBooking.pickup_location}
-                          </span>
-                        </div>
-                      )}
-                      {selectedBooking.dropoff_location && (
-                        <div className="flex items-start gap-2 text-sm">
-                          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
-                          <span className="text-gray-300">
-                            <span className="text-gray-500">Dropoff:</span> {selectedBooking.dropoff_location}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                {/* Booking details — 3-col grid */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="rounded-lg border border-dark-border p-2.5">
+                    <p className="text-xs text-gray-500">Date</p>
+                    <p className="text-sm font-medium text-white">
+                      {formatDate(selectedBooking.booking_date)}
+                    </p>
                   </div>
-                )}
+                  <div className="rounded-lg border border-dark-border p-2.5">
+                    <p className="text-xs text-gray-500">Time</p>
+                    <p className="text-sm font-medium text-white">
+                      {selectedBooking.start_time} - {selectedBooking.end_time || 'TBD'}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-dark-border p-2.5">
+                    <p className="text-xs text-gray-500">Vehicle</p>
+                    <p className="text-sm font-medium text-white truncate">
+                      {getVehicleName(selectedBooking.vehicle_id)}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-dark-border p-2.5">
+                    <p className="text-xs text-gray-500">Guests</p>
+                    <p className="text-sm font-medium text-white">
+                      {selectedBooking.guest_count || 'N/A'}
+                    </p>
+                  </div>
+                  {selectedBooking.pickup_location && (
+                    <div className="rounded-lg border border-dark-border p-2.5">
+                      <p className="text-xs text-gray-500">Pickup</p>
+                      <p className="text-sm font-medium text-white truncate">
+                        {selectedBooking.pickup_location}
+                      </p>
+                    </div>
+                  )}
+                  {selectedBooking.dropoff_location && (
+                    <div className="rounded-lg border border-dark-border p-2.5">
+                      <p className="text-xs text-gray-500">Dropoff</p>
+                      <p className="text-sm font-medium text-white truncate">
+                        {selectedBooking.dropoff_location}
+                      </p>
+                    </div>
+                  )}
+                </div>
 
                 {/* Financial */}
-                <div>
-                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                    Financial
-                  </h3>
-                  <div className="space-y-2 rounded-lg border border-dark-border p-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400">Total Amount</span>
-                      <span className="font-semibold text-white">
-                        {selectedBooking.total_amount ? formatCurrency(selectedBooking.total_amount) : '-'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400">Deposit Required</span>
-                      <span className="text-white">
-                        {selectedBooking.deposit_amount ? formatCurrency(selectedBooking.deposit_amount) : '-'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400">Deposit Status</span>
-                      <Badge variant={selectedBooking.deposit_paid ? 'green' : 'yellow'}>
-                        {selectedBooking.deposit_paid ? 'Paid' : 'Unpaid'}
-                      </Badge>
-                    </div>
-                    {selectedBooking.total_amount && selectedBooking.deposit_amount && (
-                      <div className="flex items-center justify-between border-t border-dark-border pt-2 text-sm">
-                        <span className="text-gray-400">Balance Due</span>
-                        <span className="font-semibold text-gold">
-                          {formatCurrency(
-                            selectedBooking.total_amount -
-                              (selectedBooking.deposit_paid ? selectedBooking.deposit_amount : 0)
-                          )}
-                        </span>
-                      </div>
-                    )}
+                <div className="rounded-lg border border-dark-border p-3 space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">Total</span>
+                    <span className="font-semibold text-white">
+                      {selectedBooking.total_amount ? formatCurrency(selectedBooking.total_amount) : '-'}
+                    </span>
                   </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">Deposit</span>
+                    <span className="text-white">
+                      {selectedBooking.deposit_amount ? formatCurrency(selectedBooking.deposit_amount) : '-'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">Deposit Status</span>
+                    <Badge variant={selectedBooking.deposit_paid ? 'green' : 'yellow'}>
+                      {selectedBooking.deposit_paid ? 'Paid' : 'Unpaid'}
+                    </Badge>
+                  </div>
+                  {selectedBooking.total_amount && selectedBooking.deposit_amount && (
+                    <div className="flex items-center justify-between border-t border-dark-border pt-2 text-sm">
+                      <span className="text-gray-400">Balance Due</span>
+                      <span className="font-semibold text-gold">
+                        {formatCurrency(
+                          selectedBooking.total_amount -
+                            (selectedBooking.deposit_paid ? selectedBooking.deposit_amount : 0)
+                        )}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Notes */}
                 {selectedBooking.notes && (
                   <div>
-                    <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                      Notes
-                    </h3>
-                    <p className="rounded-lg border border-dark-border bg-black/50 p-3 text-sm text-gray-300">
+                    <p className="mb-1 text-xs font-medium text-gray-500">Notes</p>
+                    <p className="rounded-lg border border-dark-border bg-black/50 p-2.5 text-sm text-gray-300">
                       {selectedBooking.notes}
                     </p>
                   </div>
                 )}
 
-                {/* Status change */}
+                {/* Status */}
                 <div>
-                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                    Update Status
-                  </h3>
+                  <p className="mb-1 text-xs font-medium text-gray-500">Status</p>
                   <select
                     value={selectedBooking.status}
                     onChange={(e) => handleStatusChange(selectedBooking.id, e.target.value as BookingStatus)}
-                    className="w-full rounded-lg border border-dark-border bg-black px-4 py-2.5 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+                    className="w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
                   >
                     <option value="pending">Pending</option>
                     <option value="confirmed">Confirmed</option>
