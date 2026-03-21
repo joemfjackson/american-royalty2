@@ -574,9 +574,9 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                 <QuoteBuilder
                   quote={quote}
                   vehicle={vehicle}
-                  existingItems={lineItems}
                   onSaved={handleQuoteSaved}
                   onCancel={() => setShowQuoteBuilder(false)}
+                  adminNotes={adminNotes}
                 />
               )}
 

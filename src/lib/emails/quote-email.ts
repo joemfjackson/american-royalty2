@@ -2,34 +2,34 @@ interface QuoteEmailData {
   clientName: string
   eventType: string
   eventDate: string
-  vehicleName: string | null
-  lineItems: { description: string; quantity: number; unitPrice: number }[]
-  totalAmount: string
+  pickupTime: string | null
+  durationHours: number
+  hourlyRate: number
+  baseFare: number
+  fuelSurcharge: number
+  customItems: { description: string; amount: number }[]
+  taxAmount: number
+  driverGratuity: number
+  total: number
   depositPercent: number
-  depositAmount: string
+  depositAmount: number
   quoteUrl: string
-  brandPhone: string
-  brandEmail: string
+  adminNotes: string | null
 }
 
-function formatCurrencyInline(amount: number): string {
-  return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+function fmt(amount: number): string {
+  return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 export function buildQuoteEmailHtml(data: QuoteEmailData): string {
-  const lineItemRows = data.lineItems
-    .map((item) => {
-      const lineTotal = item.quantity * item.unitPrice
-      const qtyLabel = item.quantity > 1
-        ? `${item.quantity} × ${formatCurrencyInline(item.unitPrice)}`
-        : ''
-      return `
-        <tr>
-          <td style="padding:8px 0;font-size:14px;color:#ccc;">${item.description}</td>
-          <td style="padding:8px 0;font-size:13px;color:#999;text-align:center;width:120px;">${qtyLabel}</td>
-          <td style="padding:8px 0;font-size:14px;color:#fff;text-align:right;font-weight:500;width:100px;">${formatCurrencyInline(lineTotal)}</td>
-        </tr>`
-    })
+  const subtotal = data.baseFare + data.fuelSurcharge + data.customItems.reduce((s, i) => s + i.amount, 0)
+
+  const customItemRows = data.customItems
+    .map((item) => `
+      <tr>
+        <td style="padding:6px 0;font-size:14px;color:#ccc;">${item.description}</td>
+        <td style="padding:6px 0;font-size:14px;color:#fff;text-align:right;font-weight:500;">${fmt(item.amount)}</td>
+      </tr>`)
     .join('')
 
   return `
@@ -63,33 +63,35 @@ export function buildQuoteEmailHtml(data: QuoteEmailData): string {
             <td style="padding:0 0 24px;">
               <p style="margin:0;font-size:16px;color:#ffffff;">Hi ${data.clientName},</p>
               <p style="margin:12px 0 0;font-size:15px;color:#cccccc;line-height:1.5;">
-                Thank you for your interest in American Royalty! Here is your personalized quote for your upcoming event.
+                Thank you for reaching out to American Royalty! We'd love to be part of your ${data.eventType.toLowerCase()}.
+              </p>
+              <p style="margin:12px 0 0;font-size:15px;color:#cccccc;line-height:1.5;">
+                Here's your quote:
               </p>
             </td>
           </tr>
 
-          <!-- Event Details Card -->
+          <!-- Event Details -->
           <tr>
             <td style="padding:0 0 24px;">
               <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#111111;border:1px solid #1E1E1E;border-radius:12px;">
                 <tr>
                   <td style="padding:20px;">
-                    <p style="margin:0 0 12px;font-size:11px;font-weight:600;color:#999;letter-spacing:2px;text-transform:uppercase;">Event Details</p>
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#999;width:120px;">Event</td>
-                        <td style="padding:6px 0;font-size:14px;color:#fff;font-weight:500;">${data.eventType}</td>
+                        <td style="padding:4px 0;font-size:14px;color:#999;width:100px;">Date</td>
+                        <td style="padding:4px 0;font-size:14px;color:#fff;font-weight:500;">${data.eventDate}</td>
                       </tr>
+                      ${data.pickupTime ? `
                       <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#999;">Date</td>
-                        <td style="padding:6px 0;font-size:14px;color:#fff;font-weight:500;">${data.eventDate}</td>
-                      </tr>
-                      ${data.vehicleName ? `
-                      <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#999;">Vehicle</td>
-                        <td style="padding:6px 0;font-size:14px;color:#fff;font-weight:500;">${data.vehicleName}</td>
+                        <td style="padding:4px 0;font-size:14px;color:#999;">Time</td>
+                        <td style="padding:4px 0;font-size:14px;color:#fff;font-weight:500;">${data.pickupTime}</td>
                       </tr>
                       ` : ''}
+                      <tr>
+                        <td style="padding:4px 0;font-size:14px;color:#999;">Duration</td>
+                        <td style="padding:4px 0;font-size:14px;color:#fff;font-weight:500;">${data.durationHours} hours</td>
+                      </tr>
                     </table>
                   </td>
                 </tr>
@@ -97,11 +99,10 @@ export function buildQuoteEmailHtml(data: QuoteEmailData): string {
             </td>
           </tr>
 
-          <!-- Pricing Breakdown Card -->
+          <!-- Pricing Breakdown -->
           <tr>
-            <td style="padding:0 0 32px;">
+            <td style="padding:0 0 24px;">
               <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#111111;border:1px solid #1E1E1E;border-radius:12px;">
-                <!-- Gold top accent -->
                 <tr>
                   <td style="padding:0;">
                     <div style="height:3px;background:linear-gradient(to right,#D6C08A,#6F2DBD);border-radius:12px 12px 0 0;"></div>
@@ -109,28 +110,41 @@ export function buildQuoteEmailHtml(data: QuoteEmailData): string {
                 </tr>
                 <tr>
                   <td style="padding:20px;">
-                    <p style="margin:0 0 16px;font-size:11px;font-weight:600;color:#999;letter-spacing:2px;text-transform:uppercase;">Pricing Breakdown</p>
                     <table width="100%" cellpadding="0" cellspacing="0">
-                      ${lineItemRows}
                       <tr>
-                        <td colspan="3" style="padding:8px 0 0;">
+                        <td style="padding:6px 0;font-size:14px;color:#ccc;">Base Fare <span style="color:#999;font-size:12px;">(${data.durationHours} hrs &times; ${fmt(data.hourlyRate)}/hr)</span></td>
+                        <td style="padding:6px 0;font-size:14px;color:#fff;text-align:right;font-weight:500;">${fmt(data.baseFare)}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 0;font-size:14px;color:#ccc;">NTA Fuel Surcharge</td>
+                        <td style="padding:6px 0;font-size:14px;color:#fff;text-align:right;font-weight:500;">${fmt(data.fuelSurcharge)}</td>
+                      </tr>
+                      ${customItemRows}
+                      <tr>
+                        <td colspan="2" style="padding:8px 0 0;">
+                          <div style="height:1px;background-color:#1E1E1E;"></div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 0;font-size:14px;color:#ccc;">Subtotal</td>
+                        <td style="padding:8px 0;font-size:14px;color:#fff;text-align:right;font-weight:500;">${fmt(subtotal)}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 0;font-size:14px;color:#ccc;">NTA Excise Tax (3%)</td>
+                        <td style="padding:6px 0;font-size:14px;color:#fff;text-align:right;font-weight:500;">${fmt(data.taxAmount)}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 0;font-size:14px;color:#ccc;">Driver Gratuity</td>
+                        <td style="padding:6px 0;font-size:14px;color:#fff;text-align:right;font-weight:500;">${fmt(data.driverGratuity)}</td>
+                      </tr>
+                      <tr>
+                        <td colspan="2" style="padding:8px 0 0;">
                           <div style="height:1px;background-color:#1E1E1E;"></div>
                         </td>
                       </tr>
                       <tr>
                         <td style="padding:12px 0 0;font-size:16px;color:#fff;font-weight:600;">Total</td>
-                        <td style="padding:12px 0 0;"></td>
-                        <td style="padding:12px 0 0;font-size:20px;color:#D6C08A;text-align:right;font-weight:700;">${data.totalAmount}</td>
-                      </tr>
-                      <tr>
-                        <td colspan="3" style="padding:8px 0 0;">
-                          <div style="height:1px;background-color:#1E1E1E;"></div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:8px 0 0;font-size:14px;color:#ccc;">Deposit to Book (${data.depositPercent}%)</td>
-                        <td style="padding:8px 0 0;"></td>
-                        <td style="padding:8px 0 0;font-size:16px;color:#D6C08A;text-align:right;font-weight:700;">${data.depositAmount}</td>
+                        <td style="padding:12px 0 0;font-size:20px;color:#D6C08A;text-align:right;font-weight:700;">${fmt(data.total)}</td>
                       </tr>
                     </table>
                   </td>
@@ -138,6 +152,24 @@ export function buildQuoteEmailHtml(data: QuoteEmailData): string {
               </table>
             </td>
           </tr>
+
+          <!-- Deposit note -->
+          <tr>
+            <td style="padding:0 0 24px;">
+              <p style="margin:0;font-size:15px;color:#cccccc;line-height:1.5;">
+                A ${data.depositPercent}% deposit of <strong style="color:#D6C08A;">${fmt(data.depositAmount)}</strong> is required to secure your date, with the remaining balance due 7 days prior to your event or cash upon arrival.
+              </p>
+            </td>
+          </tr>
+
+          ${data.adminNotes ? `
+          <!-- Admin Notes -->
+          <tr>
+            <td style="padding:0 0 24px;">
+              <p style="margin:0;font-size:14px;color:#cccccc;line-height:1.5;">${data.adminNotes}</p>
+            </td>
+          </tr>
+          ` : ''}
 
           <!-- CTA Button -->
           <tr>
@@ -148,12 +180,14 @@ export function buildQuoteEmailHtml(data: QuoteEmailData): string {
             </td>
           </tr>
 
-          <!-- Validity note -->
+          <!-- Alternative contact -->
           <tr>
             <td style="text-align:center;padding:0 0 32px;">
-              <p style="margin:0;font-size:13px;color:#999;line-height:1.5;">
-                This quote is valid for 14 days. Book now by paying your deposit online.<br>
-                Have questions? We&rsquo;d love to hear from you.
+              <p style="margin:0;font-size:14px;color:#cccccc;line-height:1.5;">
+                Ready to book? Reply to this email or call us at <strong style="color:#D6C08A;">(702) 666-4037</strong>.
+              </p>
+              <p style="margin:8px 0 0;font-size:13px;color:#999;">
+                We look forward to making your ${data.eventType.toLowerCase()} unforgettable!
               </p>
             </td>
           </tr>
@@ -168,10 +202,7 @@ export function buildQuoteEmailHtml(data: QuoteEmailData): string {
           <!-- Footer -->
           <tr>
             <td style="text-align:center;padding:0;">
-              <p style="margin:0;font-size:13px;color:#D6C08A;font-weight:600;">American Royalty Las Vegas</p>
-              <p style="margin:8px 0 0;font-size:13px;color:#999;">
-                ${data.brandPhone} | ${data.brandEmail}
-              </p>
+              <p style="margin:0;font-size:13px;color:#D6C08A;font-weight:600;">The American Royalty Team</p>
               <p style="margin:4px 0 0;font-size:12px;color:#666;">
                 americanroyaltylasvegas.com
               </p>

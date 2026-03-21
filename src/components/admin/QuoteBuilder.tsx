@@ -1,186 +1,84 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import {
-  Plus,
-  X,
-  ChevronUp,
-  ChevronDown,
-  Send,
-  Save,
-  Package,
-} from 'lucide-react'
-import type { Quote, QuoteLineItem, Vehicle } from '@/types'
-import { QUOTE_PRESETS } from '@/lib/quote-presets'
-import { saveQuoteLineItems, buildAndSendQuote } from '@/lib/actions/admin'
-import { formatCurrency } from '@/lib/utils'
+import { useState, useMemo } from 'react'
+import { Plus, Trash2, Send, Save } from 'lucide-react'
+import type { Quote, Vehicle } from '@/types'
+import { saveQuotePricing, buildAndSendQuote } from '@/lib/actions/admin'
 
-interface LineItemDraft {
+const VEHICLE_RATE_DEFAULTS: Record<string, number> = {
+  'the-crown-jewel': 295,
+  'the-empire': 350,
+  'royal-sprinter': 185,
+  'black-diamond': 125,
+  'the-monarch': 275,
+  'the-sovereign': 245,
+}
+
+interface CustomItem {
   id: string
   description: string
-  quantity: number
-  unitPrice: number
-  sortOrder: number
-  isPreset: boolean
-  presetKey: string | null
+  amount: number
 }
 
 interface QuoteBuilderProps {
   quote: Quote
   vehicle: Vehicle | null
-  existingItems?: QuoteLineItem[]
-  onSaved: (updatedQuote: Quote) => void
+  onSaved: (updated: Quote) => void
   onCancel: () => void
+  adminNotes?: string
 }
 
-let nextId = 0
-function tempId() {
-  return `temp_${++nextId}_${Date.now()}`
+function fmt(n: number): string {
+  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-export function QuoteBuilder({ quote, vehicle, existingItems, onSaved, onCancel }: QuoteBuilderProps) {
-  const [items, setItems] = useState<LineItemDraft[]>(() => {
-    if (existingItems && existingItems.length > 0) {
-      return existingItems.map((li) => ({
-        id: li.id,
-        description: li.description,
-        quantity: li.quantity,
-        unitPrice: li.unit_price,
-        sortOrder: li.sort_order,
-        isPreset: li.is_preset,
-        presetKey: li.preset_key,
-      }))
-    }
-    return []
-  })
+export function QuoteBuilder({ quote, vehicle, onSaved, onCancel, adminNotes }: QuoteBuilderProps) {
+  const defaultRate = vehicle
+    ? (vehicle.hourly_rate || VEHICLE_RATE_DEFAULTS[vehicle.slug] || 200)
+    : 200
+
+  const [rate, setRate] = useState(quote.hourly_rate ?? defaultRate)
+  const [duration, setDuration] = useState(quote.duration_hours ?? 3)
+  const [fuelSurcharge, setFuelSurcharge] = useState(
+    quote.fuel_surcharge ?? (quote.duration_hours ?? 3) * 6
+  )
+  const [gratuityPercent, setGratuityPercent] = useState(quote.gratuity_percent ?? 20)
+  const [depositPercent, setDepositPercent] = useState(quote.deposit_percent ?? 25)
+  const [customItems, setCustomItems] = useState<CustomItem[]>(
+    quote.custom_items?.map((ci, i) => ({ id: `ci_${i}`, ...ci })) ?? []
+  )
   const [saving, setSaving] = useState(false)
   const [sending, setSending] = useState(false)
-  const [depositPercent, setDepositPercent] = useState(quote.deposit_percent || 20)
 
-  const usedPresetKeys = items.filter((i) => i.isPreset).map((i) => i.presetKey)
+  // Auto-calculated values
+  const calcs = useMemo(() => {
+    const baseFare = rate * duration
+    const gratuity = Math.round(baseFare * gratuityPercent / 100 * 100) / 100
+    const tax = Math.round(baseFare * 0.03 * 100) / 100
+    const customTotal = customItems.reduce((s, i) => s + (i.amount || 0), 0)
+    const subtotal = baseFare + fuelSurcharge + customTotal
+    const total = subtotal + tax + gratuity
+    const deposit = Math.round(total * depositPercent / 100 * 100) / 100
+    return { baseFare, gratuity, tax, customTotal, subtotal, total, deposit }
+  }, [rate, duration, fuelSurcharge, gratuityPercent, customItems, depositPercent])
 
-  const subtotal = items
-    .filter((i) => i.presetKey !== 'gratuity')
-    .reduce((sum, i) => sum + i.quantity * i.unitPrice, 0)
-
-  const total = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0)
-
-  const addPreset = useCallback((presetKey: string) => {
-    const preset = QUOTE_PRESETS.find((p) => p.key === presetKey)
-    if (!preset) return
-
-    let defaultPrice = preset.defaultPrice || 0
-
-    if (presetKey === 'vehicle_rental' && vehicle) {
-      const hours = quote.duration_hours || vehicle.min_hours
-      defaultPrice = vehicle.hourly_rate
-      setItems((prev) => [
-        ...prev,
-        {
-          id: tempId(),
-          description: `${vehicle.name} — ${hours} hr${hours > 1 ? 's' : ''}`,
-          quantity: hours,
-          unitPrice: vehicle.hourly_rate,
-          sortOrder: prev.length,
-          isPreset: true,
-          presetKey: 'vehicle_rental',
-        },
-      ])
-      return
-    }
-
-    if (presetKey === 'overtime' && vehicle) {
-      defaultPrice = vehicle.hourly_rate
-    }
-
-    if (preset.isPercentage && preset.percentOf === 'subtotal') {
-      const currentSubtotal = items
-        .filter((i) => i.presetKey !== 'gratuity')
-        .reduce((sum, i) => sum + i.quantity * i.unitPrice, 0)
-      defaultPrice = Math.round(currentSubtotal * (preset.percentValue || 20) / 100)
-    }
-
-    setItems((prev) => [
-      ...prev,
-      {
-        id: tempId(),
-        description: preset.description,
-        quantity: 1,
-        unitPrice: defaultPrice,
-        sortOrder: prev.length,
-        isPreset: true,
-        presetKey: preset.key,
-      },
-    ])
-  }, [items, vehicle, quote.duration_hours])
-
-  const addCustomItem = useCallback(() => {
-    setItems((prev) => [
-      ...prev,
-      {
-        id: tempId(),
-        description: '',
-        quantity: 1,
-        unitPrice: 0,
-        sortOrder: prev.length,
-        isPreset: false,
-        presetKey: null,
-      },
-    ])
-  }, [])
-
-  const updateItem = useCallback((id: string, field: keyof LineItemDraft, value: string | number) => {
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
-    )
-  }, [])
-
-  const removeItem = useCallback((id: string) => {
-    setItems((prev) =>
-      prev.filter((item) => item.id !== id).map((item, i) => ({ ...item, sortOrder: i }))
-    )
-  }, [])
-
-  const moveItem = useCallback((id: string, direction: 'up' | 'down') => {
-    setItems((prev) => {
-      const idx = prev.findIndex((i) => i.id === id)
-      if (idx < 0) return prev
-      const newIdx = direction === 'up' ? idx - 1 : idx + 1
-      if (newIdx < 0 || newIdx >= prev.length) return prev
-      const copy = [...prev]
-      ;[copy[idx], copy[newIdx]] = [copy[newIdx], copy[idx]]
-      return copy.map((item, i) => ({ ...item, sortOrder: i }))
-    })
-  }, [])
-
-  const recalcGratuity = useCallback(() => {
-    setItems((prev) => {
-      const gratIdx = prev.findIndex((i) => i.presetKey === 'gratuity')
-      if (gratIdx < 0) return prev
-      const subWithoutGrat = prev
-        .filter((i) => i.presetKey !== 'gratuity')
-        .reduce((sum, i) => sum + i.quantity * i.unitPrice, 0)
-      const gratAmount = Math.round(subWithoutGrat * 20 / 100)
-      return prev.map((item, i) =>
-        i === gratIdx ? { ...item, unitPrice: gratAmount } : item
-      )
-    })
-  }, [])
-
-  const serializeItems = () =>
-    items.map((i) => ({
-      description: i.description,
-      quantity: i.quantity,
-      unitPrice: i.unitPrice,
-      sortOrder: i.sortOrder,
-      isPreset: i.isPreset,
-      presetKey: i.presetKey,
-    }))
+  const buildPricingData = () => ({
+    hourlyRate: rate,
+    durationHours: duration,
+    baseFare: calcs.baseFare,
+    fuelSurcharge,
+    gratuityPercent,
+    driverGratuity: calcs.gratuity,
+    taxAmount: calcs.tax,
+    customItems: customItems.filter(i => i.description.trim()).map(i => ({ description: i.description, amount: i.amount })),
+    total: calcs.total,
+    depositPercent,
+  })
 
   const handleSaveDraft = async () => {
     setSaving(true)
     try {
-      const updated = await saveQuoteLineItems(quote.id, serializeItems())
+      const updated = await saveQuotePricing(quote.id, buildPricingData())
       onSaved(updated)
     } catch (err) {
       console.error('Failed to save draft:', err)
@@ -190,10 +88,9 @@ export function QuoteBuilder({ quote, vehicle, existingItems, onSaved, onCancel 
   }
 
   const handleSendQuote = async () => {
-    if (items.length === 0) return
     setSending(true)
     try {
-      const updated = await buildAndSendQuote(quote.id, serializeItems(), depositPercent)
+      const updated = await buildAndSendQuote(quote.id, buildPricingData(), adminNotes)
       onSaved(updated)
     } catch (err) {
       console.error('Failed to send quote:', err)
@@ -202,202 +99,258 @@ export function QuoteBuilder({ quote, vehicle, existingItems, onSaved, onCancel 
     }
   }
 
+  const addCustomItem = () => {
+    setCustomItems([...customItems, { id: `ci_${Date.now()}`, description: '', amount: 0 }])
+  }
+
+  const updateCustomItem = (id: string, field: 'description' | 'amount', value: string | number) => {
+    setCustomItems(customItems.map(i => i.id === id ? { ...i, [field]: value } : i))
+  }
+
+  const removeCustomItem = (id: string) => {
+    setCustomItems(customItems.filter(i => i.id !== id))
+  }
+
+  // Recalculate fuel surcharge when duration changes
+  const handleDurationChange = (newDuration: number) => {
+    const oldDefault = duration * 6
+    setDuration(newDuration)
+    // Only auto-update fuel if it was still at the default
+    if (fuelSurcharge === oldDefault) {
+      setFuelSurcharge(newDuration * 6)
+    }
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-gold flex items-center gap-2">
-          <Package className="h-4 w-4" />
-          Build Quote
-        </h3>
+      {/* Base Fare */}
+      <div className="rounded-lg border border-dark-border bg-black/50 p-3 space-y-3">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Base Fare</p>
+        <div className="grid grid-cols-3 gap-3 items-end">
+          <div>
+            <label className="text-xs text-gray-500 block mb-1">Rate ($/hr)</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+              <input
+                type="number"
+                value={rate}
+                onChange={(e) => setRate(parseFloat(e.target.value) || 0)}
+                className="w-full rounded-lg border border-dark-border bg-black py-2 pl-7 pr-3 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs text-gray-500 block mb-1">Duration (hrs)</label>
+            <input
+              type="number"
+              min={1}
+              value={duration}
+              onChange={(e) => handleDurationChange(parseInt(e.target.value) || 1)}
+              className="w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+            />
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-gray-500 mb-1">Subtotal</p>
+            <p className="text-lg font-bold text-gold">{fmt(calcs.baseFare)}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* NTA Fuel Surcharge */}
+      <div className="flex items-center justify-between rounded-lg border border-dark-border bg-black/50 p-3">
+        <div>
+          <p className="text-sm text-white">NTA Fuel Surcharge</p>
+          <p className="text-xs text-gray-500">Default: $6/hr &times; {duration} hrs = {fmt(duration * 6)}</p>
+        </div>
+        <div className="relative w-28">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+          <input
+            type="number"
+            step="0.01"
+            value={fuelSurcharge}
+            onChange={(e) => setFuelSurcharge(parseFloat(e.target.value) || 0)}
+            className="w-full rounded-lg border border-dark-border bg-black py-2 pl-7 pr-3 text-sm text-white text-right focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+          />
+        </div>
+      </div>
+
+      {/* Driver Gratuity */}
+      <div className="flex items-center justify-between rounded-lg border border-dark-border bg-black/50 p-3">
+        <div>
+          <p className="text-sm text-white">Driver Gratuity</p>
+          <p className="text-xs text-gray-500">{gratuityPercent}% of base fare = {fmt(calcs.gratuity)}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min={0}
+            max={100}
+            value={gratuityPercent}
+            onChange={(e) => setGratuityPercent(parseInt(e.target.value) || 0)}
+            className="w-16 rounded-lg border border-dark-border bg-black px-2 py-2 text-sm text-white text-right focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+          />
+          <span className="text-sm text-gray-400">%</span>
+        </div>
+      </div>
+
+      {/* Custom Line Items */}
+      <div className="space-y-2">
+        {customItems.map((item) => (
+          <div key={item.id} className="flex items-center gap-2 rounded-lg border border-dark-border bg-black/50 p-2">
+            <input
+              type="text"
+              value={item.description}
+              onChange={(e) => updateCustomItem(item.id, 'description', e.target.value)}
+              placeholder="Description (e.g., Airport AVI Fee)"
+              className="flex-1 rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+            />
+            <div className="relative w-24">
+              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+              <input
+                type="number"
+                step="0.01"
+                value={item.amount || ''}
+                onChange={(e) => updateCustomItem(item.id, 'amount', parseFloat(e.target.value) || 0)}
+                placeholder="0.00"
+                className="w-full rounded-lg border border-dark-border bg-black py-2 pl-6 pr-2 text-sm text-white text-right placeholder:text-gray-600 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+              />
+            </div>
+            <button
+              onClick={() => removeCustomItem(item.id)}
+              className="rounded-lg p-2 text-gray-500 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
         <button
-          onClick={onCancel}
-          className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
+          onClick={addCustomItem}
+          className="flex items-center gap-2 rounded-lg border border-dashed border-dark-border px-3 py-2 text-xs font-medium text-gray-400 transition-all hover:border-gold/30 hover:text-gold w-full justify-center"
         >
-          <X className="h-4 w-4" />
+          <Plus className="h-3.5 w-3.5" />
+          Add Line Item
         </button>
       </div>
 
-      {/* Preset chips */}
-      <div>
-        <p className="mb-2 text-xs text-gray-500">Quick add presets:</p>
-        <div className="flex flex-wrap gap-1.5">
-          {QUOTE_PRESETS.map((preset) => {
-            const isUsed = usedPresetKeys.includes(preset.key)
-            return (
-              <button
-                key={preset.key}
-                onClick={() => {
-                  addPreset(preset.key)
-                  // Auto-recalc gratuity when adding items
-                  if (preset.key !== 'gratuity') {
-                    setTimeout(recalcGratuity, 0)
-                  }
-                }}
-                disabled={isUsed}
-                className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-all ${
-                  isUsed
-                    ? 'bg-white/5 text-gray-600 cursor-not-allowed'
-                    : 'bg-gold/10 text-gold hover:bg-gold/20'
-                }`}
-              >
-                {preset.label}
-              </button>
-            )
-          })}
+      {/* NTA Excise Tax (auto-calculated, read-only) */}
+      <div className="flex items-center justify-between rounded-lg border border-dark-border bg-black/30 p-3">
+        <div>
+          <p className="text-sm text-white">NTA Excise Tax (3%)</p>
+          <p className="text-xs text-gray-500">3% of base fare</p>
+        </div>
+        <p className="text-sm font-medium text-white">{fmt(calcs.tax)}</p>
+      </div>
+
+      {/* Totals */}
+      <div className="rounded-lg border border-gold/20 bg-gold/5 p-3 space-y-2">
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-400">Subtotal</span>
+          <span className="text-white">{fmt(calcs.subtotal)}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-400">NTA Excise Tax (3%)</span>
+          <span className="text-white">{fmt(calcs.tax)}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-400">Driver Gratuity ({gratuityPercent}%)</span>
+          <span className="text-white">{fmt(calcs.gratuity)}</span>
+        </div>
+        <div className="border-t border-gold/20 pt-2 flex justify-between">
+          <span className="text-sm font-semibold text-white">Total</span>
+          <span className="text-lg font-bold text-gold">{fmt(calcs.total)}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-400">Deposit</span>
+            <input
+              type="number"
+              min={10}
+              max={100}
+              value={depositPercent}
+              onChange={(e) => setDepositPercent(Math.min(100, Math.max(10, parseInt(e.target.value) || 25)))}
+              className="w-14 rounded border border-dark-border bg-black px-2 py-1 text-xs text-white text-right focus:border-gold/50 focus:outline-none"
+            />
+            <span className="text-xs text-gray-400">%</span>
+          </div>
+          <span className="text-sm font-semibold text-gold">{fmt(calcs.deposit)}</span>
         </div>
       </div>
 
-      {/* Line items */}
-      {items.length > 0 && (
-        <div className="rounded-lg border border-dark-border overflow-hidden">
-          {/* Header */}
-          <div className="grid grid-cols-[1fr_60px_80px_60px_32px] gap-1 bg-black/50 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
-            <span>Description</span>
-            <span className="text-center">Qty</span>
-            <span className="text-right">Price</span>
-            <span className="text-right">Total</span>
-            <span></span>
+      {/* Live Email Preview */}
+      <details className="rounded-lg border border-dark-border">
+        <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-gray-400 hover:text-white transition-colors">
+          Email Preview
+        </summary>
+        <div className="border-t border-dark-border px-3 py-3 text-sm text-gray-300 space-y-2 bg-black/30">
+          <p className="text-white font-medium">Hi {quote.name.split(' ')[0]},</p>
+          <p>Thank you for reaching out to American Royalty! We&apos;d love to be part of your {quote.event_type.toLowerCase()}.</p>
+          <p>Here&apos;s your quote:</p>
+          <div className="rounded border border-dark-border p-2 space-y-1 text-xs">
+            <p>Date: {quote.event_date}</p>
+            {quote.pickup_time && <p>Time: {quote.pickup_time}</p>}
+            <p>Duration: {duration} hours</p>
           </div>
-
-          {/* Rows */}
-          {items.map((item, index) => (
-            <div
-              key={item.id}
-              className="grid grid-cols-[1fr_60px_80px_60px_32px] gap-1 items-center border-t border-dark-border px-3 py-2"
-            >
-              <input
-                type="text"
-                value={item.description}
-                onChange={(e) => updateItem(item.id, 'description', e.target.value)}
-                placeholder="Description"
-                className="rounded border-0 bg-transparent px-1 py-0.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-gold/30"
-              />
-              <input
-                type="number"
-                min={1}
-                value={item.quantity}
-                onChange={(e) => {
-                  updateItem(item.id, 'quantity', Math.max(1, parseInt(e.target.value) || 1))
-                  setTimeout(recalcGratuity, 0)
-                }}
-                className="w-full rounded border-0 bg-transparent px-1 py-0.5 text-center text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold/30"
-              />
-              <div className="relative">
-                <span className="absolute left-1 top-1/2 -translate-y-1/2 text-xs text-gray-500">$</span>
-                <input
-                  type="number"
-                  min={0}
-                  value={item.unitPrice}
-                  onChange={(e) => {
-                    updateItem(item.id, 'unitPrice', Math.max(0, parseFloat(e.target.value) || 0))
-                    setTimeout(recalcGratuity, 0)
-                  }}
-                  className="w-full rounded border-0 bg-transparent py-0.5 pl-4 pr-1 text-right text-sm text-white focus:outline-none focus:ring-1 focus:ring-gold/30"
-                />
-              </div>
-              <span className="text-right text-sm font-medium text-gray-300">
-                ${(item.quantity * item.unitPrice).toLocaleString()}
-              </span>
-              <div className="flex flex-col items-center gap-0.5">
-                {index > 0 && (
-                  <button
-                    onClick={() => moveItem(item.id, 'up')}
-                    className="text-gray-500 hover:text-white"
-                  >
-                    <ChevronUp className="h-3 w-3" />
-                  </button>
-                )}
-                {index < items.length - 1 && (
-                  <button
-                    onClick={() => moveItem(item.id, 'down')}
-                    className="text-gray-500 hover:text-white"
-                  >
-                    <ChevronDown className="h-3 w-3" />
-                  </button>
-                )}
-                <button
-                  onClick={() => {
-                    removeItem(item.id)
-                    setTimeout(recalcGratuity, 0)
-                  }}
-                  className="text-gray-500 hover:text-red-400"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
+          <div className="rounded border border-dark-border p-2 space-y-1 text-xs">
+            <div className="flex justify-between">
+              <span>Base Fare: {duration} hrs &times; {fmt(rate)}/hr</span>
+              <span>{fmt(calcs.baseFare)}</span>
             </div>
-          ))}
+            <div className="flex justify-between">
+              <span>NTA Fuel Surcharge</span>
+              <span>{fmt(fuelSurcharge)}</span>
+            </div>
+            {customItems.filter(i => i.description.trim()).map((item) => (
+              <div key={item.id} className="flex justify-between">
+                <span>{item.description}</span>
+                <span>{fmt(item.amount)}</span>
+              </div>
+            ))}
+            <div className="border-t border-dark-border pt-1 flex justify-between">
+              <span>Subtotal</span>
+              <span>{fmt(calcs.subtotal)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>NTA Excise Tax (3%)</span>
+              <span>{fmt(calcs.tax)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Driver Gratuity</span>
+              <span>{fmt(calcs.gratuity)}</span>
+            </div>
+            <div className="border-t border-dark-border pt-1 flex justify-between font-bold text-gold">
+              <span>Total</span>
+              <span>{fmt(calcs.total)}</span>
+            </div>
+          </div>
+          <p>A {depositPercent}% deposit of {fmt(calcs.deposit)} is required to secure your date.</p>
         </div>
-      )}
-
-      {/* Add custom item */}
-      <button
-        onClick={addCustomItem}
-        className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-dark-border py-2 text-xs font-medium text-gray-400 transition-all hover:border-gold/30 hover:text-gold"
-      >
-        <Plus className="h-3.5 w-3.5" />
-        Add Custom Item
-      </button>
-
-      {/* Totals + Deposit */}
-      {items.length > 0 && (
-        <div className="rounded-lg border border-dark-border bg-black/50 p-3 space-y-2">
-          {items.some((i) => i.presetKey === 'gratuity') && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Subtotal (before gratuity)</span>
-              <span className="text-white">{formatCurrency(subtotal)}</span>
-            </div>
-          )}
-          <div className="flex justify-between text-base">
-            <span className="font-semibold text-white">Total</span>
-            <span className="font-bold text-gold">{formatCurrency(total)}</span>
-          </div>
-          <div className="border-t border-dark-border pt-2 mt-2 space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs text-gray-400">Deposit %</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={10}
-                  max={100}
-                  value={depositPercent}
-                  onChange={(e) => setDepositPercent(Math.min(100, Math.max(10, parseInt(e.target.value) || 50)))}
-                  className="w-16 rounded border border-dark-border bg-black px-2 py-1 text-center text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/20"
-                />
-                <span className="text-xs text-gray-500">%</span>
-              </div>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Deposit to book</span>
-              <span className="text-gold font-semibold">{formatCurrency(Math.round(total * depositPercent / 100))}</span>
-            </div>
-          </div>
-        </div>
-      )}
+      </details>
 
       {/* Actions */}
       <div className="flex gap-2">
         <button
           onClick={handleSaveDraft}
-          disabled={saving || sending || items.length === 0}
-          className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-dark-border px-4 py-2.5 text-sm font-medium text-gray-300 transition-all hover:bg-white/5 hover:text-white disabled:opacity-50"
+          disabled={saving || sending}
+          className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-dark-border bg-white/5 px-4 py-2.5 text-sm font-semibold text-gray-300 transition-all hover:bg-white/10 hover:text-white disabled:opacity-50"
         >
           <Save className="h-4 w-4" />
           {saving ? 'Saving...' : 'Save Draft'}
         </button>
         <button
           onClick={handleSendQuote}
-          disabled={saving || sending || items.length === 0}
+          disabled={saving || sending || calcs.total <= 0}
           className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-gold px-4 py-2.5 text-sm font-semibold text-black transition-all hover:bg-gold-light disabled:opacity-50"
         >
           <Send className="h-4 w-4" />
           {sending ? 'Sending...' : 'Send Quote'}
         </button>
+        <button
+          onClick={onCancel}
+          className="rounded-lg border border-dark-border px-4 py-2.5 text-sm font-medium text-gray-400 transition-all hover:bg-white/5 hover:text-white"
+        >
+          Cancel
+        </button>
       </div>
-
-      <p className="text-xs text-gray-500 text-center">
-        Quote will be emailed to <span className="text-gray-300">{quote.email}</span>
-      </p>
     </div>
   )
 }

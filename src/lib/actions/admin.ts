@@ -111,6 +111,13 @@ function mapQuote(q: PrismaQuote & { preferredVehicle?: PrismaVehicle | null; li
     deposit_percent: q.depositPercent,
     quote_token: q.quoteToken,
     quote_sent_at: q.quoteSentAt?.toISOString() || null,
+    hourly_rate: q.hourlyRate ? Number(q.hourlyRate) : null,
+    base_fare: q.baseFare ? Number(q.baseFare) : null,
+    fuel_surcharge: q.fuelSurcharge ? Number(q.fuelSurcharge) : null,
+    gratuity_percent: q.gratuityPercent ?? null,
+    driver_gratuity: q.driverGratuity ? Number(q.driverGratuity) : null,
+    tax_amount: q.taxAmount ? Number(q.taxAmount) : null,
+    custom_items: (q.customItems as { description: string; amount: number }[] | null) ?? null,
     created_at: q.createdAt.toISOString(),
     updated_at: q.updatedAt.toISOString(),
     line_items: q.lineItems?.map(mapQuoteLineItem),
@@ -614,39 +621,42 @@ export async function getVehicleForQuote(vehicleId: string): Promise<Vehicle | n
   return vehicle ? mapVehicle(vehicle) : null
 }
 
-export async function saveQuoteLineItems(
+export interface QuotePricingData {
+  hourlyRate: number
+  durationHours: number
+  baseFare: number
+  fuelSurcharge: number
+  gratuityPercent: number
+  driverGratuity: number
+  taxAmount: number
+  customItems: { description: string; amount: number }[]
+  total: number
+  depositPercent: number
+}
+
+export async function saveQuotePricing(
   quoteId: string,
-  items: { description: string; quantity: number; unitPrice: number; sortOrder: number; isPreset: boolean; presetKey: string | null }[]
+  pricing: QuotePricingData
 ): Promise<Quote> {
   await requireAdmin()
 
-  const total = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0)
-
-  await prisma.$transaction([
-    prisma.quoteLineItem.deleteMany({ where: { quoteId } }),
-    ...items.map((item) =>
-      prisma.quoteLineItem.create({
-        data: {
-          quoteId,
-          description: item.description,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          sortOrder: item.sortOrder,
-          isPreset: item.isPreset,
-          presetKey: item.presetKey,
-        },
-      })
-    ),
-    prisma.quote.update({
-      where: { id: quoteId },
-      data: { quotedAmount: total },
-    }),
-  ])
-
-  const updated = await prisma.quote.findUnique({
+  await prisma.quote.update({
     where: { id: quoteId },
-    include: { lineItems: { orderBy: { sortOrder: 'asc' } } },
+    data: {
+      hourlyRate: pricing.hourlyRate,
+      durationHours: pricing.durationHours,
+      baseFare: pricing.baseFare,
+      fuelSurcharge: pricing.fuelSurcharge,
+      gratuityPercent: pricing.gratuityPercent,
+      driverGratuity: pricing.driverGratuity,
+      taxAmount: pricing.taxAmount,
+      customItems: pricing.customItems,
+      quotedAmount: pricing.total,
+      depositPercent: pricing.depositPercent,
+    },
   })
+
+  const updated = await prisma.quote.findUnique({ where: { id: quoteId } })
 
   revalidatePath('/admin/quotes')
   revalidatePath('/admin')
@@ -655,8 +665,8 @@ export async function saveQuoteLineItems(
 
 export async function buildAndSendQuote(
   quoteId: string,
-  items: { description: string; quantity: number; unitPrice: number; sortOrder: number; isPreset: boolean; presetKey: string | null }[],
-  depositPercent: number = 20
+  pricing: QuotePricingData,
+  adminNotes?: string | null
 ): Promise<Quote> {
   await requireAdmin()
 
@@ -666,41 +676,32 @@ export async function buildAndSendQuote(
   })
   if (!quote) throw new Error('Quote not found')
 
-  const total = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0)
-
-  // Generate quoteToken if not already set
   const quoteToken = quote.quoteToken || require('crypto').randomUUID()
 
-  await prisma.$transaction([
-    prisma.quoteLineItem.deleteMany({ where: { quoteId } }),
-    ...items.map((item) =>
-      prisma.quoteLineItem.create({
-        data: {
-          quoteId,
-          description: item.description,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          sortOrder: item.sortOrder,
-          isPreset: item.isPreset,
-          presetKey: item.presetKey,
-        },
-      })
-    ),
-    prisma.quote.update({
-      where: { id: quoteId },
-      data: {
-        quotedAmount: total,
-        depositPercent,
-        status: 'QUOTED',
-        quoteToken,
-        quoteSentAt: new Date(),
-      },
-    }),
-  ])
+  await prisma.quote.update({
+    where: { id: quoteId },
+    data: {
+      hourlyRate: pricing.hourlyRate,
+      durationHours: pricing.durationHours,
+      baseFare: pricing.baseFare,
+      fuelSurcharge: pricing.fuelSurcharge,
+      gratuityPercent: pricing.gratuityPercent,
+      driverGratuity: pricing.driverGratuity,
+      taxAmount: pricing.taxAmount,
+      customItems: pricing.customItems,
+      quotedAmount: pricing.total,
+      depositPercent: pricing.depositPercent,
+      status: 'QUOTED',
+      quoteToken,
+      quoteSentAt: new Date(),
+      adminNotes: adminNotes ?? quote.adminNotes,
+    },
+  })
 
   // Send email
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
   const quoteUrl = `${siteUrl}/quote/view/${quoteToken}`
+  const depositAmount = Math.round(pricing.total * pricing.depositPercent / 100)
 
   if (process.env.RESEND_API_KEY) {
     try {
@@ -708,23 +709,24 @@ export async function buildAndSendQuote(
       await resend.emails.send({
         from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
         to: [quote.email],
-        subject: `Your Quote from American Royalty — ${quote.eventType} on ${quote.eventDate}`,
+        subject: `Your American Royalty Quote — ${quote.eventType}, ${quote.eventDate}`,
         html: buildQuoteEmailHtml({
-          clientName: quote.name,
+          clientName: quote.name.split(' ')[0],
           eventType: quote.eventType,
           eventDate: quote.eventDate,
-          vehicleName: quote.preferredVehicle?.name || null,
-          lineItems: items.map((i) => ({
-            description: i.description,
-            quantity: i.quantity,
-            unitPrice: i.unitPrice,
-          })),
-          totalAmount: formatCurrency(total),
-          depositPercent,
-          depositAmount: formatCurrency(Math.round(total * depositPercent / 100)),
+          pickupTime: quote.pickupTime,
+          durationHours: pricing.durationHours,
+          hourlyRate: pricing.hourlyRate,
+          baseFare: pricing.baseFare,
+          fuelSurcharge: pricing.fuelSurcharge,
+          customItems: pricing.customItems,
+          taxAmount: pricing.taxAmount,
+          driverGratuity: pricing.driverGratuity,
+          total: pricing.total,
+          depositPercent: pricing.depositPercent,
+          depositAmount,
           quoteUrl,
-          brandPhone: BRAND.phone,
-          brandEmail: BRAND.email,
+          adminNotes: adminNotes || null,
         }),
       })
     } catch (emailError) {
@@ -732,10 +734,7 @@ export async function buildAndSendQuote(
     }
   }
 
-  const updated = await prisma.quote.findUnique({
-    where: { id: quoteId },
-    include: { lineItems: { orderBy: { sortOrder: 'asc' } } },
-  })
+  const updated = await prisma.quote.findUnique({ where: { id: quoteId } })
 
   revalidatePath('/admin/quotes')
   revalidatePath('/admin')

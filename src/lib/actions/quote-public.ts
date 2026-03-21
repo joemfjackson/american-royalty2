@@ -18,12 +18,14 @@ export interface PublicQuoteData {
   quote_sent_at: string | null
   is_booked: boolean
   is_paid: boolean
-  line_items: {
-    description: string
-    quantity: number
-    unit_price: number
-    sort_order: number
-  }[]
+  // Structured pricing
+  hourly_rate: number | null
+  base_fare: number | null
+  fuel_surcharge: number | null
+  driver_gratuity: number | null
+  gratuity_percent: number | null
+  tax_amount: number | null
+  custom_items: { description: string; amount: number }[] | null
 }
 
 export async function getQuotePublic(token: string): Promise<PublicQuoteData | null> {
@@ -31,7 +33,6 @@ export async function getQuotePublic(token: string): Promise<PublicQuoteData | n
     where: { quoteToken: token },
     include: {
       preferredVehicle: { select: { name: true } },
-      lineItems: { orderBy: { sortOrder: 'asc' } },
       invoices: {
         where: { status: 'PAID' },
         take: 1,
@@ -67,11 +68,12 @@ export async function getQuotePublic(token: string): Promise<PublicQuoteData | n
     quote_sent_at: quote.quoteSentAt?.toISOString() || null,
     is_booked: isBooked,
     is_paid: isPaid,
-    line_items: quote.lineItems.map((li) => ({
-      description: li.description,
-      quantity: li.quantity,
-      unit_price: Number(li.unitPrice),
-      sort_order: li.sortOrder,
-    })),
+    hourly_rate: quote.hourlyRate ? Number(quote.hourlyRate) : null,
+    base_fare: quote.baseFare ? Number(quote.baseFare) : null,
+    fuel_surcharge: quote.fuelSurcharge ? Number(quote.fuelSurcharge) : null,
+    driver_gratuity: quote.driverGratuity ? Number(quote.driverGratuity) : null,
+    gratuity_percent: quote.gratuityPercent ?? null,
+    tax_amount: quote.taxAmount ? Number(quote.taxAmount) : null,
+    custom_items: (quote.customItems as { description: string; amount: number }[] | null) ?? null,
   }
 }

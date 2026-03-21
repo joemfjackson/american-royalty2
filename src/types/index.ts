@@ -62,6 +62,13 @@ export interface Quote {
   deposit_percent: number
   quote_token: string | null
   quote_sent_at: string | null
+  hourly_rate: number | null
+  base_fare: number | null
+  fuel_surcharge: number | null
+  gratuity_percent: number | null
+  driver_gratuity: number | null
+  tax_amount: number | null
+  custom_items: { description: string; amount: number }[] | null
   created_at: string
   updated_at: string
   vehicle?: Vehicle

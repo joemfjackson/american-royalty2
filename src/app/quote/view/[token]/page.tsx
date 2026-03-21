@@ -9,8 +9,8 @@ interface Props {
   params: Promise<{ token: string }>
 }
 
-function formatCurrencyDisplay(amount: number): string {
-  return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+function fmt(amount: number): string {
+  return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 export default async function QuoteViewPage({ params }: Props) {
@@ -22,6 +22,7 @@ export default async function QuoteViewPage({ params }: Props) {
   }
 
   const balanceDue = quote.quoted_amount - quote.deposit_amount
+  const hasStructuredPricing = quote.base_fare != null
 
   return (
     <div className="space-y-6">
@@ -108,42 +109,87 @@ export default async function QuoteViewPage({ params }: Props) {
           <h2 className="text-xs font-semibold tracking-wider text-gray-500 uppercase">Pricing Breakdown</h2>
         </div>
         <div className="px-5 py-4 space-y-1">
-          {quote.line_items.map((item, index) => {
-            const lineTotal = item.quantity * item.unit_price
-            return (
-              <div key={index} className="flex justify-between items-baseline text-sm py-1.5">
-                <div className="flex-1 min-w-0">
-                  <span className="text-gray-300">{item.description}</span>
-                  {item.quantity > 1 && (
+          {hasStructuredPricing ? (
+            <>
+              {/* Base Fare */}
+              <div className="flex justify-between items-baseline text-sm py-1.5">
+                <div>
+                  <span className="text-gray-300">Base Fare</span>
+                  {quote.duration_hours && quote.hourly_rate && (
                     <span className="ml-2 text-xs text-gray-500">
-                      {item.quantity} × {formatCurrencyDisplay(item.unit_price)}
+                      {quote.duration_hours} hrs &times; {fmt(quote.hourly_rate)}/hr
                     </span>
                   )}
                 </div>
-                <span className="text-white font-medium ml-4 shrink-0">
-                  {formatCurrencyDisplay(lineTotal)}
+                <span className="text-white font-medium ml-4 shrink-0">{fmt(quote.base_fare!)}</span>
+              </div>
+
+              {/* Fuel Surcharge */}
+              {quote.fuel_surcharge != null && quote.fuel_surcharge > 0 && (
+                <div className="flex justify-between items-baseline text-sm py-1.5">
+                  <span className="text-gray-300">NTA Fuel Surcharge</span>
+                  <span className="text-white font-medium ml-4 shrink-0">{fmt(quote.fuel_surcharge)}</span>
+                </div>
+              )}
+
+              {/* Custom Items */}
+              {quote.custom_items?.map((item, index) => (
+                <div key={index} className="flex justify-between items-baseline text-sm py-1.5">
+                  <span className="text-gray-300">{item.description}</span>
+                  <span className="text-white font-medium ml-4 shrink-0">{fmt(item.amount)}</span>
+                </div>
+              ))}
+
+              <div className="border-t border-dark-border my-2" />
+
+              {/* Subtotal */}
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">Subtotal</span>
+                <span className="text-white font-medium">
+                  {fmt(
+                    (quote.base_fare || 0) +
+                    (quote.fuel_surcharge || 0) +
+                    (quote.custom_items?.reduce((s, i) => s + i.amount, 0) || 0)
+                  )}
                 </span>
               </div>
-            )
-          })}
 
-          {/* If no line items, show flat total */}
-          {quote.line_items.length === 0 && (
-            <div className="flex justify-between text-sm py-1.5">
-              <span className="text-gray-300">Service Total</span>
-              <span className="text-white font-medium">{formatCurrencyDisplay(quote.quoted_amount)}</span>
-            </div>
+              {/* Tax */}
+              {quote.tax_amount != null && quote.tax_amount > 0 && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-400">NTA Excise Tax (3%)</span>
+                  <span className="text-white font-medium">{fmt(quote.tax_amount)}</span>
+                </div>
+              )}
+
+              {/* Gratuity */}
+              {quote.driver_gratuity != null && quote.driver_gratuity > 0 && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-400">Driver Gratuity</span>
+                  <span className="text-white font-medium">{fmt(quote.driver_gratuity)}</span>
+                </div>
+              )}
+
+              <div className="border-t border-dark-border my-2" />
+            </>
+          ) : (
+            <>
+              {/* Fallback for old quotes without structured pricing */}
+              <div className="flex justify-between text-sm py-1.5">
+                <span className="text-gray-300">Service Total</span>
+                <span className="text-white font-medium">{fmt(quote.quoted_amount)}</span>
+              </div>
+              <div className="border-t border-dark-border my-2" />
+            </>
           )}
-
-          <div className="border-t border-dark-border my-2" />
 
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-400">Total Amount</span>
-            <span className="text-white font-medium">{formatCurrencyDisplay(quote.quoted_amount)}</span>
+            <span className="text-white font-medium">{fmt(quote.quoted_amount)}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-400">Deposit to Book ({quote.deposit_percent}%)</span>
-            <span className="text-gold font-bold">{formatCurrencyDisplay(quote.deposit_amount)}</span>
+            <span className="text-gold font-bold">{fmt(quote.deposit_amount)}</span>
           </div>
 
           <div className="border-t border-dark-border my-2" />
@@ -153,7 +199,7 @@ export default async function QuoteViewPage({ params }: Props) {
               {quote.is_paid ? 'Deposit Paid' : 'Pay Now to Book'}
             </span>
             <span className="text-2xl font-bold text-gold">
-              {formatCurrencyDisplay(quote.deposit_amount)}
+              {fmt(quote.deposit_amount)}
             </span>
           </div>
 
@@ -169,7 +215,7 @@ export default async function QuoteViewPage({ params }: Props) {
           {quote.is_paid && (
             <div className="rounded-lg bg-emerald-500/5 border border-emerald-500/20 p-4 text-center mt-2">
               <div className="text-3xl mb-2">&#10003;</div>
-              <p className="text-sm font-medium text-emerald-400">Deposit Received — You&apos;re Booked!</p>
+              <p className="text-sm font-medium text-emerald-400">Deposit Received &mdash; You&apos;re Booked!</p>
               <p className="text-xs text-gray-500 mt-1">
                 We&apos;ll be in touch with final details before your event.
               </p>
@@ -181,7 +227,7 @@ export default async function QuoteViewPage({ params }: Props) {
         {!quote.is_paid && balanceDue > 0 && (
           <div className="px-5 py-3 border-t border-dark-border bg-black/30">
             <p className="text-xs text-gray-500 text-center">
-              Remaining balance of {formatCurrencyDisplay(balanceDue)} due before your event
+              Remaining balance of {fmt(balanceDue)} due 7 days before your event or cash upon arrival
             </p>
           </div>
         )}

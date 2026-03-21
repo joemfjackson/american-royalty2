@@ -123,9 +123,16 @@ model Quote {
   status             QuoteStatus @default(NEW)
   quotedAmount       Decimal?    @db.Decimal(10, 2)
   adminNotes         String?     @db.Text
-  depositPercent     Int         @default(20)
+  depositPercent     Int         @default(25)
   quoteToken         String?     @unique
   quoteSentAt        DateTime?
+  hourlyRate         Decimal?    @db.Decimal(10, 2)
+  baseFare           Decimal?    @db.Decimal(10, 2)
+  fuelSurcharge      Decimal?    @db.Decimal(10, 2)
+  gratuityPercent    Int?        @default(20)
+  driverGratuity     Decimal?    @db.Decimal(10, 2)
+  taxAmount          Decimal?    @db.Decimal(10, 2)
+  customItems        Json?
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
 
