@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getQuotePublic } from '@/lib/actions/quote-public'
-import { formatDate } from '@/lib/utils'
+import { formatDate, formatTime } from '@/lib/utils'
 import { QuotePayClient } from './QuotePayClient'
 
 export const dynamic = 'force-dynamic'
@@ -64,7 +64,7 @@ export default async function QuoteViewPage({ params }: Props) {
           {quote.pickup_time && (
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Time</span>
-              <span className="text-white font-medium">{quote.pickup_time}</span>
+              <span className="text-white font-medium">{formatTime(quote.pickup_time)}</span>
             </div>
           )}
           {quote.duration_hours && (
@@ -165,7 +165,7 @@ export default async function QuoteViewPage({ params }: Props) {
               {/* Gratuity */}
               {quote.driver_gratuity != null && quote.driver_gratuity > 0 && (
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-400">Driver Gratuity</span>
+                  <span className="text-gray-400">Driver Gratuity{quote.gratuity_percent ? ` (${quote.gratuity_percent}%)` : ''}</span>
                   <span className="text-white font-medium">{fmt(quote.driver_gratuity)}</span>
                 </div>
               )}

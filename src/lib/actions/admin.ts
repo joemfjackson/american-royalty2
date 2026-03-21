@@ -493,7 +493,7 @@ export async function createAndSendInvoice(
       await resend.emails.send({
         from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
         to: [quote.email],
-        subject: `Your Invoice from American Royalty — ${quote.eventType} on ${quote.eventDate}`,
+        subject: `Your Invoice from American Royalty — ${quote.eventType} on ${new Date(quote.eventDate + 'T00:00:00').toLocaleDateString('en-US')}`,
         html: buildInvoiceEmailHtml({
           clientName: quote.name,
           eventType: quote.eventType,
@@ -709,7 +709,7 @@ export async function buildAndSendQuote(
       await resend.emails.send({
         from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
         to: [quote.email],
-        subject: `Your American Royalty Quote — ${quote.eventType}, ${quote.eventDate}`,
+        subject: `Your American Royalty Quote — ${quote.eventType}, ${new Date(quote.eventDate + 'T00:00:00').toLocaleDateString('en-US')}`,
         html: buildQuoteEmailHtml({
           clientName: quote.name.split(' ')[0],
           eventType: quote.eventType,

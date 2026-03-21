@@ -35,7 +35,7 @@ import {
   getQuotePublicLink,
   getVehicleForQuote,
 } from '@/lib/actions/admin'
-import { formatDate, formatCurrency } from '@/lib/utils'
+import { formatDate, formatCurrency, formatTime } from '@/lib/utils'
 import { QuoteBuilder } from '@/components/admin/QuoteBuilder'
 
 type QuoteStatus = Quote['status']
@@ -391,7 +391,7 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                 </div>
                 <div className="rounded-lg border border-dark-border p-2.5">
                   <p className="text-xs text-gray-500">Time</p>
-                  <p className="text-sm font-medium text-white">{quote.pickup_time || 'TBD'}</p>
+                  <p className="text-sm font-medium text-white">{quote.pickup_time ? formatTime(quote.pickup_time) : 'TBD'}</p>
                 </div>
                 <div className="rounded-lg border border-dark-border p-2.5">
                   <p className="text-xs text-gray-500">Guests</p>

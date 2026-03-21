@@ -21,6 +21,11 @@ function fmt(amount: number): string {
   return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
+function formatDateDisplay(date: string): string {
+  const d = new Date(date + 'T00:00:00')
+  return d.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
+}
+
 export function buildQuoteEmailHtml(data: QuoteEmailData): string {
   const subtotal = data.baseFare + data.fuelSurcharge + data.customItems.reduce((s, i) => s + i.amount, 0)
 
@@ -80,7 +85,7 @@ export function buildQuoteEmailHtml(data: QuoteEmailData): string {
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
                         <td style="padding:4px 0;font-size:14px;color:#999;width:100px;">Date</td>
-                        <td style="padding:4px 0;font-size:14px;color:#fff;font-weight:500;">${data.eventDate}</td>
+                        <td style="padding:4px 0;font-size:14px;color:#fff;font-weight:500;">${formatDateDisplay(data.eventDate)}</td>
                       </tr>
                       ${data.pickupTime ? `
                       <tr>

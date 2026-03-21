@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { Plus, Trash2, Send, Save } from 'lucide-react'
 import type { Quote, Vehicle } from '@/types'
 import { saveQuotePricing, buildAndSendQuote } from '@/lib/actions/admin'
+import { formatTime } from '@/lib/utils'
 
 const VEHICLE_RATE_DEFAULTS: Record<string, number> = {
   'the-crown-jewel': 295,
@@ -287,7 +288,7 @@ export function QuoteBuilder({ quote, vehicle, onSaved, onCancel, adminNotes }: 
           <p>Here&apos;s your quote:</p>
           <div className="rounded border border-dark-border p-2 space-y-1 text-xs">
             <p>Date: {quote.event_date}</p>
-            {quote.pickup_time && <p>Time: {quote.pickup_time}</p>}
+            {quote.pickup_time && <p>Time: {formatTime(quote.pickup_time)}</p>}
             <p>Duration: {duration} hours</p>
           </div>
           <div className="rounded border border-dark-border p-2 space-y-1 text-xs">

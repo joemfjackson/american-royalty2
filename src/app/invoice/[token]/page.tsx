@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getInvoicePublic } from '@/lib/actions/invoice-public'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, formatTime } from '@/lib/utils'
 import { InvoiceClient } from './InvoiceClient'
 
 export const dynamic = 'force-dynamic'
@@ -64,7 +64,7 @@ export default async function InvoicePage({ params }: Props) {
           {invoice.quote.pickup_time && (
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Time</span>
-              <span className="text-white font-medium">{invoice.quote.pickup_time}</span>
+              <span className="text-white font-medium">{formatTime(invoice.quote.pickup_time)}</span>
             </div>
           )}
           {invoice.quote.duration_hours && (
