@@ -722,6 +722,7 @@ export async function buildAndSendQuote(
           customItems: pricing.customItems,
           taxAmount: pricing.taxAmount,
           driverGratuity: pricing.driverGratuity,
+          gratuityPercent: pricing.gratuityPercent,
           total: pricing.total,
           depositPercent: pricing.depositPercent,
           depositAmount,

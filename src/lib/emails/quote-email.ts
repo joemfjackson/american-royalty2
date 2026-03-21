@@ -10,6 +10,7 @@ interface QuoteEmailData {
   customItems: { description: string; amount: number }[]
   taxAmount: number
   driverGratuity: number
+  gratuityPercent: number
   total: number
   depositPercent: number
   depositAmount: number
@@ -24,6 +25,13 @@ function fmt(amount: number): string {
 function formatDateDisplay(date: string): string {
   const d = new Date(date + 'T00:00:00')
   return d.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
+}
+
+function formatTimeDisplay(time: string): string {
+  const [hours, minutes] = time.split(':').map(Number)
+  const period = hours >= 12 ? 'PM' : 'AM'
+  const displayHours = hours % 12 || 12
+  return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`
 }
 
 export function buildQuoteEmailHtml(data: QuoteEmailData): string {
@@ -90,7 +98,7 @@ export function buildQuoteEmailHtml(data: QuoteEmailData): string {
                       ${data.pickupTime ? `
                       <tr>
                         <td style="padding:4px 0;font-size:14px;color:#999;">Time</td>
-                        <td style="padding:4px 0;font-size:14px;color:#fff;font-weight:500;">${data.pickupTime}</td>
+                        <td style="padding:4px 0;font-size:14px;color:#fff;font-weight:500;">${formatTimeDisplay(data.pickupTime)}</td>
                       </tr>
                       ` : ''}
                       <tr>
@@ -138,10 +146,12 @@ export function buildQuoteEmailHtml(data: QuoteEmailData): string {
                         <td style="padding:6px 0;font-size:14px;color:#ccc;">NTA Excise Tax (3%)</td>
                         <td style="padding:6px 0;font-size:14px;color:#fff;text-align:right;font-weight:500;">${fmt(data.taxAmount)}</td>
                       </tr>
+                      ${data.driverGratuity > 0 ? `
                       <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#ccc;">Driver Gratuity</td>
+                        <td style="padding:6px 0;font-size:14px;color:#ccc;">Driver Gratuity (${data.gratuityPercent}%)</td>
                         <td style="padding:6px 0;font-size:14px;color:#fff;text-align:right;font-weight:500;">${fmt(data.driverGratuity)}</td>
                       </tr>
+                      ` : ''}
                       <tr>
                         <td colspan="2" style="padding:8px 0 0;">
                           <div style="height:1px;background-color:#1E1E1E;"></div>
