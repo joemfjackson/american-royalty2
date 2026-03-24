@@ -95,9 +95,24 @@ export interface Booking {
   deposit_paid: boolean
   status: 'pending' | 'confirmed' | 'deposit_paid' | 'in_progress' | 'completed' | 'cancelled'
   notes: string | null
+  stripe_customer_id: string | null
+  stripe_payment_method: string | null
   created_at: string
   updated_at: string
   vehicle?: Vehicle
+  additional_charges?: AdditionalCharge[]
+}
+
+export interface AdditionalCharge {
+  id: string
+  booking_id: string
+  amount: number
+  reason: string
+  status: 'pending' | 'succeeded' | 'failed'
+  stripe_payment_id: string | null
+  failure_message: string | null
+  charged_at: string | null
+  created_at: string
 }
 
 export interface Invoice {

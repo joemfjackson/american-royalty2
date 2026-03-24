@@ -190,12 +190,39 @@ model Booking {
   totalAmount     Decimal?      @db.Decimal(10, 2)
   depositAmount   Decimal?      @db.Decimal(10, 2)
   depositPaid     Boolean       @default(false)
-  status          BookingStatus @default(PENDING)
-  notes           String?       @db.Text
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  status              BookingStatus @default(PENDING)
+  notes               String?       @db.Text
+  stripeCustomerId    String?
+  stripePaymentMethod String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  additionalCharges AdditionalCharge[]
 
   @@map("bookings")
+}
+
+// ─── Additional Charges ─────────────────────────────────
+
+enum ChargeStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+}
+
+model AdditionalCharge {
+  id              String       @id @default(cuid())
+  bookingId       String
+  booking         Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  amount          Decimal      @db.Decimal(10, 2)
+  reason          String
+  status          ChargeStatus @default(PENDING)
+  stripePaymentId String?
+  failureMessage  String?
+  chargedAt       DateTime?
+  createdAt       DateTime     @default(now())
+
+  @@map("additional_charges")
 }
 
 // ─── Invoices ────────────────────────────────────────

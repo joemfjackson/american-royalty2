@@ -4,17 +4,21 @@ import { prisma } from '@/lib/db'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
-import type { Quote, QuoteLineItem, Booking, Testimonial, Vehicle, Invoice } from '@/types'
+import type { Quote, QuoteLineItem, Booking, Testimonial, Vehicle, Invoice, AdditionalCharge } from '@/types'
 import type {
   Quote as PrismaQuote,
   Booking as PrismaBooking,
   Vehicle as PrismaVehicle,
   Invoice as PrismaInvoice,
   QuoteLineItem as PrismaQuoteLineItem,
+  AdditionalCharge as PrismaAdditionalCharge,
 } from '@prisma/client'
 import { Resend } from 'resend'
 import { buildInvoiceEmailHtml } from '@/lib/emails/invoice-email'
 import { buildQuoteEmailHtml } from '@/lib/emails/quote-email'
+import { buildBookingConfirmationEmailHtml } from '@/lib/emails/booking-confirmation-email'
+import { buildAdditionalChargeEmailHtml } from '@/lib/emails/additional-charge-email'
+import { getStripe } from '@/lib/stripe'
 import { BRAND } from '@/lib/constants'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
@@ -158,6 +162,8 @@ function mapBooking(b: PrismaBooking): Booking {
     deposit_paid: b.depositPaid,
     status: (BOOKING_STATUS_MAP[b.status] || 'pending') as Booking['status'],
     notes: b.notes,
+    stripe_customer_id: b.stripeCustomerId,
+    stripe_payment_method: b.stripePaymentMethod,
     created_at: b.createdAt.toISOString(),
     updated_at: b.updatedAt.toISOString(),
   }
@@ -394,6 +400,8 @@ export async function markDepositPaidOffPlatform(quoteId: string, paymentMethod:
     data: { status: 'BOOKED' },
   })
 
+  await sendBookingConfirmationEmail(quote, depositAmount)
+
   revalidatePath('/admin/quotes')
   revalidatePath('/admin/bookings')
   revalidatePath('/admin/calendar')
@@ -440,6 +448,41 @@ async function createBookingFromQuote(quoteId: string, depositAmount: number): P
   revalidatePath('/admin')
 
   return booking
+}
+
+async function sendBookingConfirmationEmail(quote: PrismaQuote, depositAmount: number) {
+  if (!process.env.RESEND_API_KEY) return
+  try {
+    const vehicle = quote.preferredVehicleId
+      ? await prisma.vehicle.findUnique({ where: { id: quote.preferredVehicleId }, select: { name: true } })
+      : null
+    const totalAmount = Number(quote.quotedAmount || 0)
+    const depositAmt = Number(depositAmount)
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    await resend.emails.send({
+      from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
+      to: [quote.email],
+      subject: `Booking Confirmed — ${quote.eventType}, ${new Date(quote.eventDate + 'T00:00:00').toLocaleDateString('en-US')}`,
+      html: buildBookingConfirmationEmailHtml({
+        clientName: quote.name.split(' ')[0],
+        eventType: quote.eventType,
+        eventDate: quote.eventDate,
+        pickupTime: quote.pickupTime,
+        durationHours: quote.durationHours,
+        vehicleName: vehicle?.name || null,
+        guestCount: quote.guestCount,
+        pickupLocation: quote.pickupLocation,
+        dropoffLocation: quote.dropoffLocation,
+        totalAmount,
+        depositAmount: depositAmt,
+        balanceDue: totalAmount - depositAmt,
+        siteUrl,
+      }),
+    })
+  } catch (emailError) {
+    console.error('Booking confirmation email failed:', emailError)
+  }
 }
 
 // ─── Invoices ───────────────────────────────────────────
@@ -549,6 +592,12 @@ export async function markInvoicePaidManually(invoiceId: string): Promise<Invoic
   })
 
   await createBookingFromQuote(invoice.quoteId, Number(invoice.depositAmount))
+
+  // Send booking confirmation email
+  const quote = await prisma.quote.findUnique({ where: { id: invoice.quoteId } })
+  if (quote) {
+    await sendBookingConfirmationEmail(quote, Number(invoice.depositAmount))
+  }
 
   revalidatePath('/admin/quotes')
   revalidatePath('/admin/bookings')
@@ -1042,4 +1091,122 @@ export async function getVehicleNames(): Promise<Record<string, string>> {
     map[v.id] = v.name
   }
   return map
+}
+
+// ─── Additional Charges (Card on File) ─────────────────
+
+const CHARGE_STATUS_MAP: Record<string, AdditionalCharge['status']> = {
+  PENDING: 'pending',
+  SUCCEEDED: 'succeeded',
+  FAILED: 'failed',
+}
+
+function mapAdditionalCharge(c: PrismaAdditionalCharge): AdditionalCharge {
+  return {
+    id: c.id,
+    booking_id: c.bookingId,
+    amount: Number(c.amount),
+    reason: c.reason,
+    status: (CHARGE_STATUS_MAP[c.status] || 'pending') as AdditionalCharge['status'],
+    stripe_payment_id: c.stripePaymentId,
+    failure_message: c.failureMessage,
+    charged_at: c.chargedAt?.toISOString() || null,
+    created_at: c.createdAt.toISOString(),
+  }
+}
+
+export async function getBookingCharges(bookingId: string): Promise<AdditionalCharge[]> {
+  await requireAdmin()
+  const charges = await prisma.additionalCharge.findMany({
+    where: { bookingId },
+    orderBy: { createdAt: 'desc' },
+  })
+  return charges.map(mapAdditionalCharge)
+}
+
+export async function chargeCardOnFile(
+  bookingId: string,
+  amount: number,
+  reason: string
+): Promise<AdditionalCharge> {
+  await requireAdmin()
+
+  const booking = await prisma.booking.findUnique({ where: { id: bookingId } })
+  if (!booking) throw new Error('Booking not found')
+  if (!booking.stripeCustomerId || !booking.stripePaymentMethod) {
+    throw new Error('No card on file for this booking')
+  }
+
+  const stripe = getStripe()
+  if (!stripe) throw new Error('Stripe not configured')
+
+  // Create charge record as PENDING
+  const charge = await prisma.additionalCharge.create({
+    data: {
+      bookingId,
+      amount,
+      reason,
+      status: 'PENDING',
+    },
+  })
+
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount * 100),
+      currency: 'usd',
+      customer: booking.stripeCustomerId,
+      payment_method: booking.stripePaymentMethod,
+      off_session: true,
+      confirm: true,
+      description: `Additional charge — ${reason}`,
+      metadata: {
+        bookingId,
+        chargeId: charge.id,
+        reason,
+      },
+    })
+
+    const updated = await prisma.additionalCharge.update({
+      where: { id: charge.id },
+      data: {
+        status: 'SUCCEEDED',
+        stripePaymentId: paymentIntent.id,
+        chargedAt: new Date(),
+      },
+    })
+
+    // Send receipt email
+    if (booking.clientEmail && process.env.RESEND_API_KEY) {
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY)
+        await resend.emails.send({
+          from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
+          to: [booking.clientEmail],
+          subject: `Additional Charge Receipt — $${amount.toFixed(2)}`,
+          html: buildAdditionalChargeEmailHtml({
+            clientName: booking.clientName.split(' ')[0],
+            amount,
+            reason,
+            bookingDate: booking.bookingDate,
+            eventType: booking.eventType,
+          }),
+        })
+      } catch (emailErr) {
+        console.error('Additional charge receipt email failed:', emailErr)
+      }
+    }
+
+    revalidatePath('/admin/bookings')
+    return mapAdditionalCharge(updated)
+  } catch (err: unknown) {
+    const failureMessage = err instanceof Error ? err.message : 'Unknown error'
+    const failed = await prisma.additionalCharge.update({
+      where: { id: charge.id },
+      data: {
+        status: 'FAILED',
+        failureMessage,
+      },
+    })
+    return mapAdditionalCharge(failed)
+  }
 }

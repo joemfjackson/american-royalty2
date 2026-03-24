@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getStripe } from '@/lib/stripe'
 import { revalidatePath } from 'next/cache'
+import { Resend } from 'resend'
+import { buildBookingConfirmationEmailHtml } from '@/lib/emails/booking-confirmation-email'
 import type Stripe from 'stripe'
 
 export async function POST(request: Request) {
@@ -67,7 +69,15 @@ export async function POST(request: Request) {
       })
 
       if (quote) {
-        // Create booking
+        // Capture card-on-file data from the payment
+        const stripeCustomerId = session.customer as string | null
+        let stripePaymentMethod: string | null = null
+        if (session.payment_intent && typeof session.payment_intent === 'string') {
+          const pi = await stripe.paymentIntents.retrieve(session.payment_intent)
+          stripePaymentMethod = pi.payment_method as string | null
+        }
+
+        // Create booking with card on file
         await prisma.booking.create({
           data: {
             quoteId: quote.id,
@@ -87,6 +97,8 @@ export async function POST(request: Request) {
             depositPaid: true,
             status: 'DEPOSIT_PAID',
             notes: quote.adminNotes,
+            stripeCustomerId,
+            stripePaymentMethod,
           },
         })
 
@@ -95,6 +107,41 @@ export async function POST(request: Request) {
           where: { id: quote.id },
           data: { status: 'BOOKED' },
         })
+
+        // Send booking confirmation email
+        if (process.env.RESEND_API_KEY) {
+          try {
+            const vehicle = quote.preferredVehicleId
+              ? await prisma.vehicle.findUnique({ where: { id: quote.preferredVehicleId }, select: { name: true } })
+              : null
+            const totalAmount = Number(quote.quotedAmount || 0)
+            const depositAmt = Number(invoice.depositAmount)
+            const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
+            const resend = new Resend(process.env.RESEND_API_KEY)
+            await resend.emails.send({
+              from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
+              to: [quote.email],
+              subject: `Booking Confirmed — ${quote.eventType}, ${new Date(quote.eventDate + 'T00:00:00').toLocaleDateString('en-US')}`,
+              html: buildBookingConfirmationEmailHtml({
+                clientName: quote.name.split(' ')[0],
+                eventType: quote.eventType,
+                eventDate: quote.eventDate,
+                pickupTime: quote.pickupTime,
+                durationHours: quote.durationHours,
+                vehicleName: vehicle?.name || null,
+                guestCount: quote.guestCount,
+                pickupLocation: quote.pickupLocation,
+                dropoffLocation: quote.dropoffLocation,
+                totalAmount,
+                depositAmount: depositAmt,
+                balanceDue: totalAmount - depositAmt,
+                siteUrl,
+              }),
+            })
+          } catch (emailError) {
+            console.error('Booking confirmation email failed:', emailError)
+          }
+        }
       }
 
       revalidatePath('/admin/quotes')

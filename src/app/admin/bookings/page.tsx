@@ -14,13 +14,16 @@ import {
   Users,
   Car,
   Plus,
+  CreditCard,
+  DollarSign,
+  AlertCircle,
 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { getBookings, getVehicleNames, updateBookingStatus, createBooking } from '@/lib/actions/admin'
+import { getBookings, getVehicleNames, updateBookingStatus, createBooking, chargeCardOnFile, getBookingCharges } from '@/lib/actions/admin'
 import { formatDate, formatCurrency } from '@/lib/utils'
 import { EVENT_TYPES } from '@/lib/constants'
-import type { Booking } from '@/types'
+import type { Booking, AdditionalCharge } from '@/types'
 
 type BookingStatus = Booking['status']
 
@@ -77,6 +80,11 @@ export default function AdminBookingsPage() {
   const [createLoading, setCreateLoading] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
   const [form, setForm] = useState(EMPTY_FORM)
+  const [chargeAmount, setChargeAmount] = useState('')
+  const [chargeReason, setChargeReason] = useState('')
+  const [chargeLoading, setChargeLoading] = useState(false)
+  const [chargeResult, setChargeResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [charges, setCharges] = useState<AdditionalCharge[]>([])
 
   useEffect(() => {
     async function load() {
@@ -92,6 +100,36 @@ export default function AdminBookingsPage() {
     }
     load()
   }, [])
+
+  useEffect(() => {
+    if (selectedBooking && detailOpen) {
+      setChargeAmount('')
+      setChargeReason('')
+      setChargeResult(null)
+      getBookingCharges(selectedBooking.id).then(setCharges).catch(console.error)
+    }
+  }, [selectedBooking?.id, detailOpen])
+
+  const handleCharge = async () => {
+    if (!selectedBooking || !chargeAmount || !chargeReason) return
+    setChargeLoading(true)
+    setChargeResult(null)
+    try {
+      const result = await chargeCardOnFile(selectedBooking.id, parseFloat(chargeAmount), chargeReason)
+      if (result.status === 'succeeded') {
+        setChargeResult({ success: true, message: `Successfully charged $${parseFloat(chargeAmount).toFixed(2)}` })
+        setChargeAmount('')
+        setChargeReason('')
+        setCharges(prev => [result, ...prev])
+      } else {
+        setChargeResult({ success: false, message: result.failure_message || 'Charge failed' })
+      }
+    } catch (err) {
+      setChargeResult({ success: false, message: err instanceof Error ? err.message : 'Failed to charge card' })
+    } finally {
+      setChargeLoading(false)
+    }
+  }
 
   const getVehicleName = (id: string | null) => id ? vehicleNames[id] || 'Unknown' : 'Not specified'
 
@@ -485,6 +523,96 @@ export default function AdminBookingsPage() {
                             (selectedBooking.deposit_paid ? selectedBooking.deposit_amount : 0)
                         )}
                       </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Card on File */}
+                <div className="rounded-lg border border-dark-border p-3 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="h-4 w-4 text-gray-400" />
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Card on File</p>
+                  </div>
+
+                  {selectedBooking.stripe_customer_id && selectedBooking.stripe_payment_method ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-xs font-medium text-emerald-400">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                          Card saved
+                        </span>
+                      </div>
+
+                      {/* Charge form */}
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-3 gap-2">
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            value={chargeAmount}
+                            onChange={(e) => setChargeAmount(e.target.value)}
+                            placeholder="Amount"
+                            className="rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            value={chargeReason}
+                            onChange={(e) => setChargeReason(e.target.value)}
+                            placeholder="Reason (damage, extra time...)"
+                            className="col-span-2 rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none"
+                          />
+                        </div>
+                        <button
+                          onClick={handleCharge}
+                          disabled={chargeLoading || !chargeAmount || !chargeReason}
+                          className="inline-flex items-center gap-2 rounded-lg bg-gold/15 border border-gold/30 px-3 py-2 text-sm font-medium text-gold transition-all hover:bg-gold/25 disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          <DollarSign className="h-3.5 w-3.5" />
+                          {chargeLoading ? 'Charging...' : 'Charge Card'}
+                        </button>
+                      </div>
+
+                      {/* Charge result */}
+                      {chargeResult && (
+                        <div className={`rounded-lg border px-3 py-2 text-sm ${
+                          chargeResult.success
+                            ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                            : 'border-red-500/30 bg-red-500/10 text-red-400'
+                        }`}>
+                          {chargeResult.message}
+                        </div>
+                      )}
+
+                      {/* Charge history */}
+                      {charges.length > 0 && (
+                        <div className="space-y-1.5">
+                          <p className="text-xs text-gray-500">Charge History</p>
+                          {charges.map((c) => (
+                            <div key={c.id} className="flex items-center justify-between rounded border border-dark-border px-2.5 py-1.5 text-xs">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className={`inline-block h-1.5 w-1.5 rounded-full ${
+                                  c.status === 'succeeded' ? 'bg-emerald-400' : c.status === 'failed' ? 'bg-red-400' : 'bg-yellow-400'
+                                }`} />
+                                <span className="text-gray-300 truncate">{c.reason}</span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0 ml-2">
+                                <span className={c.status === 'succeeded' ? 'text-emerald-400 font-medium' : 'text-red-400 font-medium'}>
+                                  {formatCurrency(c.amount)}
+                                </span>
+                                <span className="text-gray-500">
+                                  {c.charged_at ? new Date(c.charged_at).toLocaleDateString() : c.status}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>No card on file — paid off-platform</span>
                     </div>
                   )}
                 </div>

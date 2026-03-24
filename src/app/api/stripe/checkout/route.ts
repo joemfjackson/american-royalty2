@@ -42,8 +42,19 @@ export async function POST(request: Request) {
     const vehicleName = invoice.quote.preferredVehicle?.name || 'Luxury Vehicle'
     const description = `Deposit — ${invoice.quote.eventType} on ${invoice.quote.eventDate} (${vehicleName})`
 
+    // Find or create Stripe Customer to save card on file
+    const existingCustomers = await stripe.customers.list({ email: invoice.quote.email, limit: 1 })
+    const customer = existingCustomers.data[0] || await stripe.customers.create({
+      email: invoice.quote.email,
+      name: invoice.quote.name,
+    })
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
+      customer: customer.id,
+      payment_intent_data: {
+        setup_future_usage: 'off_session',
+      },
       line_items: [
         {
           price_data: {
@@ -61,7 +72,6 @@ export async function POST(request: Request) {
         invoiceId: invoice.id,
         quoteId: invoice.quoteId,
       },
-      customer_email: invoice.quote.email,
       success_url: `${siteUrl}/invoice/${token}/success`,
       cancel_url: `${siteUrl}/invoice/${token}`,
     })
