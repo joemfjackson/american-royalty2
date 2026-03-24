@@ -21,16 +21,19 @@ const stats: StatItem[] = [
 ]
 
 function AnimatedValue({ stat, inView }: { stat: StatItem; inView: boolean }) {
-  const [displayValue, setDisplayValue] = useState('0')
+  // Initialize with the real value so SSR/crawlers see the final numbers
+  const [displayValue, setDisplayValue] = useState(stat.value)
+  const hasAnimated = useRef(false)
 
   useEffect(() => {
-    if (!inView) return
+    if (!inView || hasAnimated.current) return
+    hasAnimated.current = true
 
     // Special case for non-numeric values
-    if (stat.numericValue === 0 && stat.value === '24/7') {
-      setDisplayValue('24/7')
-      return
-    }
+    if (stat.numericValue === 0 && stat.value === '24/7') return
+
+    // Reset to 0 for the count-up animation (client-side only)
+    setDisplayValue(stat.numericValue % 1 !== 0 ? '0.0' + stat.suffix : '0' + stat.suffix)
 
     const isDecimal = stat.numericValue % 1 !== 0
     const duration = 1500
@@ -41,7 +44,6 @@ function AnimatedValue({ stat, inView }: { stat: StatItem; inView: boolean }) {
     const timer = setInterval(() => {
       currentStep++
       const progress = currentStep / steps
-      // Ease-out curve
       const eased = 1 - Math.pow(1 - progress, 3)
       const current = stat.numericValue * eased
 
@@ -53,11 +55,7 @@ function AnimatedValue({ stat, inView }: { stat: StatItem; inView: boolean }) {
 
       if (currentStep >= steps) {
         clearInterval(timer)
-        if (isDecimal) {
-          setDisplayValue(stat.numericValue.toFixed(1) + stat.suffix)
-        } else {
-          setDisplayValue(stat.numericValue.toString() + stat.suffix)
-        }
+        setDisplayValue(stat.value)
       }
     }, stepDuration)
 
