@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Montserrat } from 'next/font/google'
+import Script from 'next/script'
 import '@/styles/globals.css'
 
 const montserrat = Montserrat({
@@ -65,6 +66,20 @@ export default function RootLayout({
   return (
     <html lang="en" className={montserrat.variable}>
       <head>
+        {/* Google Ads (gtag.js) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=AW-18039620267"
+          strategy="afterInteractive"
+        />
+        <Script id="google-ads-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'AW-18039620267');
+          `}
+        </Script>
+
         {/* Preload hero image so browser fetches it immediately */}
         <link
           rel="preload"

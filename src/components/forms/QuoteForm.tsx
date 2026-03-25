@@ -88,6 +88,19 @@ function QuoteFormInner({ vehicleOptions = [] }: QuoteFormProps) {
         throw new Error(json.error || 'Something went wrong')
       }
 
+      // Fire Google Ads conversion event
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const w = window as any
+        if (typeof w.gtag === 'function') {
+          w.gtag('event', 'conversion', {
+            send_to: 'AW-18039620267/CONVERSION_LABEL',
+            value: 1.0,
+            currency: 'USD',
+          })
+        }
+      } catch { /* gtag not loaded */ }
+
       setSubmitted(true)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
