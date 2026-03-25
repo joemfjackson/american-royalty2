@@ -33,9 +33,13 @@ export async function generateMetadata({ params }: MetadataProps): Promise<Metad
   const vehicle = await getVehicleBySlug(slug)
   if (!vehicle) return { title: 'Vehicle Not Found' }
 
+  const desc = `Rent the ${vehicle.name} ${vehicle.type.toLowerCase()} in Las Vegas. Up to ${vehicle.capacity} passengers, starting at ${formatCurrency(vehicle.hourly_rate)}/hr. ${vehicle.description.slice(0, 120)}`
+  const url = `https://www.americanroyaltylasvegas.com/fleet/${slug}`
+  const image = vehicle.image_url || '/images/fleet/white-bus-casino.webp'
+
   return {
     title: `${vehicle.name} - ${vehicle.type} Rental`,
-    description: `Rent the ${vehicle.name} ${vehicle.type.toLowerCase()} in Las Vegas. Up to ${vehicle.capacity} passengers, starting at ${formatCurrency(vehicle.hourly_rate)}/hr. ${vehicle.description.slice(0, 120)}`,
+    description: desc,
     keywords: [
       `${vehicle.name} Las Vegas`,
       `${vehicle.type} rental Las Vegas`,
@@ -43,9 +47,17 @@ export async function generateMetadata({ params }: MetadataProps): Promise<Metad
       'party bus rental Las Vegas',
       'limousine Las Vegas',
     ],
+    alternates: { canonical: url },
     openGraph: {
       title: `${vehicle.name} | ${vehicle.type} | American Royalty Las Vegas`,
       description: vehicle.description,
+      url,
+      images: [{ url: image, width: 1200, height: 630, alt: `${vehicle.name} - ${vehicle.type} in Las Vegas` }],
+    },
+    twitter: {
+      card: 'summary_large_image' as const,
+      title: `${vehicle.name} - ${vehicle.type} Rental | American Royalty`,
+      description: desc,
     },
   }
 }

@@ -4,10 +4,11 @@ import { GoldLine } from '@/components/ui/GoldLine'
 import { QuoteForm } from '@/components/forms/QuoteForm'
 import { getVehicles } from '@/lib/data'
 
+const desc = 'Request a free quote for party bus and limousine rental in Las Vegas. Bachelor parties, bachelorette parties, weddings, nightlife, corporate events. Fast response within 2 hours.'
+
 export const metadata: Metadata = {
   title: 'Get a Quote | Las Vegas Party Bus & Limo Pricing',
-  description:
-    'Request a free quote for party bus and limousine rental in Las Vegas. Bachelor parties, bachelorette parties, weddings, nightlife, corporate events. Fast response within 2 hours.',
+  description: desc,
   keywords: [
     'party bus quote Las Vegas',
     'limo rental quote Las Vegas',
@@ -18,10 +19,17 @@ export const metadata: Metadata = {
     'bachelorette party limo quote',
     'wedding limo quote Las Vegas',
   ],
+  alternates: { canonical: 'https://www.americanroyaltylasvegas.com/quote' },
   openGraph: {
     title: 'Get a Quote | American Royalty Las Vegas',
-    description:
-      'Request a free, no-obligation quote for party bus and limo rental in Las Vegas. We respond within 2 hours.',
+    description: 'Request a free, no-obligation quote for party bus and limo rental in Las Vegas. We respond within 2 hours.',
+    url: 'https://www.americanroyaltylasvegas.com/quote',
+    images: [{ url: '/images/fleet/interior-blue-led.webp', width: 1200, height: 630, alt: 'American Royalty party bus interior' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Get a Quote | American Royalty Las Vegas',
+    description: desc,
   },
 }
 

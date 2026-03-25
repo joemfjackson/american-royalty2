@@ -6,10 +6,11 @@ import { GoldLine } from '@/components/ui/GoldLine'
 import { ContactForm } from '@/components/forms/ContactForm'
 import { BRAND, SERVICE_AREAS } from '@/lib/constants'
 
+const desc = 'Contact American Royalty for party bus and limousine rentals in Las Vegas. Call, email, or submit a form. 24/7 availability for bachelor parties, weddings, nightlife, and more.'
+
 export const metadata: Metadata = {
   title: 'Contact American Royalty | Las Vegas Party Bus & Limo',
-  description:
-    'Contact American Royalty for party bus and limousine rentals in Las Vegas. Call, email, or submit a form. 24/7 availability for bachelor parties, weddings, nightlife, and more.',
+  description: desc,
   keywords: [
     'contact American Royalty',
     'Las Vegas party bus phone number',
@@ -17,10 +18,17 @@ export const metadata: Metadata = {
     'party bus booking Las Vegas',
     'limo reservation Las Vegas',
   ],
+  alternates: { canonical: 'https://www.americanroyaltylasvegas.com/contact' },
   openGraph: {
     title: 'Contact American Royalty | Las Vegas Party Bus & Limo',
-    description:
-      'Get in touch with American Royalty for party bus and limo rentals in Las Vegas. 24/7 availability.',
+    description: 'Get in touch with American Royalty for party bus and limo rentals in Las Vegas. 24/7 availability.',
+    url: 'https://www.americanroyaltylasvegas.com/contact',
+    images: [{ url: '/images/fleet/white-bus-front.webp', width: 1200, height: 630, alt: 'American Royalty party bus Las Vegas' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Contact American Royalty | Las Vegas Party Bus & Limo',
+    description: desc,
   },
 }
 

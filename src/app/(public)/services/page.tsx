@@ -8,10 +8,12 @@ import { SectionTag } from '@/components/ui/SectionTag'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { Card } from '@/components/ui/Card'
 
+const SITE = 'https://www.americanroyaltylasvegas.com'
+const desc = 'Luxury party bus and limousine services in Las Vegas. Bachelor & bachelorette parties, weddings, nightlife club crawls, corporate events, airport transfers, and more. Book American Royalty today.'
+
 export const metadata: Metadata = {
   title: 'Party Bus & Limo Services in Las Vegas',
-  description:
-    'Luxury party bus and limousine services in Las Vegas. Bachelor & bachelorette parties, weddings, nightlife club crawls, corporate events, airport transfers, and more. Book American Royalty today.',
+  description: desc,
   keywords: [
     'party bus services Las Vegas',
     'limousine services Las Vegas',
@@ -23,18 +25,43 @@ export const metadata: Metadata = {
     'airport transfer Las Vegas',
     'Las Vegas Strip tour',
   ],
+  alternates: { canonical: `${SITE}/services` },
   openGraph: {
     title: 'Party Bus & Limo Services in Las Vegas | American Royalty',
-    description:
-      'Luxury party bus and limo services for every occasion. Bachelor parties, weddings, nightlife, corporate events, and more in Las Vegas.',
+    description: 'Luxury party bus and limo services for every occasion. Bachelor parties, weddings, nightlife, corporate events, and more in Las Vegas.',
+    url: `${SITE}/services`,
+    images: [{ url: '/images/hero/interior-pink-blue.webp', width: 1200, height: 630, alt: 'American Royalty party bus interior Las Vegas' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Party Bus & Limo Services in Las Vegas | American Royalty',
+    description: desc,
   },
 }
 
 export default async function ServicesPage() {
   const services = await getServices()
 
+  const servicesJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'American Royalty Las Vegas Services',
+    numberOfItems: services.length,
+    itemListElement: services.map((s, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: s.title,
+      url: `${SITE}/services/${s.slug}`,
+      description: s.description,
+    })),
+  }
+
   return (
     <section className="section-padding pt-32">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesJsonLd) }}
+      />
       <div className="container-max">
         {/* Page Header */}
         <div className="text-center">

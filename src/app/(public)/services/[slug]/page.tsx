@@ -47,14 +47,35 @@ export async function generateMetadata({ params }: MetadataProps): Promise<Metad
 
   const title = titleMap[slug] || `${service.title} | Las Vegas`
 
+  const siteUrl = 'https://www.americanroyaltylasvegas.com'
+  const url = `${siteUrl}/services/${service.slug}`
+  const imageMap: Record<string, string> = {
+    'bachelor-party': '/images/services/bachelor.webp',
+    'bachelorette-party': '/images/services/bachelorette.webp',
+    wedding: '/images/services/wedding.webp',
+    nightlife: '/images/services/nightlife.webp',
+    corporate: '/images/services/corporate.webp',
+    birthday: '/images/services/birthday.webp',
+    prom: '/images/services/prom.webp',
+    airport: '/images/services/airport.webp',
+    'strip-tour': '/images/services/strip-tour.webp',
+  }
+
   return {
     title,
-    description: `${service.description} ${service.keywords}`,
+    description: service.description,
     keywords: service.keywords.split(', '),
+    alternates: { canonical: url },
     openGraph: {
       title: `${title} | American Royalty`,
       description: service.description,
-      url: `${BRAND.siteUrl}/services/${service.slug}`,
+      url,
+      images: imageMap[slug] ? [{ url: imageMap[slug], width: 1200, height: 630, alt: `${service.title} in Las Vegas` }] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image' as const,
+      title: `${title} | American Royalty`,
+      description: service.description,
     },
   }
 }

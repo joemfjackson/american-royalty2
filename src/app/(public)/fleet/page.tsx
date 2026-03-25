@@ -6,10 +6,12 @@ import { SectionTag } from '@/components/ui/SectionTag'
 import { GoldLine } from '@/components/ui/GoldLine'
 import { FleetGrid } from '@/components/FleetGrid'
 
+const SITE = 'https://www.americanroyaltylasvegas.com'
+const desc = 'Browse the American Royalty fleet of luxury party buses, Sprinter limos, and stretch limousines in Las Vegas. Vehicles from 8 to 40 passengers for bachelor parties, weddings, nightlife, and more.'
+
 export const metadata: Metadata = {
   title: 'Las Vegas Party Bus & Limousine Fleet',
-  description:
-    'Browse the American Royalty fleet of luxury party buses, Sprinter limos, and stretch limousines in Las Vegas. Vehicles from 8 to 40 passengers for bachelor parties, weddings, nightlife, and more.',
+  description: desc,
   keywords: [
     'party bus fleet Las Vegas',
     'Las Vegas limousine fleet',
@@ -19,18 +21,44 @@ export const metadata: Metadata = {
     'luxury party bus Las Vegas',
     'Las Vegas VIP transportation fleet',
   ],
+  alternates: { canonical: `${SITE}/fleet` },
   openGraph: {
     title: 'Las Vegas Party Bus & Limousine Fleet | American Royalty',
-    description:
-      'Browse our fleet of luxury party buses, Sprinter limos, and stretch limousines. 8-40 passengers. Book your VIP ride in Las Vegas.',
+    description: 'Browse our fleet of luxury party buses, Sprinter limos, and stretch limousines. 8-40 passengers. Book your VIP ride in Las Vegas.',
+    url: `${SITE}/fleet`,
+    images: [{ url: '/images/fleet/white-bus-casino.webp', width: 1200, height: 630, alt: 'American Royalty party bus fleet in Las Vegas' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Las Vegas Party Bus & Limousine Fleet | American Royalty',
+    description: desc,
   },
 }
 
 export default async function FleetPage() {
   const vehicles = await getVehicles()
 
+  const fleetJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'American Royalty Las Vegas Fleet',
+    numberOfItems: vehicles.length,
+    itemListElement: vehicles.map((v, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: v.name,
+      url: `${SITE}/fleet/${v.slug}`,
+      image: v.image_url || '/images/fleet/white-bus-casino.webp',
+      description: v.description,
+    })),
+  }
+
   return (
     <section className="section-padding overflow-hidden pt-32">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(fleetJsonLd) }}
+      />
       <div className="container-max">
         {/* Page Header */}
         <div className="text-center">
@@ -50,6 +78,7 @@ export default async function FleetPage() {
 
         {/* Fleet Grid with Filters */}
         <div className="mt-16">
+          <h2 className="sr-only">Available Vehicles</h2>
           <FleetGrid vehicles={vehicles} />
         </div>
       </div>

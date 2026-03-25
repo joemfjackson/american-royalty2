@@ -16,10 +16,11 @@ const experienceGallery = [
   { src: '/images/gallery/wedding-on-bus.webp', alt: 'Wedding couple celebrating on party bus' },
 ]
 
+const desc = 'Learn about American Royalty, Las Vegas\'s premier party bus and limousine company. Professional chauffeurs, premium fleet, 24/7 availability, and deep Las Vegas expertise.'
+
 export const metadata: Metadata = {
   title: 'About American Royalty | Las Vegas Party Bus & Limo',
-  description:
-    'Learn about American Royalty, Las Vegas\'s premier party bus and limousine company. Professional chauffeurs, premium fleet, 24/7 availability, and deep Las Vegas expertise.',
+  description: desc,
   keywords: [
     'about American Royalty',
     'Las Vegas party bus company',
@@ -28,10 +29,17 @@ export const metadata: Metadata = {
     'party bus rental company Vegas',
     'professional chauffeurs Las Vegas',
   ],
+  alternates: { canonical: 'https://www.americanroyaltylasvegas.com/about' },
   openGraph: {
     title: 'About American Royalty | Las Vegas Party Bus & Limo',
-    description:
-      'Las Vegas\'s premier party bus and limousine company. Premium fleet, professional chauffeurs, and 24/7 availability for every occasion.',
+    description: 'Las Vegas\'s premier party bus and limousine company. Premium fleet, professional chauffeurs, and 24/7 availability for every occasion.',
+    url: 'https://www.americanroyaltylasvegas.com/about',
+    images: [{ url: '/images/gallery/group-outside-bus.webp', width: 1200, height: 630, alt: 'American Royalty Las Vegas team and fleet' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'About American Royalty | Las Vegas Party Bus & Limo',
+    description: desc,
   },
 }
 

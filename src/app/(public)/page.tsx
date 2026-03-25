@@ -6,7 +6,7 @@ import { TrustSignals } from '@/components/sections/TrustSignals'
 import { FleetPreview } from '@/components/sections/FleetPreview'
 import { ServicesGrid } from '@/components/sections/ServicesGrid'
 import { CTABanner } from '@/components/sections/CTABanner'
-import { BRAND, SERVICE_AREAS } from '@/lib/constants'
+import { BRAND, SERVICE_AREAS, FAQ_ITEMS } from '@/lib/constants'
 import { getVehicles, getServices, getTestimonials } from '@/lib/data'
 
 const Testimonials = dynamic(
@@ -76,6 +76,19 @@ const jsonLd = {
   sameAs: [],
 }
 
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQ_ITEMS.map((item) => ({
+    '@type': 'Question',
+    name: item.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: item.answer,
+    },
+  })),
+}
+
 export default async function HomePage() {
   const [vehicles, services, testimonials] = await Promise.all([
     getVehicles(),
@@ -88,6 +101,10 @@ export default async function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <Hero />
       <TrustSignals />

@@ -10,7 +10,7 @@ const montserrat = Montserrat({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'),
+  metadataBase: new URL('https://www.americanroyaltylasvegas.com'),
   title: {
     default: 'American Royalty | Las Vegas Party Bus & Limousine Service',
     template: '%s | American Royalty Las Vegas',
@@ -30,20 +30,24 @@ export const metadata: Metadata = {
     'Las Vegas nightlife transportation',
   ],
   authors: [{ name: 'American Royalty' }],
+  alternates: {
+    canonical: 'https://www.americanroyaltylasvegas.com',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
+    url: 'https://www.americanroyaltylasvegas.com',
     siteName: 'American Royalty',
     title: 'American Royalty | Las Vegas Party Bus & Limousine Service',
     description:
       'Premium party bus and limousine rental in Las Vegas. Bachelor & bachelorette parties, weddings, nightlife, corporate events. Book your VIP ride today.',
-    images: [{ url: '/images/logo.png', width: 1200, height: 630, alt: 'American Royalty' }],
+    images: [{ url: '/images/hero/bus-exterior-casino.webp', width: 1200, height: 630, alt: 'American Royalty party bus in Las Vegas' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'American Royalty | Las Vegas Party Bus & Limousine Service',
     description:
-      'Premium party bus and limousine rental in Las Vegas. Book your VIP ride today.',
+      'Premium party bus and limousine rental in Las Vegas. Bachelor & bachelorette parties, weddings, nightlife, corporate events. Book your VIP ride today.',
   },
   robots: {
     index: true,

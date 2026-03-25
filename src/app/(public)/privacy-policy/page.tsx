@@ -7,6 +7,7 @@ import { GoldLine } from '@/components/ui/GoldLine'
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description: `Privacy policy for ${BRAND.name}. Learn how we collect, use, and protect your personal information.`,
+  alternates: { canonical: 'https://www.americanroyaltylasvegas.com/privacy-policy' },
   robots: { index: true, follow: true },
 }
 

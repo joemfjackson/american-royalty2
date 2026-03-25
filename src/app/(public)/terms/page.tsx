@@ -7,6 +7,7 @@ import { GoldLine } from '@/components/ui/GoldLine'
 export const metadata: Metadata = {
   title: 'Terms & Conditions',
   description: `Terms and conditions for ${BRAND.name} party bus and limousine services in Las Vegas, Nevada.`,
+  alternates: { canonical: 'https://www.americanroyaltylasvegas.com/terms' },
   robots: { index: true, follow: true },
 }
 
