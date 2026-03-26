@@ -100,7 +100,7 @@ export default function RootLayout({
           media="(min-width: 641px)"
         />
       </head>
-      <body className="font-body">
+      <body className="font-body overflow-x-hidden">
         {children}
       </body>
     </html>
