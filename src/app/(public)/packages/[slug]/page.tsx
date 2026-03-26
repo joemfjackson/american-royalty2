@@ -61,13 +61,15 @@ export default async function PackageDetailPage({
   const otherPackages = PACKAGES.filter((p) => p.slug !== slug)
   const photos = await getPackagePhotos(slug)
 
+  const imageUrl = pkg.image.startsWith('http') ? pkg.image : `${SITE}${pkg.image}`
+
   const productJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: pkg.name,
     description: pkg.description,
-    image: `${SITE}${pkg.image}`,
-    brand: { '@type': 'Organization', name: 'American Royalty' },
+    image: imageUrl,
+    brand: { '@type': 'Brand', name: 'American Royalty' },
     offers: pkg.pricing.map((t) => ({
       '@type': 'Offer',
       name: t.tier,
@@ -76,25 +78,24 @@ export default async function PackageDetailPage({
       availability: 'https://schema.org/InStock',
       itemCondition: 'https://schema.org/NewCondition',
       priceValidUntil: '2026-12-31',
-      hasMerchantReturnPolicy: {
-        '@type': 'MerchantReturnPolicy',
-        applicableCountry: 'US',
-        returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
-        merchantReturnDays: 0,
-      },
-      shippingDetails: {
-        '@type': 'OfferShippingDetails',
-        shippingRate: {
-          '@type': 'MonetaryAmount',
-          value: '0',
-          currency: 'USD',
-        },
-        shippingDestination: {
-          '@type': 'DefinedRegion',
-          addressCountry: 'US',
-        },
-      },
     })),
+    hasMerchantReturnPolicy: {
+      '@type': 'MerchantReturnPolicy',
+      applicableCountry: 'US',
+      returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
+    },
+    shippingDetails: {
+      '@type': 'OfferShippingDetails',
+      shippingRate: {
+        '@type': 'MonetaryAmount',
+        value: '0',
+        currency: 'USD',
+      },
+      shippingDestination: {
+        '@type': 'DefinedRegion',
+        addressCountry: 'US',
+      },
+    },
     provider: {
       '@type': 'LocalBusiness',
       name: 'American Royalty',
