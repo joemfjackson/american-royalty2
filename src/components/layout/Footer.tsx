@@ -77,7 +77,7 @@ export async function Footer() {
             <p className="mt-3 text-lg font-semibold italic text-gold/80">
               {BRAND.tagline}
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-white/60">
+            <p className="mt-3 text-sm leading-relaxed text-white/70">
               Las Vegas&apos;s premier party bus and limousine service. Luxury
               transportation for bachelor parties, bachelorette parties,
               weddings, nightlife, and more.
@@ -89,7 +89,7 @@ export async function Footer() {
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-dark-border text-white/60 transition-all duration-200 hover:border-royal/40 hover:text-gold hover:bg-royal/10 hover:shadow-[0_0_15px_rgba(111,45,189,0.2)]"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-dark-border text-white/70 transition-all duration-200 hover:border-royal/40 hover:text-gold hover:bg-royal/10 hover:shadow-[0_0_15px_rgba(111,45,189,0.2)]"
                 >
                   <social.icon className="h-4 w-4" />
                 </a>
@@ -107,7 +107,7 @@ export async function Footer() {
                 <li key={link.href} className="py-1">
                   <Link
                     href={link.href}
-                    className="text-sm text-white/60 transition-colors hover:text-gold"
+                    className="text-sm text-white/70 transition-colors hover:text-gold"
                   >
                     {link.label}
                   </Link>
@@ -126,7 +126,7 @@ export async function Footer() {
                 <li key={service.id} className={`py-1 ${i >= 5 ? 'hidden sm:block' : ''}`}>
                   <Link
                     href={`/services/${service.slug}`}
-                    className="text-sm text-white/60 transition-colors hover:text-gold"
+                    className="text-sm text-white/70 transition-colors hover:text-gold"
                   >
                     {service.title}
                   </Link>
@@ -154,7 +154,7 @@ export async function Footer() {
               {SERVICE_AREAS.map((area) => (
                 <li
                   key={area}
-                  className="truncate text-sm text-white/60"
+                  className="truncate text-sm text-white/70"
                 >
                   {area}
                 </li>
@@ -167,7 +167,7 @@ export async function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-dark-border pb-16 sm:pb-0">
         <div className="container-max mx-auto flex flex-col items-center gap-3 px-4 py-6 sm:flex-row sm:justify-between sm:px-6 lg:px-8">
-          <p className="text-xs text-white/60">
+          <p className="text-xs text-white/70">
             &copy; {currentYear} {BRAND.name}. All rights reserved.
             <span className="mx-2">|</span>
             <Link href="/privacy-policy" className="transition-colors hover:text-gold">
@@ -178,7 +178,7 @@ export async function Footer() {
               Terms &amp; Conditions
             </Link>
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-white/60">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-white/70">
             <span>{BRAND.address}</span>
             <span className="hidden sm:inline">|</span>
             <a
@@ -196,13 +196,13 @@ export async function Footer() {
             </a>
           </div>
         </div>
-        <p className="pb-4 text-center text-[11px] text-white/60">
+        <p className="pb-4 text-center text-[11px] text-white/70">
           Website designed by{' '}
           <a
             href="https://www.stage1labs.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-white/60 underline transition-colors hover:text-gold"
+            className="text-white/70 underline transition-colors hover:text-gold"
           >
             Stage1Labs
           </a>

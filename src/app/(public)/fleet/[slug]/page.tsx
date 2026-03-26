@@ -124,7 +124,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
       <article className="section-padding pt-28">
         <div className="container-max">
           {/* ---- Breadcrumb ---- */}
-          <nav aria-label="Breadcrumb" className="mb-8 flex items-center gap-2 text-sm text-white/40">
+          <nav aria-label="Breadcrumb" className="mb-8 flex items-center gap-2 text-sm text-white/60">
             <Link href="/fleet" className="transition-colors hover:text-gold">
               Fleet
             </Link>
@@ -169,7 +169,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                 <p className="text-2xl font-bold text-gold">
                   Starting at {formatCurrency(vehicle.hourly_rate)}/hr
                 </p>
-                <p className="mt-1 text-sm text-white/40">
+                <p className="mt-1 text-sm text-white/60">
                   {vehicle.min_hours}-hour minimum &middot; Gratuity not included
                 </p>
               </div>
@@ -253,7 +253,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                           {rv.name}
                         </h3>
                         <div className="mt-2 flex items-center gap-4 text-sm">
-                          <span className="flex items-center gap-1 text-white/50">
+                          <span className="flex items-center gap-1 text-white/70">
                             <Users className="h-3.5 w-3.5" aria-hidden="true" />
                             {rv.capacity}
                           </span>

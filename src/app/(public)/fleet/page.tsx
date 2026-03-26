@@ -68,7 +68,7 @@ export default async function FleetPage() {
             <span className="gold-gradient-text">Limousine Fleet</span>
           </h1>
           <GoldLine className="mx-auto mt-5" width="100px" />
-          <p className="mx-auto mt-6 max-w-3xl text-lg text-white/50">
+          <p className="mx-auto mt-6 max-w-3xl text-lg text-white/70">
             From intimate stretch limousines to our massive 40-passenger party
             buses, every vehicle in the American Royalty fleet is built for the
             ultimate Las Vegas experience. Club-quality sound, LED lighting, wet

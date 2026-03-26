@@ -60,7 +60,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
             {service.tagline}
           </p>
 
-          <p className="mt-3 flex-1 text-sm leading-relaxed text-white/50">
+          <p className="mt-3 flex-1 text-sm leading-relaxed text-white/70">
             {service.description}
           </p>
 
@@ -91,7 +91,7 @@ export function ServicesGrid({ services }: { services: Service[] }) {
             <span className="gold-gradient-text">Transportation Services</span>
           </h2>
           <GoldLine className="mx-auto mt-4" width="80px" />
-          <p className="mx-auto mt-4 max-w-2xl text-white/50">
+          <p className="mx-auto mt-4 max-w-2xl text-white/70">
             Whatever the occasion, American Royalty has the perfect ride. Every
             booking includes a professional chauffeur and a vehicle detailed to
             perfection.
