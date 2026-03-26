@@ -150,7 +150,13 @@ export default async function PackageDetailPage({
           </p>
           <a
             href="#book"
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gold px-6 py-3 text-sm font-semibold text-black transition-all hover:bg-gold-light"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gold px-6 py-3 text-sm font-semibold text-black transition-all hover:bg-gold-light lg:hidden"
+          >
+            Book Now
+          </a>
+          <a
+            href="#book-desktop"
+            className="mt-6 hidden lg:inline-flex items-center gap-2 rounded-lg bg-gold px-6 py-3 text-sm font-semibold text-black transition-all hover:bg-gold-light"
           >
             Book Now
           </a>
@@ -201,6 +207,11 @@ export default async function PackageDetailPage({
               </div>
             </section>
 
+            {/* Booking form (mobile only) */}
+            <section id="book" className="lg:hidden">
+              <PackageBookingForm pkg={pkg} />
+            </section>
+
             {/* FAQ */}
             <section>
               <h2 className="text-xl font-bold text-white">Common Questions</h2>
@@ -218,9 +229,9 @@ export default async function PackageDetailPage({
             </section>
           </div>
 
-          {/* Sidebar — booking form */}
-          <div className="lg:col-span-1">
-            <div id="book" className="sticky top-24">
+          {/* Sidebar — booking form (desktop only) */}
+          <div className="hidden lg:block lg:col-span-1">
+            <div id="book-desktop" className="sticky top-24">
               <PackageBookingForm pkg={pkg} />
             </div>
           </div>
