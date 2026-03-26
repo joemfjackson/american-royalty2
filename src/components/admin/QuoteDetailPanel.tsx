@@ -19,6 +19,7 @@ import {
   Copy,
   CreditCard,
   Link as LinkIcon,
+  Trash2,
 } from 'lucide-react'
 import type { Quote, QuoteLineItem, Invoice, Vehicle } from '@/types'
 import { Badge } from '@/components/ui/Badge'
@@ -34,6 +35,7 @@ import {
   getQuoteWithLineItems,
   getQuotePublicLink,
   getVehicleForQuote,
+  deleteQuote,
 } from '@/lib/actions/admin'
 import { formatDate, formatCurrency, formatTime } from '@/lib/utils'
 import { QuoteBuilder } from '@/components/admin/QuoteBuilder'
@@ -65,10 +67,11 @@ interface QuoteDetailPanelProps {
   open: boolean
   onClose: () => void
   onUpdateQuote: (updated: Quote) => void
+  onDeleteQuote?: (quoteId: string) => void
   vehicleNames?: Record<string, string>
 }
 
-export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleNames = {} }: QuoteDetailPanelProps) {
+export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, onDeleteQuote, vehicleNames = {} }: QuoteDetailPanelProps) {
   const [status, setStatus] = useState<QuoteStatus>(quote?.status || 'new')
   const [adminNotes, setAdminNotes] = useState(quote?.admin_notes || '')
   const [quotedAmount, setQuotedAmount] = useState(quote?.quoted_amount?.toString() || '')
@@ -88,6 +91,8 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
   const [showDepositConfirm, setShowDepositConfirm] = useState(false)
   const [depositPaymentMethod, setDepositPaymentMethod] = useState('Zelle')
   const [depositProcessing, setDepositProcessing] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   // Update local state when quote changes
   useEffect(() => {
@@ -239,6 +244,21 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
       setActionMessage({ type: 'error', text: 'Failed to cancel invoice' })
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleDeleteQuote = async () => {
+    setDeleting(true)
+    try {
+      await deleteQuote(quote.id)
+      onDeleteQuote?.(quote.id)
+      onClose()
+    } catch (err) {
+      console.error('Failed to delete quote:', err)
+      setActionMessage({ type: 'error', text: 'Failed to delete quote' })
+    } finally {
+      setDeleting(false)
+      setShowDeleteConfirm(false)
     }
   }
 
@@ -729,6 +749,14 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                     Cancel
                   </button>
                 )}
+
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-400 transition-all hover:bg-red-500/20"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </button>
               </div>
 
               {/* Save button */}
@@ -802,6 +830,45 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, vehicleN
                     className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-500 disabled:opacity-50"
                   >
                     {depositProcessing ? 'Processing...' : 'Confirm Paid'}
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+
+          {/* Delete confirmation popup */}
+          {showDeleteConfirm && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[60] bg-black/60"
+                onClick={() => setShowDeleteConfirm(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="fixed left-1/2 top-1/2 z-[60] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-red-500/30 bg-dark-card p-6 shadow-2xl"
+              >
+                <h3 className="text-lg font-semibold text-white">Delete Quote</h3>
+                <p className="mt-2 text-sm text-gray-400">
+                  This will permanently delete this quote from <span className="font-medium text-white">{quote.name}</span>, along with all related invoices and bookings. This cannot be undone.
+                </p>
+                <div className="mt-6 flex gap-3">
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="flex-1 rounded-lg border border-dark-border px-4 py-2.5 text-sm font-medium text-gray-400 transition-all hover:bg-white/5 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteQuote}
+                    disabled={deleting}
+                    className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-red-500 disabled:opacity-50"
+                  >
+                    {deleting ? 'Deleting...' : 'Delete Forever'}
                   </button>
                 </div>
               </motion.div>

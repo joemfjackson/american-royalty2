@@ -17,10 +17,11 @@ import {
   CreditCard,
   DollarSign,
   AlertCircle,
+  Trash2,
 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { getBookings, getVehicleNames, updateBookingStatus, createBooking, chargeCardOnFile, getBookingCharges } from '@/lib/actions/admin'
+import { getBookings, getVehicleNames, updateBookingStatus, createBooking, chargeCardOnFile, getBookingCharges, deleteBooking } from '@/lib/actions/admin'
 import { formatDate, formatCurrency } from '@/lib/utils'
 import { EVENT_TYPES } from '@/lib/constants'
 import type { Booking, AdditionalCharge } from '@/types'
@@ -85,6 +86,8 @@ export default function AdminBookingsPage() {
   const [chargeLoading, setChargeLoading] = useState(false)
   const [chargeResult, setChargeResult] = useState<{ success: boolean; message: string } | null>(null)
   const [charges, setCharges] = useState<AdditionalCharge[]>([])
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -128,6 +131,21 @@ export default function AdminBookingsPage() {
       setChargeResult({ success: false, message: err instanceof Error ? err.message : 'Failed to charge card' })
     } finally {
       setChargeLoading(false)
+    }
+  }
+
+  const handleDeleteBooking = async () => {
+    if (!selectedBooking) return
+    setDeleteLoading(true)
+    try {
+      await deleteBooking(selectedBooking.id)
+      setBookings((prev) => prev.filter((b) => b.id !== selectedBooking.id))
+      setDetailOpen(false)
+    } catch (err) {
+      console.error('Failed to delete booking:', err)
+    } finally {
+      setDeleteLoading(false)
+      setShowDeleteConfirm(false)
     }
   }
 
@@ -643,6 +661,56 @@ export default function AdminBookingsPage() {
                     <option value="cancelled">Cancelled</option>
                   </select>
                 </div>
+
+                {/* Delete booking */}
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-400 transition-all hover:bg-red-500/20"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete Booking
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Delete booking confirmation */}
+      <AnimatePresence>
+        {showDeleteConfirm && selectedBooking && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[60] bg-black/60"
+              onClick={() => setShowDeleteConfirm(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed left-1/2 top-1/2 z-[60] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-red-500/30 bg-dark-card p-6 shadow-2xl"
+            >
+              <h3 className="text-lg font-semibold text-white">Delete Booking</h3>
+              <p className="mt-2 text-sm text-gray-400">
+                This will permanently delete the booking for <span className="font-medium text-white">{selectedBooking.client_name}</span>. This cannot be undone.
+              </p>
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1 rounded-lg border border-dark-border px-4 py-2.5 text-sm font-medium text-gray-400 transition-all hover:bg-white/5 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteBooking}
+                  disabled={deleteLoading}
+                  className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-red-500 disabled:opacity-50"
+                >
+                  {deleteLoading ? 'Deleting...' : 'Delete Forever'}
+                </button>
               </div>
             </motion.div>
           </>

@@ -321,6 +321,7 @@ export default function AdminQuotesPage() {
         open={panelOpen}
         onClose={() => setPanelOpen(false)}
         onUpdateQuote={handleUpdateQuote}
+        onDeleteQuote={(id) => setQuotes((prev) => prev.filter((q) => q.id !== id))}
         vehicleNames={vehicleNames}
       />
     </div>

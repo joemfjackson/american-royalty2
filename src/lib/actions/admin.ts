@@ -485,6 +485,33 @@ async function sendBookingConfirmationEmail(quote: PrismaQuote, depositAmount: n
   }
 }
 
+// ─── Delete Quote / Booking ─────────────────────────────
+
+export async function deleteQuote(quoteId: string) {
+  await requireAdmin()
+
+  // Delete related invoices, line items, and bookings first (cascade may handle some)
+  await prisma.invoice.deleteMany({ where: { quoteId } })
+  await prisma.quoteLineItem.deleteMany({ where: { quoteId } })
+  await prisma.booking.deleteMany({ where: { quoteId } })
+  await prisma.quote.delete({ where: { id: quoteId } })
+
+  revalidatePath('/admin/quotes')
+  revalidatePath('/admin/bookings')
+  revalidatePath('/admin')
+}
+
+export async function deleteBooking(bookingId: string) {
+  await requireAdmin()
+
+  await prisma.additionalCharge.deleteMany({ where: { bookingId } })
+  await prisma.booking.delete({ where: { id: bookingId } })
+
+  revalidatePath('/admin/bookings')
+  revalidatePath('/admin/calendar')
+  revalidatePath('/admin')
+}
+
 // ─── Invoices ───────────────────────────────────────────
 
 export async function createAndSendInvoice(
