@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import type { PackageConfig } from '@/lib/packages'
@@ -138,6 +138,7 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const formRef = useRef<HTMLDivElement>(null)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -184,6 +185,10 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
       }
       if (data.clientSecret) {
         setClientSecret(data.clientSecret)
+        // Scroll back to the form so user sees the payment element
+        setTimeout(() => {
+          formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }, 100)
       } else {
         setError('Failed to initialize payment. Please try again.')
       }
@@ -196,7 +201,7 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
   }
 
   return (
-    <div className="rounded-2xl border border-dark-border bg-dark-card overflow-hidden">
+    <div ref={formRef} className="rounded-2xl border border-dark-border bg-dark-card overflow-hidden">
       <div className="bg-gradient-to-r from-gold/10 to-royal/10 border-b border-dark-border p-5">
         <h2 className="text-lg font-bold text-white">Book This Package</h2>
         <p className="mt-1 text-xs text-gray-400">Select party size and fill in details</p>
