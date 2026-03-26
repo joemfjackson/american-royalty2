@@ -43,7 +43,7 @@ export const PACKAGES: PackageConfig[] = [
       'Las Vegas Strip cruise on return',
       'Professional chauffeur',
       'Premium sound system & LED party lighting',
-      'Cooler with ice (BYOB)',
+      'Ice water and cups provided',
     ],
     itinerary: [
       { time: 'Start', label: 'Pickup at your hotel or location' },
@@ -66,11 +66,11 @@ export const PACKAGES: PackageConfig[] = [
       },
       {
         q: 'Where does the liquor store stop happen?',
-        a: 'We stop at a liquor store near your pickup location at the beginning of the tour so your group can grab drinks, mixers, and snacks for the ride. We provide coolers and ice on the bus.',
+        a: 'We stop at a liquor store near your pickup location at the beginning of the tour so your group can grab drinks, mixers, and snacks for the ride. We provide ice water and cups on the bus.',
       },
       {
         q: 'Can we bring our own drinks on the bus?',
-        a: 'Yes! You are welcome to bring your own beverages. We provide coolers, ice, and glassware. All passengers must be 21+ to consume alcohol.',
+        a: 'Yes! You are welcome to bring your own beverages. We provide ice water, cups, and glassware. All passengers must be 21+ to consume alcohol.',
       },
       {
         q: 'What time of day is best for Vegas Sign photos?',
@@ -78,7 +78,7 @@ export const PACKAGES: PackageConfig[] = [
       },
       {
         q: "What's included in the price?",
-        a: 'Everything — professional chauffeur, party bus with premium sound and LED lighting, cooler with ice, and all stops. The price shown is the total, taxes and fees included. Just bring your drinks and your crew.',
+        a: 'Everything — professional chauffeur, party bus with premium sound and LED lighting, ice water and cups, and all stops. The price shown is the total, taxes and fees included. Just bring your drinks and your crew.',
       },
     ],
     image: '/images/hero/bus-exterior-casino.webp',
@@ -100,7 +100,7 @@ export const PACKAGES: PackageConfig[] = [
       'Las Vegas Strip cruise on return',
       'Professional chauffeur',
       'Premium sound system & LED party lighting',
-      'Cooler with ice (BYOB)',
+      'Ice water and cups provided',
     ],
     itinerary: [
       { time: 'Start', label: 'Pickup at your hotel or location' },
@@ -157,7 +157,7 @@ export const PACKAGES: PackageConfig[] = [
       'Photo stops available on request',
       'Professional chauffeur',
       'Premium sound system & LED party lighting',
-      'Cooler with ice (BYOB)',
+      'Ice water and cups provided',
     ],
     itinerary: [
       { time: 'Start', label: 'Pickup at your hotel or location' },
@@ -184,7 +184,7 @@ export const PACKAGES: PackageConfig[] = [
       },
       {
         q: "What's included on the bus?",
-        a: 'Premium sound system, LED party lighting, cooler with ice, and glassware. Bring your own drinks and we handle everything else. A professional chauffeur drives so your whole group can enjoy the ride.',
+        a: 'Premium sound system, LED party lighting, ice water, cups, and glassware. Bring your own drinks and we handle everything else. A professional chauffeur drives so your whole group can enjoy the ride.',
       },
       {
         q: 'Is this good for a first time in Vegas?',
@@ -213,7 +213,7 @@ export const PACKAGES: PackageConfig[] = [
       'Photo stops at iconic lit-up landmarks',
       'Professional chauffeur',
       'Premium sound system & LED party lighting',
-      'Cooler with ice (BYOB)',
+      'Ice water and cups provided',
     ],
     itinerary: [
       { time: 'Start', label: 'Late night pickup at your hotel or location' },
@@ -260,7 +260,7 @@ export const PACKAGES: PackageConfig[] = [
 export const PACKAGE_GENERAL_FAQS = [
   {
     q: "What's included with every package?",
-    a: 'Every package includes a professional chauffeur, luxury party bus with premium sound system and LED lighting, cooler with ice, and a liquor store stop. All taxes and fees are included in the price.',
+    a: 'Every package includes a professional chauffeur, luxury party bus with premium sound system and LED lighting, ice water and cups, and a liquor store stop. All taxes and fees are included in the price.',
   },
   {
     q: 'Can I customize a package?',
@@ -276,7 +276,7 @@ export const PACKAGE_GENERAL_FAQS = [
   },
   {
     q: 'Can we bring food and drinks on the bus?',
-    a: 'Absolutely. Bring your own drinks, snacks, and food. We provide coolers, ice, and glassware. We also make a liquor store stop at the beginning of every package so you can stock up.',
+    a: 'Absolutely. Bring your own drinks, snacks, and food. We provide ice water, cups, and glassware. We also make a liquor store stop at the beginning of every package so you can stock up.',
   },
   {
     q: 'How far in advance should I book?',

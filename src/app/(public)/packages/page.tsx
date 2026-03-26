@@ -42,7 +42,7 @@ const STEPS = [
 const INCLUDED = [
   'Professional chauffeur',
   'Party bus with premium sound & LED lighting',
-  'Cooler with ice',
+  'Ice water and cups provided',
   'Liquor store stop',
   'All taxes and fees included',
 ]
