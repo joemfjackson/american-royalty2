@@ -16,7 +16,7 @@ export default function PublicLayout({
         Skip to content
       </a>
       <Navbar />
-      <main id="main-content" className="min-h-screen pb-14 sm:pb-0">{children}</main>
+      <main id="main-content" className="min-h-screen pb-14 sm:pb-0 overflow-x-hidden">{children}</main>
       <Footer />
       <MobileCTA />
     </>
