@@ -63,7 +63,7 @@ export function PackageGallery({ photos, packageName }: PackageGalleryProps) {
   return (
     <>
       {/* Masonry Grid */}
-      <div className="columns-2 sm:columns-3 gap-2 space-y-2">
+      <div className="columns-3 sm:columns-4 gap-2 space-y-2">
         {photos.map((photo, i) => (
           <button
             key={photo.id}
@@ -73,10 +73,10 @@ export function PackageGallery({ photos, packageName }: PackageGalleryProps) {
             <Image
               src={photo.url}
               alt={photo.alt_text || `${packageName} guest photo ${i + 1}`}
-              width={400}
-              height={500}
+              width={250}
+              height={300}
               className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 640px) 50vw, 33vw"
+              sizes="(max-width: 640px) 33vw, 25vw"
               loading="lazy"
             />
           </button>
