@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { BRAND } from '@/lib/constants'
 import { getVehicles, getServices } from '@/lib/data'
+import { PACKAGES } from '@/lib/packages'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = BRAND.siteUrl
@@ -63,5 +64,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }))
 
-  return [...staticPages, ...vehiclePages, ...servicePages]
+  const packagePages: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/packages`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.9,
+    },
+    ...PACKAGES.map((pkg) => ({
+      url: `${baseUrl}/packages/${pkg.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    })),
+  ]
+
+  return [...staticPages, ...vehiclePages, ...servicePages, ...packagePages]
 }

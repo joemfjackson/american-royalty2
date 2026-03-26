@@ -4,6 +4,7 @@ import { getStripe } from '@/lib/stripe'
 import { revalidatePath } from 'next/cache'
 import { Resend } from 'resend'
 import { buildBookingConfirmationEmailHtml } from '@/lib/emails/booking-confirmation-email'
+import { buildPackageBookingEmailHtml } from '@/lib/emails/package-booking-email'
 import type Stripe from 'stripe'
 
 export async function POST(request: Request) {
@@ -151,6 +152,93 @@ export async function POST(request: Request) {
     } catch (error) {
       console.error('Webhook processing error:', error)
       return NextResponse.json({ error: 'Processing failed' }, { status: 500 })
+    }
+  }
+
+  // Handle package bookings
+  if (event.type === 'payment_intent.succeeded') {
+    const paymentIntent = event.data.object as Stripe.PaymentIntent
+    const meta = paymentIntent.metadata
+
+    if (meta?.type === 'package_booking') {
+      try {
+        // Check if already processed
+        const existing = await prisma.packageBooking.findFirst({
+          where: { stripePaymentId: paymentIntent.id },
+        })
+        if (existing) {
+          return NextResponse.json({ received: true })
+        }
+
+        // Create package booking
+        await prisma.packageBooking.create({
+          data: {
+            packageSlug: meta.packageSlug,
+            packageName: meta.packageName,
+            tierLabel: meta.tierLabel,
+            price: parseFloat(meta.tierPrice),
+            eventDate: meta.eventDate,
+            eventTime: meta.eventTime,
+            pickupLocation: meta.pickupLocation,
+            clientName: meta.clientName,
+            clientEmail: meta.clientEmail,
+            clientPhone: meta.clientPhone,
+            specialRequests: meta.specialRequests || null,
+            stripePaymentId: paymentIntent.id,
+            stripeCustomerId: paymentIntent.customer as string | null,
+            paymentStatus: 'paid',
+          },
+        })
+
+        // Send confirmation email to customer
+        if (process.env.RESEND_API_KEY) {
+          try {
+            const resend = new Resend(process.env.RESEND_API_KEY)
+            await resend.emails.send({
+              from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
+              to: [meta.clientEmail],
+              subject: `Booking Confirmed — ${meta.packageName}`,
+              html: buildPackageBookingEmailHtml({
+                clientName: meta.clientName.split(' ')[0],
+                packageName: meta.packageName,
+                eventDate: meta.eventDate,
+                eventTime: meta.eventTime,
+                tierLabel: meta.tierLabel,
+                pickupLocation: meta.pickupLocation,
+                price: parseFloat(meta.tierPrice),
+              }),
+            })
+
+            // Admin notification
+            await resend.emails.send({
+              from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
+              to: ['admin@americanroyaltylasvegas.com', 'dispatch@americanroyaltylasvegas.com'],
+              subject: `New Package Booking — ${meta.packageName} (${meta.tierLabel})`,
+              html: `<p>New package booking received:</p>
+                <ul>
+                  <li><strong>Package:</strong> ${meta.packageName}</li>
+                  <li><strong>Party Size:</strong> ${meta.tierLabel}</li>
+                  <li><strong>Date:</strong> ${meta.eventDate}</li>
+                  <li><strong>Time:</strong> ${meta.eventTime}</li>
+                  <li><strong>Pickup:</strong> ${meta.pickupLocation}</li>
+                  <li><strong>Client:</strong> ${meta.clientName}</li>
+                  <li><strong>Email:</strong> ${meta.clientEmail}</li>
+                  <li><strong>Phone:</strong> ${meta.clientPhone}</li>
+                  <li><strong>Amount:</strong> $${meta.tierPrice}</li>
+                  ${meta.specialRequests ? `<li><strong>Requests:</strong> ${meta.specialRequests}</li>` : ''}
+                </ul>`,
+            })
+          } catch (emailError) {
+            console.error('Package booking email failed:', emailError)
+          }
+        }
+
+        revalidatePath('/admin/packages')
+        revalidatePath('/admin')
+      } catch (error) {
+        console.error('Package booking webhook error:', error)
+        return NextResponse.json({ error: 'Processing failed' }, { status: 500 })
+      }
     }
   }
 

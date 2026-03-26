@@ -272,3 +272,27 @@ model Setting {
 
   @@map("settings")
 }
+
+// ─── Package Bookings ───────────────────────────────────
+
+model PackageBooking {
+  id                  String   @id @default(cuid())
+  packageSlug         String
+  packageName         String
+  tierLabel           String
+  price               Decimal  @db.Decimal(10, 2)
+  eventDate           String
+  eventTime           String
+  pickupLocation      String
+  clientName          String
+  clientEmail         String
+  clientPhone         String
+  specialRequests     String?  @db.Text
+  stripePaymentId     String?
+  stripeCustomerId    String?
+  paymentStatus       String   @default("pending")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("package_bookings")
+}

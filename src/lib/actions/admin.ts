@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
-import type { Quote, QuoteLineItem, Booking, Testimonial, Vehicle, Invoice, AdditionalCharge } from '@/types'
+import type { Quote, QuoteLineItem, Booking, Testimonial, Vehicle, Invoice, AdditionalCharge, PackageBooking } from '@/types'
 import type {
   Quote as PrismaQuote,
   Booking as PrismaBooking,
@@ -1236,4 +1236,42 @@ export async function chargeCardOnFile(
     })
     return mapAdditionalCharge(failed)
   }
+}
+
+// ─── Package Bookings ───────────────────────────────────
+
+import type { PackageBooking as PrismaPackageBooking } from '@prisma/client'
+
+function mapPackageBooking(b: PrismaPackageBooking): PackageBooking {
+  return {
+    id: b.id,
+    package_slug: b.packageSlug,
+    package_name: b.packageName,
+    tier_label: b.tierLabel,
+    price: Number(b.price),
+    event_date: b.eventDate,
+    event_time: b.eventTime,
+    pickup_location: b.pickupLocation,
+    client_name: b.clientName,
+    client_email: b.clientEmail,
+    client_phone: b.clientPhone,
+    special_requests: b.specialRequests,
+    stripe_payment_id: b.stripePaymentId,
+    payment_status: b.paymentStatus,
+    created_at: b.createdAt.toISOString(),
+  }
+}
+
+export async function getPackageBookings(): Promise<PackageBooking[]> {
+  await requireAdmin()
+  const bookings = await prisma.packageBooking.findMany({
+    orderBy: { createdAt: 'desc' },
+  })
+  return bookings.map(mapPackageBooking)
+}
+
+export async function deletePackageBooking(id: string) {
+  await requireAdmin()
+  await prisma.packageBooking.delete({ where: { id } })
+  revalidatePath('/admin/packages')
 }

@@ -115,6 +115,24 @@ export interface AdditionalCharge {
   created_at: string
 }
 
+export interface PackageBooking {
+  id: string
+  package_slug: string
+  package_name: string
+  tier_label: string
+  price: number
+  event_date: string
+  event_time: string
+  pickup_location: string
+  client_name: string
+  client_email: string
+  client_phone: string
+  special_requests: string | null
+  stripe_payment_id: string | null
+  payment_status: string
+  created_at: string
+}
+
 export interface Invoice {
   id: string
   quote_id: string

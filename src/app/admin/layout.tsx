@@ -17,12 +17,14 @@ import {
   LogOut,
   Menu,
   X,
+  Package,
 } from 'lucide-react'
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { label: 'Quotes', href: '/admin/quotes', icon: FileText },
   { label: 'Bookings', href: '/admin/bookings', icon: ClipboardList },
+  { label: 'Packages', href: '/admin/packages', icon: Package },
   { label: 'Calendar', href: '/admin/calendar', icon: CalendarDays },
   { label: 'Fleet', href: '/admin/fleet', icon: Car },
   { label: 'Testimonials', href: '/admin/testimonials', icon: Star },
