@@ -10,8 +10,8 @@
   --color-royal-light: #8B4FD4;
   --color-royal-dark: #5A1FA3;
   --color-dark: #0A0A0A;
-  --color-dark-card: #161616;
-  --color-dark-border: #2A2A2A;
+  --color-dark-card: #1A1A1A;
+  --color-dark-border: #333333;
   --font-display: var(--font-montserrat), sans-serif;
   --font-body: var(--font-montserrat), sans-serif;
 }

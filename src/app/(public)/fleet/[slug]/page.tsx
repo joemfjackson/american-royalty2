@@ -124,12 +124,12 @@ export default async function VehicleDetailPage({ params }: PageProps) {
       <article className="section-padding pt-28">
         <div className="container-max">
           {/* ---- Breadcrumb ---- */}
-          <nav aria-label="Breadcrumb" className="mb-8 flex items-center gap-2 text-sm text-white/60">
+          <nav aria-label="Breadcrumb" className="mb-8 flex items-center gap-2 text-sm text-white/80">
             <Link href="/fleet" className="transition-colors hover:text-gold">
               Fleet
             </Link>
             <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="text-white/70">{vehicle.name}</span>
+            <span className="text-white/80">{vehicle.name}</span>
           </nav>
 
           {/* ---- Hero Section ---- */}
@@ -154,11 +154,11 @@ export default async function VehicleDetailPage({ params }: PageProps) {
 
               {/* Stats Row */}
               <div className="mt-6 flex flex-wrap items-center gap-6">
-                <div className="flex items-center gap-2 text-white/60">
+                <div className="flex items-center gap-2 text-white/80">
                   <Users className="h-5 w-5 text-gold" aria-hidden="true" />
                   <span>Up to {vehicle.capacity} passengers</span>
                 </div>
-                <div className="flex items-center gap-2 text-white/60">
+                <div className="flex items-center gap-2 text-white/80">
                   <Clock className="h-5 w-5 text-gold" aria-hidden="true" />
                   <span>{vehicle.min_hours} hour minimum</span>
                 </div>
@@ -169,13 +169,13 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                 <p className="text-2xl font-bold text-gold">
                   Starting at {formatCurrency(vehicle.hourly_rate)}/hr
                 </p>
-                <p className="mt-1 text-sm text-white/60">
+                <p className="mt-1 text-sm text-white/80">
                   {vehicle.min_hours}-hour minimum &middot; Gratuity not included
                 </p>
               </div>
 
               {/* Description */}
-              <p className="mt-6 leading-relaxed text-white/60">
+              <p className="mt-6 leading-relaxed text-white/80">
                 {vehicle.description}
               </p>
 
@@ -253,7 +253,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                           {rv.name}
                         </h3>
                         <div className="mt-2 flex items-center gap-4 text-sm">
-                          <span className="flex items-center gap-1 text-white/70">
+                          <span className="flex items-center gap-1 text-white/80">
                             <Users className="h-3.5 w-3.5" aria-hidden="true" />
                             {rv.capacity}
                           </span>

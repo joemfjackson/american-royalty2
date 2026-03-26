@@ -81,7 +81,7 @@ export function Hero() {
         </p>
 
         <p
-          className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-white/75 animate-hero-fade-in sm:mt-6 sm:text-lg"
+          className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-white/85 animate-hero-fade-in sm:mt-6 sm:text-lg"
           style={{ animationDelay: '0.45s' }}
         >
           Premium VIP transportation for bachelor and bachelorette parties,

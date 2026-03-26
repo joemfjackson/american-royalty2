@@ -51,7 +51,7 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
 
           {/* Capacity + Rate */}
           <div className="mt-3 flex items-center gap-4 text-sm">
-            <span className="flex items-center gap-1.5 text-white/70">
+            <span className="flex items-center gap-1.5 text-white/80">
               <Users className="h-4 w-4" aria-hidden="true" />
               Up to {vehicle.capacity} guests
             </span>
@@ -62,7 +62,7 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
             <span className="text-lg font-bold text-gold">
               {formatCurrency(vehicle.hourly_rate)}/hr
             </span>
-            <span className="ml-2 text-sm text-white/70">
+            <span className="ml-2 text-sm text-white/80">
               {vehicle.min_hours} hr min
             </span>
           </div>
@@ -72,7 +72,7 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
             {vehicle.features.slice(0, 4).map((feature) => (
               <li
                 key={feature}
-                className="flex items-center gap-2 text-sm text-white/70"
+                className="flex items-center gap-2 text-sm text-white/80"
               >
                 <Check className="h-3.5 w-3.5 shrink-0 text-gold" aria-hidden="true" />
                 {feature}
@@ -90,7 +90,7 @@ function VehicleCard({ vehicle, index }: { vehicle: Vehicle; index: number }) {
             </Link>
             <Link
               href={`/quote?vehicle=${vehicle.slug}`}
-              className="text-sm font-semibold text-white/70 transition-colors hover:text-white"
+              className="text-sm font-semibold text-white/80 transition-colors hover:text-white"
             >
               Get a Quote
             </Link>
@@ -143,7 +143,7 @@ export function FleetGrid({ vehicles }: { vehicles: Vehicle[] }) {
       {/* Empty State */}
       {filteredVehicles.length === 0 && (
         <div className="mt-16 text-center">
-          <p className="text-lg text-white/70">
+          <p className="text-lg text-white/80">
             No vehicles found in this category.
           </p>
         </div>

@@ -71,7 +71,7 @@ export default async function ServicesPage() {
             <span className="gold-gradient-text">Services in Las Vegas</span>
           </h1>
           <GoldLine className="mx-auto mt-5" width="100px" />
-          <p className="mx-auto mt-6 max-w-3xl text-lg text-white/70">
+          <p className="mx-auto mt-6 max-w-3xl text-lg text-white/80">
             From epic bachelor parties to elegant wedding transportation,
             American Royalty delivers VIP experiences for every occasion. Our
             luxury fleet and professional chauffeurs ensure your Las Vegas event
@@ -111,7 +111,7 @@ export default async function ServicesPage() {
                 </p>
 
                 {/* Description */}
-                <p className="mt-3 flex-1 text-sm leading-relaxed text-white/70">
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-white/80">
                   {service.description}
                 </p>
 
@@ -168,13 +168,13 @@ export default async function ServicesPage() {
                   <item.icon className="h-7 w-7 text-gold" aria-hidden="true" />
                 </div>
                 <h3 className="mt-4 font-bold text-white">{item.title}</h3>
-                <p className="mt-2 text-sm text-white/70">{item.text}</p>
+                <p className="mt-2 text-sm text-white/80">{item.text}</p>
               </div>
             ))}
           </div>
 
           {/* SEO paragraphs */}
-          <div className="mx-auto mt-16 max-w-4xl space-y-6 text-white/70 leading-relaxed">
+          <div className="mx-auto mt-16 max-w-4xl space-y-6 text-white/80 leading-relaxed">
             <p>
               American Royalty is Las Vegas&apos;s premier luxury transportation
               provider, specializing in party buses and limousines for every
