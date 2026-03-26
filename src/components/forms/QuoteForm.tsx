@@ -98,6 +98,11 @@ function QuoteFormInner({ vehicleOptions = [] }: QuoteFormProps) {
             value: 1.0,
             currency: 'USD',
           })
+          w.gtag('event', 'conversion', {
+            send_to: 'AW-18039620267/7KD1CMqj3Y8cEKuF-5lD',
+            value: 1.0,
+            currency: 'USD',
+          })
         }
       } catch { /* gtag not loaded */ }
 
