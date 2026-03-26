@@ -1252,6 +1252,7 @@ function mapPackageBooking(b: PrismaPackageBooking): PackageBooking {
     event_date: b.eventDate,
     event_time: b.eventTime,
     pickup_location: b.pickupLocation,
+    dropoff_location: b.dropoffLocation,
     client_name: b.clientName,
     client_email: b.clientEmail,
     client_phone: b.clientPhone,

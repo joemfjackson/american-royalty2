@@ -284,6 +284,7 @@ model PackageBooking {
   eventDate           String
   eventTime           String
   pickupLocation      String
+  dropoffLocation     String?
   clientName          String
   clientEmail         String
   clientPhone         String

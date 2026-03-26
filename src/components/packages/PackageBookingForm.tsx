@@ -142,6 +142,7 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
     date: '',
     time: '',
     pickup: '',
+    dropoff: '',
     requests: '',
   })
 
@@ -155,7 +156,8 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
     formData.phone &&
     formData.date &&
     formData.time &&
-    formData.pickup
+    formData.pickup &&
+    formData.dropoff
 
   const handleCreatePayment = async () => {
     if (!isFormValid || selectedTier === null) return
@@ -262,6 +264,16 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
                   placeholder="Hotel name or address"
                   value={formData.pickup}
                   onChange={(e) => updateField('pickup', e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-400">Drop-off Location</label>
+                <input
+                  type="text"
+                  placeholder="Hotel name or address"
+                  value={formData.dropoff}
+                  onChange={(e) => updateField('dropoff', e.target.value)}
                   className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none"
                 />
               </div>

@@ -180,6 +180,7 @@ export async function POST(request: Request) {
             eventDate: meta.eventDate,
             eventTime: meta.eventTime,
             pickupLocation: meta.pickupLocation,
+            dropoffLocation: meta.dropoffLocation || null,
             clientName: meta.clientName,
             clientEmail: meta.clientEmail,
             clientPhone: meta.clientPhone,

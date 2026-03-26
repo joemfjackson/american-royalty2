@@ -5,7 +5,7 @@ import { getPackageBySlug } from '@/lib/packages'
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { packageSlug, tierIndex, name, email, phone, date, time, pickup, requests } = body
+    const { packageSlug, tierIndex, name, email, phone, date, time, pickup, dropoff, requests } = body
 
     // Validate package and tier
     const pkg = getPackageBySlug(packageSlug)
@@ -49,6 +49,7 @@ export async function POST(request: Request) {
         eventDate: date,
         eventTime: time,
         pickupLocation: pickup,
+        dropoffLocation: dropoff || '',
         specialRequests: requests || '',
       },
       description: `${pkg.name} — ${tier.tier}`,

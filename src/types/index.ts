@@ -124,6 +124,7 @@ export interface PackageBooking {
   event_date: string
   event_time: string
   pickup_location: string
+  dropoff_location: string | null
   client_name: string
   client_email: string
   client_phone: string
