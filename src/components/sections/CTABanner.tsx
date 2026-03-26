@@ -7,8 +7,8 @@ export function CTABanner() {
     <section className="relative overflow-hidden">
       {/* Background photo */}
       <Image
-        src="/images/gallery/dancing-on-bus.webp"
-        alt="Guests dancing and celebrating on an American Royalty party bus"
+        src="/images/gallery/bus-interior-blue.jpg"
+        alt="American Royalty party bus interior with blue LED lighting"
         fill
         sizes="100vw"
         quality={80}
