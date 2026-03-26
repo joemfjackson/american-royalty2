@@ -101,14 +101,20 @@ export default function PackagesPage() {
       </section>
 
       {/* Package Cards */}
-      <section className="mx-auto max-w-6xl px-4 pb-20">
-        <div className="grid gap-6 sm:grid-cols-2">
+      <section className="relative mx-auto max-w-6xl px-4 pb-20 overflow-hidden">
+        {/* Purple ambient glow */}
+        <div className="pointer-events-none absolute -left-40 top-1/3 h-[500px] w-[500px] rounded-full bg-royal/[0.06] blur-[120px]" />
+        <div className="pointer-events-none absolute -right-40 bottom-1/4 h-[400px] w-[400px] rounded-full bg-royal/[0.04] blur-[100px]" />
+
+        <div className="relative grid gap-6 sm:grid-cols-2">
           {PACKAGES.map((pkg) => (
             <Link
               key={pkg.slug}
               href={`/packages/${pkg.slug}`}
-              className="group relative overflow-hidden rounded-2xl border border-dark-border bg-dark-card transition-all hover:border-gold/30"
+              className="group relative overflow-hidden rounded-2xl border border-royal/20 bg-dark-card shadow-[0_10px_40px_rgba(111,45,189,0.25),0_4px_15px_rgba(111,45,189,0.15)] transition-all duration-300 hover:-translate-y-1 hover:border-royal/40 hover:shadow-[0_15px_50px_rgba(111,45,189,0.35),0_6px_20px_rgba(111,45,189,0.2)]"
             >
+              {/* Purple-gold gradient top accent */}
+              <div className="absolute top-0 left-0 right-0 z-10 h-0.5 bg-gradient-to-r from-royal via-gold/60 to-royal opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               <div className="relative h-48 overflow-hidden">
                 <Image
                   src={pkg.image}
