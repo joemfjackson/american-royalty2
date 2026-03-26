@@ -19,12 +19,14 @@ interface BookingFormProps {
   selectedTierIndex: number
   clientSecret: string
   formData: {
-    name: string
+    firstName: string
+    lastName: string
     email: string
     phone: string
     date: string
     time: string
     pickup: string
+    dropoff: string
     requests: string
   }
 }
@@ -140,7 +142,8 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
   const [error, setError] = useState<string | null>(null)
   const formRef = useRef<HTMLDivElement>(null)
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     date: '',
@@ -155,7 +158,8 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
 
   const isFormValid =
     selectedTier !== null &&
-    formData.name &&
+    formData.firstName &&
+    formData.lastName &&
     formData.email &&
     formData.phone &&
     formData.date &&
@@ -175,7 +179,14 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
         body: JSON.stringify({
           packageSlug: pkg.slug,
           tierIndex: selectedTier,
-          ...formData,
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          phone: formData.phone,
+          date: formData.date,
+          time: formData.time,
+          pickup: formData.pickup,
+          dropoff: formData.dropoff,
+          requests: formData.requests,
         }),
       })
       const data = await res.json()
@@ -290,14 +301,25 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
                   className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none"
                 />
               </div>
-              <div>
-                <label className="text-xs font-medium text-gray-400">Full Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => updateField('name', e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none"
-                />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs font-medium text-gray-400">First Name</label>
+                  <input
+                    type="text"
+                    value={formData.firstName}
+                    onChange={(e) => updateField('firstName', e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-400">Last Name</label>
+                  <input
+                    type="text"
+                    value={formData.lastName}
+                    onChange={(e) => updateField('lastName', e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none"
+                  />
+                </div>
               </div>
               <div>
                 <label className="text-xs font-medium text-gray-400">Email</label>
