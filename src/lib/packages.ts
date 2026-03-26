@@ -25,6 +25,7 @@ export interface PackageConfig {
   pricing: PackageTier[]
   faqs: PackageFaq[]
   image: string
+  gallery?: string[]
   keywords: string
 }
 
@@ -81,7 +82,27 @@ export const PACKAGES: PackageConfig[] = [
         a: 'Everything — professional chauffeur, party bus with premium sound and LED lighting, ice water and cups, and all stops. The price shown is the total, taxes and fees included. Just bring your drinks and your crew.',
       },
     ],
-    image: '/images/hero/bus-exterior-casino.webp',
+    image: '/images/packages/vegas-sign/IMG_8627.JPG',
+    gallery: [
+      '/images/packages/vegas-sign/IMG_8620.JPG',
+      '/images/packages/vegas-sign/IMG_8621.JPG',
+      '/images/packages/vegas-sign/IMG_8623.JPG',
+      '/images/packages/vegas-sign/IMG_8624.JPG',
+      '/images/packages/vegas-sign/IMG_8625.JPG',
+      '/images/packages/vegas-sign/IMG_8626.JPG',
+      '/images/packages/vegas-sign/IMG_8628.JPG',
+      '/images/packages/vegas-sign/IMG_8629.JPG',
+      '/images/packages/vegas-sign/IMG_8630.JPG',
+      '/images/packages/vegas-sign/IMG_8631.JPG',
+      '/images/packages/vegas-sign/IMG_8632.JPG',
+      '/images/packages/vegas-sign/IMG_8633.JPG',
+      '/images/packages/vegas-sign/IMG_8634.JPG',
+      '/images/packages/vegas-sign/IMG_8635.JPG',
+      '/images/packages/vegas-sign/IMG_8636.JPG',
+      '/images/packages/vegas-sign/IMG_8637.JPG',
+      '/images/packages/vegas-sign/IMG_8638.JPG',
+      '/images/packages/vegas-sign/IMG_8639.JPG',
+    ],
     keywords:
       'vegas sign photo tour, las vegas sign party bus, welcome to las vegas sign tour, vegas sign photo op party bus',
   },

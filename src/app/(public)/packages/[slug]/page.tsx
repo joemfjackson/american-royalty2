@@ -173,6 +173,32 @@ export default async function PackageDetailPage({
               <p className="mt-4 text-sm leading-relaxed text-gray-300">{pkg.description}</p>
             </section>
 
+            {/* Photo Gallery */}
+            {pkg.gallery && pkg.gallery.length > 0 && (
+              <section>
+                <h2 className="text-xl font-bold text-white">From Our Guests</h2>
+                <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {pkg.gallery.slice(0, 9).map((src, i) => (
+                    <div key={i} className="relative aspect-square overflow-hidden rounded-lg">
+                      <Image
+                        src={src}
+                        alt={`${pkg.name} guest photo ${i + 1}`}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 50vw, 33vw"
+                        loading="lazy"
+                      />
+                    </div>
+                  ))}
+                </div>
+                {pkg.gallery.length > 9 && (
+                  <p className="mt-3 text-center text-xs text-gray-500">
+                    +{pkg.gallery.length - 9} more photos from real tours
+                  </p>
+                )}
+              </section>
+            )}
+
             {/* What's Included */}
             <section>
               <h2 className="text-xl font-bold text-white">What&apos;s Included</h2>
