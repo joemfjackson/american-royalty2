@@ -1276,3 +1276,71 @@ export async function deletePackageBooking(id: string) {
   await prisma.packageBooking.delete({ where: { id } })
   revalidatePath('/admin/packages')
 }
+
+// ─── Package Photos ─────────────────────────────────────
+
+export interface PackagePhotoData {
+  id: string
+  package_slug: string
+  url: string
+  alt_text: string | null
+  display_order: number
+}
+
+export async function getPackagePhotos(packageSlug: string): Promise<PackagePhotoData[]> {
+  const photos = await prisma.packagePhoto.findMany({
+    where: { packageSlug },
+    orderBy: { displayOrder: 'asc' },
+  })
+  return photos.map((p) => ({
+    id: p.id,
+    package_slug: p.packageSlug,
+    url: p.url,
+    alt_text: p.altText,
+    display_order: p.displayOrder,
+  }))
+}
+
+export async function getPackagePhotosAdmin(packageSlug: string): Promise<PackagePhotoData[]> {
+  await requireAdmin()
+  return getPackagePhotos(packageSlug)
+}
+
+export async function addPackagePhoto(packageSlug: string, url: string, altText?: string) {
+  await requireAdmin()
+  const maxOrder = await prisma.packagePhoto.findFirst({
+    where: { packageSlug },
+    orderBy: { displayOrder: 'desc' },
+    select: { displayOrder: true },
+  })
+  await prisma.packagePhoto.create({
+    data: {
+      packageSlug,
+      url,
+      altText: altText || null,
+      displayOrder: (maxOrder?.displayOrder ?? -1) + 1,
+    },
+  })
+  revalidatePath(`/packages/${packageSlug}`)
+  revalidatePath('/admin/packages')
+}
+
+export async function deletePackagePhoto(photoId: string) {
+  await requireAdmin()
+  const photo = await prisma.packagePhoto.findUnique({ where: { id: photoId } })
+  if (!photo) return
+
+  // Delete from Vercel Blob if it's a blob URL
+  if (photo.url.includes('blob.vercel-storage.com')) {
+    try {
+      const { del } = await import('@vercel/blob')
+      await del(photo.url)
+    } catch (e) {
+      console.error('Failed to delete blob:', e)
+    }
+  }
+
+  await prisma.packagePhoto.delete({ where: { id: photoId } })
+  revalidatePath(`/packages/${photo.packageSlug}`)
+  revalidatePath('/admin/packages')
+}

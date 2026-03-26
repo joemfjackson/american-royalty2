@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Package, Calendar, Users, DollarSign, Trash2, MapPin, Clock } from 'lucide-react'
+import Link from 'next/link'
+import { Package, Calendar, Users, DollarSign, Trash2, MapPin, Clock, ImageIcon } from 'lucide-react'
 import { getPackageBookings, deletePackageBooking } from '@/lib/actions/admin'
 import type { PackageBooking } from '@/types'
 
@@ -40,6 +41,13 @@ export default function AdminPackagesPage() {
             {bookings.length} booking{bookings.length !== 1 ? 's' : ''}
           </p>
         </div>
+        <Link
+          href="/admin/packages/photos"
+          className="inline-flex items-center gap-2 rounded-lg border border-dark-border bg-dark-card px-4 py-2 text-sm font-medium text-gold transition-all hover:border-gold/30"
+        >
+          <ImageIcon className="h-4 w-4" />
+          Manage Photos
+        </Link>
       </div>
 
       {loading ? (

@@ -297,3 +297,14 @@ model PackageBooking {
 
   @@map("package_bookings")
 }
+
+model PackagePhoto {
+  id           String   @id @default(cuid())
+  packageSlug  String
+  url          String
+  altText      String?
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@map("package_photos")
+}
