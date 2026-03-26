@@ -234,18 +234,25 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-400">Preferred Time</label>
+                <label className="text-xs font-medium text-gray-400">Pickup Time</label>
                 <select
                   value={formData.time}
                   onChange={(e) => updateField('time', e.target.value)}
                   className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none"
                 >
-                  <option value="">Select time</option>
-                  <option value="Morning (8am-12pm)">Morning (8am-12pm)</option>
-                  <option value="Afternoon (12pm-5pm)">Afternoon (12pm-5pm)</option>
-                  <option value="Sunset (5pm-7pm)">Sunset (5pm-7pm)</option>
-                  <option value="Evening (7pm-10pm)">Evening (7pm-10pm)</option>
-                  <option value="Late Night (10pm-2am)">Late Night (10pm-2am)</option>
+                  <option value="">Select pickup time</option>
+                  {Array.from({ length: 24 * 4 }, (_, i) => {
+                    const h = Math.floor(i / 4)
+                    const m = (i % 4) * 15
+                    const period = h >= 12 ? 'PM' : 'AM'
+                    const h12 = h % 12 || 12
+                    const label = `${h12}:${m.toString().padStart(2, '0')} ${period}`
+                    return (
+                      <option key={i} value={label}>
+                        {label}
+                      </option>
+                    )
+                  })}
                 </select>
               </div>
               <div>
