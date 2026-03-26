@@ -6,7 +6,9 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import type { PackageConfig } from '@/lib/packages'
 import { CheckCircle } from 'lucide-react'
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+  : null
 
 function formatCurrency(n: number) {
   return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -135,6 +137,7 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
   const [selectedTier, setSelectedTier] = useState<number | null>(null)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -162,9 +165,9 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
   const handleCreatePayment = async () => {
     if (!isFormValid || selectedTier === null) return
     setLoading(true)
+    setError(null)
 
     try {
-      const tier = pkg.pricing[selectedTier]
       const res = await fetch('/api/packages/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -175,12 +178,17 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
         }),
       })
       const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Failed to set up payment')
+        return
+      }
       if (data.clientSecret) {
         setClientSecret(data.clientSecret)
       } else {
-        console.error('Failed to create payment intent:', data.error)
+        setError('Failed to initialize payment. Please try again.')
       }
     } catch (err) {
+      setError('Connection error. Please try again.')
       console.error('Payment setup failed:', err)
     } finally {
       setLoading(false)
@@ -315,6 +323,12 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
               </div>
             </div>
 
+            {error && (
+              <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+                {error}
+              </p>
+            )}
+
             <button
               onClick={handleCreatePayment}
               disabled={!isFormValid || loading}
@@ -325,7 +339,7 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
           </>
         )}
 
-        {clientSecret && selectedTier !== null && (
+        {clientSecret && selectedTier !== null && stripePromise && (
           <Elements
             stripe={stripePromise}
             options={{
