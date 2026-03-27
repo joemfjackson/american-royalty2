@@ -8,11 +8,9 @@ import { PackageBookingForm } from '@/components/packages/PackageBookingForm'
 import { PackageGallery } from '@/components/packages/PackageGallery'
 import { getPackagePhotos } from '@/lib/actions/admin'
 
-const SITE = 'https://www.americanroyaltylasvegas.com'
+export const dynamic = 'force-dynamic'
 
-export function generateStaticParams() {
-  return PACKAGES.map((p) => ({ slug: p.slug }))
-}
+const SITE = 'https://www.americanroyaltylasvegas.com'
 
 export async function generateMetadata({
   params,
