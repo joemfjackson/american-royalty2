@@ -50,7 +50,7 @@ export function BeamsBackground({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const beamsRef = useRef<Beam[]>([]);
   const animationFrameRef = useRef<number>(0);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const MINIMUM_BEAMS = 15;
 
   const opacityMap = {
@@ -60,11 +60,14 @@ export function BeamsBackground({
   };
 
   useEffect(() => {
-    setIsMobile(window.innerWidth < 768);
+    // Only enable beams on desktop — check both viewport width and device capability
+    const isWide = window.innerWidth >= 768;
+    const hasGoodPerf = !navigator.hardwareConcurrency || navigator.hardwareConcurrency >= 4;
+    setIsDesktop(isWide && hasGoodPerf);
   }, []);
 
   useEffect(() => {
-    if (isMobile) return;
+    if (!isDesktop) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -173,11 +176,11 @@ export function BeamsBackground({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [intensity, isMobile]);
+  }, [intensity, isDesktop]);
 
   return (
     <div className={cn("relative w-full", className)}>
-      {!isMobile && (
+      {isDesktop && (
         <>
           <canvas
             ref={canvasRef}
