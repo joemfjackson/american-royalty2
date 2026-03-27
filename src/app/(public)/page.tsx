@@ -2,10 +2,21 @@ export const revalidate = 60
 
 import dynamic from 'next/dynamic'
 import { Hero } from '@/components/sections/Hero'
-import { TrustSignals } from '@/components/sections/TrustSignals'
-import { FleetPreview } from '@/components/sections/FleetPreview'
-import { ServicesGrid } from '@/components/sections/ServicesGrid'
-import { CTABanner } from '@/components/sections/CTABanner'
+const TrustSignals = dynamic(
+  () => import('@/components/sections/TrustSignals').then((m) => m.TrustSignals),
+)
+
+const FleetPreview = dynamic(
+  () => import('@/components/sections/FleetPreview').then((m) => m.FleetPreview),
+)
+
+const ServicesGrid = dynamic(
+  () => import('@/components/sections/ServicesGrid').then((m) => m.ServicesGrid),
+)
+
+const CTABanner = dynamic(
+  () => import('@/components/sections/CTABanner').then((m) => m.CTABanner),
+)
 import { BRAND, SERVICE_AREAS, FAQ_ITEMS } from '@/lib/constants'
 import { getVehicles, getServices, getTestimonials } from '@/lib/data'
 

@@ -30,22 +30,11 @@ export function Hero() {
       {/* Dark overlay for text readability */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/90" />
 
-      {/* Accent radial glows */}
-      <div className="pointer-events-none absolute inset-0">
+      {/* Accent radial glows — hidden on mobile for performance */}
+      <div className="pointer-events-none absolute inset-0 hidden sm:block">
         <div className="absolute left-1/2 top-1/3 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-royal/15 blur-[120px]" />
         <div className="absolute bottom-1/4 right-1/4 h-[400px] w-[400px] rounded-full bg-gold/10 blur-[100px]" />
-        <div className="absolute left-1/4 top-2/3 h-[300px] w-[300px] rounded-full bg-royal/10 blur-[80px]" />
       </div>
-
-      {/* Subtle grid overlay */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage:
-            'linear-gradient(rgba(214,192,138,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(214,192,138,0.3) 1px, transparent 1px)',
-          backgroundSize: '60px 60px',
-        }}
-      />
 
       <div className="container-max relative z-10 px-4 text-center sm:px-6 lg:px-8">
         {/* Logo — CSS animation, no JS dependency */}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
 interface BeamsBackgroundProps {
@@ -52,7 +51,7 @@ export function BeamsBackground({
   const beamsRef = useRef<Beam[]>([]);
   const animationFrameRef = useRef<number>(0);
   const [isMobile, setIsMobile] = useState(false);
-  const MINIMUM_BEAMS = 35;
+  const MINIMUM_BEAMS = 15;
 
   const opacityMap = {
     subtle: 0.5,
@@ -150,7 +149,7 @@ export function BeamsBackground({
       if (!canvas || !ctx) return;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.filter = "blur(35px)";
+      ctx.filter = "blur(20px)";
 
       beamsRef.current.forEach((beam, index) => {
         beam.y -= beam.speed;
@@ -186,18 +185,10 @@ export function BeamsBackground({
             style={{ filter: "blur(15px)", zIndex: 0 }}
           />
 
-          <motion.div
+          <div
             className="fixed inset-0 pointer-events-none"
-            animate={{
-              opacity: [0.05, 0.15, 0.05],
-            }}
-            transition={{
-              duration: 10,
-              ease: "easeInOut",
-              repeat: Number.POSITIVE_INFINITY,
-            }}
             style={{
-              backdropFilter: "blur(50px)",
+              backdropFilter: "blur(30px)",
               zIndex: 0,
             }}
           />
