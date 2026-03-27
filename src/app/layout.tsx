@@ -83,6 +83,24 @@ export default function RootLayout({
             gtag('config', 'AW-18039620267');
           `}
         </Script>
+        <Script id="google-ads-click-to-call" strategy="lazyOnload">
+          {`
+            function gtag_report_conversion(url) {
+              var callback = function () {
+                if (typeof(url) != 'undefined') {
+                  window.location = url;
+                }
+              };
+              gtag('event', 'conversion', {
+                'send_to': 'AW-18039620267/Yzv6CObj35AcEKuF-5lD',
+                'value': 1.0,
+                'currency': 'USD',
+                'event_callback': callback
+              });
+              return false;
+            }
+          `}
+        </Script>
 
         {/* Preload hero image so browser fetches it immediately */}
         <link

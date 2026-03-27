@@ -183,6 +183,7 @@ export async function Footer() {
             <span className="hidden sm:inline">|</span>
             <a
               href={`tel:${BRAND.phone.replace(/[^0-9+]/g, '')}`}
+              onClick={() => { try { (window as any).gtag_report_conversion?.() } catch {} }}
               className="transition-colors hover:text-gold"
             >
               {BRAND.phone}

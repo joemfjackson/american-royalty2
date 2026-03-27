@@ -16,6 +16,7 @@ export function MobileCTA() {
       <div className="flex items-stretch">
         <a
           href={`tel:${BRAND.phone.replace(/[^0-9+]/g, '')}`}
+          onClick={() => { try { (window as any).gtag_report_conversion?.() } catch {} }}
           className="flex flex-1 items-center justify-center gap-2 py-3.5 font-semibold text-white transition-colors active:bg-white/5"
         >
           <Phone className="h-4 w-4 text-gold" />

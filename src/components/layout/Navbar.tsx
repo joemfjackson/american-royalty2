@@ -109,6 +109,7 @@ export function Navbar() {
           <div className="hidden items-center gap-4 lg:flex">
             <a
               href={`tel:${BRAND.phone.replace(/[^0-9+]/g, '')}`}
+              onClick={() => { try { (window as any).gtag_report_conversion?.() } catch {} }}
               className="flex items-center gap-2 text-sm text-white/70 transition-colors hover:text-gold"
             >
               <Phone className="h-4 w-4" />
@@ -170,6 +171,7 @@ export function Navbar() {
           <div className="mt-4 flex flex-col items-center gap-4">
             <a
               href={`tel:${BRAND.phone.replace(/[^0-9+]/g, '')}`}
+              onClick={() => { try { (window as any).gtag_report_conversion?.() } catch {} }}
               className="flex items-center gap-2 text-white/70 transition-colors hover:text-gold"
             >
               <Phone className="h-5 w-5" />
