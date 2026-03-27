@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, Phone } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { BRAND } from '@/lib/constants'
@@ -95,14 +94,13 @@ export function Navbar() {
                 )}
               >
                 {link.label}
-                {isActive(link.href) && (
-                  <motion.span
-                    layoutId="navbar-active"
-                    className="absolute -bottom-1 left-0 right-0 h-0.5"
-                    style={{ background: 'linear-gradient(90deg, #6F2DBD, #D6C08A, #6F2DBD)' }}
-                    transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                  />
-                )}
+                <span
+                  className={cn(
+                    'absolute -bottom-1 left-0 right-0 h-0.5 transition-opacity duration-300',
+                    isActive(link.href) ? 'opacity-100' : 'opacity-0'
+                  )}
+                  style={{ background: 'linear-gradient(90deg, #6F2DBD, #D6C08A, #6F2DBD)' }}
+                />
               </Link>
             ))}
           </div>
@@ -136,68 +134,53 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/95 backdrop-blur-xl lg:hidden"
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-              className="flex h-full flex-col items-center justify-center gap-6"
-            >
-              {NAV_LINKS.map((link, index) => (
-                <motion.div
-                  key={link.href}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 0.3, delay: 0.1 + index * 0.05 }}
-                >
-                  <Link
-                    href={link.href}
-                    className={cn(
-                      'block text-2xl font-semibold uppercase tracking-widest transition-colors',
-                      isActive(link.href)
-                        ? 'gold-gradient-text'
-                        : 'text-white/70 hover:text-white'
-                    )}
-                  >
-                    {link.label}
-                  </Link>
-                </motion.div>
-              ))}
-
-              {/* Mobile Phone + CTA */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.3, delay: 0.4 }}
-                className="mt-4 flex flex-col items-center gap-4"
-              >
-                <a
-                  href={`tel:${BRAND.phone.replace(/[^0-9+]/g, '')}`}
-                  className="flex items-center gap-2 text-white/70 transition-colors hover:text-gold"
-                >
-                  <Phone className="h-5 w-5" />
-                  <span className="text-lg">{BRAND.phone}</span>
-                </a>
-                <Link href="/quote" className="btn-gold px-8 py-3 text-lg">
-                  Get a Quote
-                </Link>
-              </motion.div>
-            </motion.div>
-          </motion.div>
+      {/* Mobile Menu Overlay — CSS transitions instead of framer-motion */}
+      <div
+        className={cn(
+          'fixed inset-0 z-40 bg-black/95 backdrop-blur-xl lg:hidden transition-all duration-300',
+          isMobileMenuOpen
+            ? 'opacity-100 pointer-events-auto'
+            : 'opacity-0 pointer-events-none'
         )}
-      </AnimatePresence>
+      >
+        <div
+          className={cn(
+            'flex h-full flex-col items-center justify-center gap-6 transition-all duration-300',
+            isMobileMenuOpen
+              ? 'opacity-100 translate-y-0'
+              : 'opacity-0 translate-y-4'
+          )}
+        >
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                'block text-2xl font-semibold uppercase tracking-widest transition-colors',
+                isActive(link.href)
+                  ? 'gold-gradient-text'
+                  : 'text-white/70 hover:text-white'
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          {/* Mobile Phone + CTA */}
+          <div className="mt-4 flex flex-col items-center gap-4">
+            <a
+              href={`tel:${BRAND.phone.replace(/[^0-9+]/g, '')}`}
+              className="flex items-center gap-2 text-white/70 transition-colors hover:text-gold"
+            >
+              <Phone className="h-5 w-5" />
+              <span className="text-lg">{BRAND.phone}</span>
+            </a>
+            <Link href="/quote" className="btn-gold px-8 py-3 text-lg">
+              Get a Quote
+            </Link>
+          </div>
+        </div>
+      </div>
     </>
   )
 }
