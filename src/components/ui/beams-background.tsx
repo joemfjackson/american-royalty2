@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -51,6 +51,7 @@ export function BeamsBackground({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const beamsRef = useRef<Beam[]>([]);
   const animationFrameRef = useRef<number>(0);
+  const [isMobile, setIsMobile] = useState(false);
   const MINIMUM_BEAMS = 35;
 
   const opacityMap = {
@@ -60,6 +61,12 @@ export function BeamsBackground({
   };
 
   useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -167,31 +174,35 @@ export function BeamsBackground({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [intensity]);
+  }, [intensity, isMobile]);
 
   return (
     <div className={cn("relative w-full", className)}>
-      <canvas
-        ref={canvasRef}
-        className="fixed inset-0 pointer-events-none"
-        style={{ filter: "blur(15px)", zIndex: 0 }}
-      />
+      {!isMobile && (
+        <>
+          <canvas
+            ref={canvasRef}
+            className="fixed inset-0 pointer-events-none"
+            style={{ filter: "blur(15px)", zIndex: 0 }}
+          />
 
-      <motion.div
-        className="fixed inset-0 pointer-events-none"
-        animate={{
-          opacity: [0.05, 0.15, 0.05],
-        }}
-        transition={{
-          duration: 10,
-          ease: "easeInOut",
-          repeat: Number.POSITIVE_INFINITY,
-        }}
-        style={{
-          backdropFilter: "blur(50px)",
-          zIndex: 0,
-        }}
-      />
+          <motion.div
+            className="fixed inset-0 pointer-events-none"
+            animate={{
+              opacity: [0.05, 0.15, 0.05],
+            }}
+            transition={{
+              duration: 10,
+              ease: "easeInOut",
+              repeat: Number.POSITIVE_INFINITY,
+            }}
+            style={{
+              backdropFilter: "blur(50px)",
+              zIndex: 0,
+            }}
+          />
+        </>
+      )}
 
       <div className="relative" style={{ zIndex: 1 }}>
         {children}

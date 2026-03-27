@@ -1,7 +1,12 @@
+import dynamic from 'next/dynamic'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { MobileCTA } from '@/components/layout/MobileCTA'
-import { BeamsBackground } from '@/components/ui/beams-background'
+
+const BeamsBackground = dynamic(
+  () => import('@/components/ui/beams-background').then((m) => m.BeamsBackground),
+  { ssr: false }
+)
 
 export default function PublicLayout({
   children,
