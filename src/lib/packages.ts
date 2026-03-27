@@ -26,6 +26,10 @@ export interface PackageConfig {
   faqs: PackageFaq[]
   image: string
   keywords: string
+  metaTitle?: string
+  metaDescription?: string
+  heroHeading?: string
+  extraSections?: { heading: string; content: string }[]
 }
 
 export const PACKAGES: PackageConfig[] = [
@@ -35,8 +39,21 @@ export const PACKAGES: PackageConfig[] = [
     tagline: 'The iconic Vegas photo every group needs',
     duration: '2 hours',
     durationHours: 2,
+    metaTitle: 'VIP Las Vegas Sign Photo Tour & Limo Package | American Royalty',
+    metaDescription: 'Skip the rideshare lines. Book a VIP Las Vegas Sign photo tour in a luxury limo or party bus. We handle the driving and parking so you get the perfect shot.',
+    heroHeading: 'The Ultimate Las Vegas Sign Photo Tour',
+    extraSections: [
+      {
+        heading: 'Arrive Like Royalty: The VIP Transportation Experience',
+        content: "Forget fighting for parking or waiting for a rideshare in the desert heat. When you book a private Las Vegas Sign photo tour with American Royalty, your group travels in a luxury party bus or limousine with premium sound, LED lighting, and ice-cold drinks. Your professional chauffeur handles every detail — from navigating Strip traffic to securing parking at the sign — while you and your crew enjoy the ride. This isn't just a photo stop. It's the full VIP Vegas experience from pickup to drop-off.",
+      },
+      {
+        heading: 'Why Book a Private Limo for the Welcome to Vegas Sign?',
+        content: "The Welcome to Fabulous Las Vegas sign is one of the most photographed landmarks in the world — and one of the hardest to get to without your own transportation. The parking lot holds fewer than 20 cars and is constantly full, especially at night when the sign is lit up. Rideshare drivers can't always find the pullover spot, and walking from the nearest casino is over a mile in the Las Vegas heat. A private limo or party bus eliminates all of that. Your chauffeur knows exactly where to go, waits while your group takes photos, and drives you back via a Strip cruise so you see every landmark along the way.",
+      },
+    ],
     description:
-      "Start the night right with a stop at the liquor store to stock up, then cruise to the world-famous Welcome to Las Vegas sign for the ultimate group photo op. Your professional chauffeur handles everything while your crew enjoys premium sound, LED lighting, and the full party bus experience. After the sign, cruise back via the Las Vegas Strip and soak in the neon-lit skyline.",
+      "Skip the rideshare lines and parking headaches. Book a VIP Las Vegas Sign photo tour in a luxury limo or party bus. Your professional chauffeur handles the driving and parking while your crew enjoys premium sound, LED lighting, and the full party bus experience. Stop at the liquor store to stock up, cruise to the world-famous Welcome to Las Vegas sign for the ultimate group photo op, then ride back via the Las Vegas Strip and soak in the neon-lit skyline.",
     includes: [
       'Liquor store stop',
       'Welcome to Las Vegas Sign photo stop (15-20 min)',
@@ -80,10 +97,22 @@ export const PACKAGES: PackageConfig[] = [
         q: "What's included in the price?",
         a: 'Everything — professional chauffeur, party bus with premium sound and LED lighting, ice water and cups, and all stops. The price shown is the total, taxes and fees included. Just bring your drinks and your crew.',
       },
+      {
+        q: 'How hard is it to park at the Las Vegas sign?',
+        a: 'Parking at the Welcome to Fabulous Las Vegas sign is notoriously difficult, with a very small lot that is constantly full. Booking a private photo tour means your chauffeur navigates the traffic and secures a spot while your group relaxes in a climate-controlled limo or party bus.',
+      },
+      {
+        q: 'Will the limo driver wait for us while we take pictures?',
+        a: 'Yes. Your chauffeur remains with the vehicle in the designated parking area while your group takes as much time as needed in the photo line.',
+      },
+      {
+        q: 'Can we drink in the limo on the way to the Vegas sign?',
+        a: 'Absolutely. Our Las Vegas photo tour packages are BYOB-friendly. We provide the ice, coolers, and glassware so you can toast to your Vegas trip on the way down the Strip.',
+      },
     ],
     image: 'https://byyjlt2ddbva9ljx.public.blob.vercel-storage.com/packages/vegas-sign-photo-tour/IMG_8627.JPG',
     keywords:
-      'vegas sign photo tour, las vegas sign party bus, welcome to las vegas sign tour, vegas sign photo op party bus',
+      'vegas sign photo tour, las vegas sign party bus, welcome to las vegas sign tour, vegas sign photo op party bus, welcome to fabulous las vegas sign limo, vip vegas sign transportation',
   },
   {
     slug: 'fremont-street-experience',

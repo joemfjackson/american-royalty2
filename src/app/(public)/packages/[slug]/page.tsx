@@ -22,23 +22,24 @@ export async function generateMetadata({
   if (!pkg) return {}
 
   const url = `${SITE}/packages/${slug}`
-  const title = `${pkg.name} | Las Vegas Party Bus Package`
+  const title = pkg.metaTitle || `${pkg.name} | Las Vegas Party Bus Package`
+  const desc = pkg.metaDescription || pkg.description.slice(0, 155)
 
   return {
     title,
-    description: pkg.description.slice(0, 155),
+    description: desc,
     keywords: pkg.keywords.split(', '),
     alternates: { canonical: url },
     openGraph: {
-      title: `${title} | American Royalty`,
-      description: pkg.description.slice(0, 155),
+      title,
+      description: desc,
       url,
       images: [{ url: pkg.image, width: 1200, height: 630, alt: `${pkg.name} Las Vegas` }],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${title} | American Royalty`,
-      description: pkg.description.slice(0, 155),
+      title,
+      description: desc,
     },
   }
 }
@@ -160,7 +161,7 @@ export default async function PackageDetailPage({
             </span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
-            {pkg.name}
+            {pkg.heroHeading || pkg.name}
           </h1>
           <p className="mt-2 text-lg text-gold">{pkg.tagline}</p>
           <p className="mt-1 text-sm text-gray-400">
@@ -195,6 +196,14 @@ export default async function PackageDetailPage({
               <p className="mt-4 text-sm leading-relaxed text-gray-300">{pkg.description}</p>
             </section>
 
+            {/* Extra SEO/AEO sections */}
+            {pkg.extraSections?.map((section) => (
+              <section key={section.heading}>
+                <h2 className="text-xl font-bold text-white">{section.heading}</h2>
+                <p className="mt-4 text-sm leading-relaxed text-gray-300">{section.content}</p>
+              </section>
+            ))}
+
             {/* Photo Gallery */}
             {photos.length > 0 && (
               <section>
@@ -207,7 +216,9 @@ export default async function PackageDetailPage({
 
             {/* What's Included */}
             <section>
-              <h2 className="text-xl font-bold text-white">What&apos;s Included</h2>
+              <h2 className="text-xl font-bold text-white">
+                {slug === 'vegas-sign-photo-tour' ? "What's Included in Your Photo Tour Package" : "What's Included"}
+              </h2>
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 {pkg.includes.map((item) => (
                   <div key={item} className="flex items-start gap-2.5">
@@ -246,7 +257,7 @@ export default async function PackageDetailPage({
 
             {/* FAQ */}
             <section>
-              <h2 className="text-xl font-bold text-white">Common Questions</h2>
+              <h2 className="text-xl font-bold text-white">Frequently Asked Questions</h2>
               <div className="mt-4 divide-y divide-dark-border">
                 {pkg.faqs.map((faq) => (
                   <details key={faq.q} className="group py-4">
