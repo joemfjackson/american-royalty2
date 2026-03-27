@@ -7,25 +7,16 @@ import { ChevronDown } from 'lucide-react'
 export function Hero() {
   return (
     <section className="relative flex min-h-svh items-center justify-center overflow-hidden pb-24 sm:min-h-screen sm:pb-0">
-      {/* Background photo — mobile-optimized srcSet */}
-      <picture>
-        <source
-          media="(max-width: 640px)"
-          srcSet="/images/hero/bus-exterior-casino-mobile.webp"
-          type="image/webp"
-        />
-        <Image
-          src="/images/hero/bus-exterior-casino.webp"
-          alt="American Royalty white party bus at a Las Vegas casino"
-          fill
-          sizes="100vw"
-          className="object-cover"
-          priority
-          quality={85}
-          placeholder="blur"
-          blurDataURL="data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAADQAwCdASoUAA0APzmGuVOvKSWisAgB4CcJYgCdAB8mnOGcQ86DdEwA3e2EK7PyAHH3OpTJsIYODLN0Kwy266XViXXLedm1oTTembzGPZpLRln1H4v1DHj+fpYM5mGXYiPqDqSLE7DTJdAA"
-        />
-      </picture>
+      {/* Background photo */}
+      <Image
+        src="/images/hero/bus-exterior-casino.webp"
+        alt="American Royalty white party bus at a Las Vegas casino"
+        fill
+        sizes="100vw"
+        className="object-cover"
+        priority
+        quality={75}
+      />
 
       {/* Dark overlay for text readability */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/90" />
@@ -45,7 +36,7 @@ export function Hero() {
             width={280}
             height={112}
             className="h-24 w-auto sm:h-32 md:h-36"
-            priority
+            loading="eager"
           />
         </div>
 
