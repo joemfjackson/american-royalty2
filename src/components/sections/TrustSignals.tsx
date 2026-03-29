@@ -15,7 +15,7 @@ interface StatItem {
 
 const stats: StatItem[] = [
   { icon: Calendar, value: '500+', numericValue: 500, suffix: '+', label: 'Events' },
-  { icon: Star, value: '4.9\u2605', numericValue: 4.9, suffix: '\u2605', label: 'Rating' },
+  { icon: Star, value: '5.0\u2605', numericValue: 5.0, suffix: '\u2605', label: 'Rating' },
   { icon: Clock, value: '24/7', numericValue: 0, suffix: '', label: 'Available' },
   { icon: Car, value: '6+', numericValue: 6, suffix: '+', label: 'Vehicles' },
 ]

@@ -72,7 +72,7 @@ const whyChooseUs = [
 
 const stats = [
   { value: '500+', label: 'Events Served' },
-  { value: '4.9', label: 'Average Rating' },
+  { value: '5.0', label: 'Average Rating' },
   { value: '6', label: 'Premium Vehicles' },
   { value: '24/7', label: 'Availability' },
 ]
