@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: MetadataProps): Promise<Metad
     'bachelor-party': 'Bachelor Party Bus Rental Las Vegas',
     'bachelorette-party': 'Bachelorette Party Bus & Limo Las Vegas',
     wedding: 'Wedding Limousine & Party Bus Las Vegas',
-    nightlife: 'Nightlife & Club Crawl Party Bus Las Vegas',
+    nightlife: 'Nightlife Transportation Party Bus Las Vegas',
     corporate: 'Corporate Transportation & Limo Las Vegas',
     birthday: 'Birthday Party Bus Rental Las Vegas',
     prom: 'Prom & Homecoming Limo Las Vegas',
@@ -224,7 +224,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
                     gold: 'in Las Vegas',
                   },
                   nightlife: {
-                    before: 'Nightlife & Club Crawl',
+                    before: 'Nightlife Transportation',
                     gold: 'Party Bus Las Vegas',
                   },
                   corporate: {

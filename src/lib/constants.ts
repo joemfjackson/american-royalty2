@@ -22,7 +22,7 @@ export const EVENT_TYPES = [
   'Bachelor Party',
   'Bachelorette Party',
   'Wedding',
-  'Nightlife & Club Crawl',
+  'Nightlife Transportation',
   'Corporate Event',
   'Birthday Celebration',
   'Prom & Homecoming',

@@ -9,7 +9,7 @@ import { GoldLine } from '@/components/ui/GoldLine'
 import { Card } from '@/components/ui/Card'
 
 const SITE = 'https://www.americanroyaltylasvegas.com'
-const desc = 'Luxury party bus and limousine services in Las Vegas. Bachelor & bachelorette parties, weddings, nightlife club crawls, corporate events, airport transfers, and more. Book American Royalty today.'
+const desc = 'Luxury party bus and limousine services in Las Vegas. Bachelor & bachelorette parties, weddings, nightlife transportation, corporate events, airport transfers, and more. Book American Royalty today.'
 
 export const metadata: Metadata = {
   title: 'Party Bus & Limo Services in Las Vegas',
