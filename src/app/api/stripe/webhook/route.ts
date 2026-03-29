@@ -117,7 +117,7 @@ export async function POST(request: Request) {
               : null
             const totalAmount = Number(quote.quotedAmount || 0)
             const depositAmt = Number(invoice.depositAmount)
-            const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
+            const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
             const resend = new Resend(process.env.RESEND_API_KEY)
             await resend.emails.send({
               from: 'American Royalty <noreply@americanroyaltylasvegas.com>',

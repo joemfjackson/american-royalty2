@@ -16,7 +16,7 @@ function formatDateDisplay(date: string): string {
 }
 
 export function buildAdditionalChargeEmailHtml(data: AdditionalChargeEmailData): string {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
 
   return `
 <!DOCTYPE html>

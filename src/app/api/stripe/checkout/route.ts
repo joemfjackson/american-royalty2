@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invoice has been cancelled' }, { status: 400 })
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
 
     const vehicleName = invoice.quote.preferredVehicle?.name || 'Luxury Vehicle'
     const description = `Deposit — ${invoice.quote.eventType} on ${invoice.quote.eventDate} (${vehicleName})`

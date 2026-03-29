@@ -458,7 +458,7 @@ async function sendBookingConfirmationEmail(quote: PrismaQuote, depositAmount: n
       : null
     const totalAmount = Number(quote.quotedAmount || 0)
     const depositAmt = Number(depositAmount)
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
     const resend = new Resend(process.env.RESEND_API_KEY)
     await resend.emails.send({
       from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
@@ -554,7 +554,7 @@ export async function createAndSendInvoice(
   })
 
   // Send email
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
   const invoiceUrl = `${siteUrl}/invoice/${invoice.token}`
 
   if (process.env.RESEND_API_KEY) {
@@ -666,7 +666,7 @@ export async function getInvoiceLink(quoteId: string): Promise<string | null> {
 
   if (!invoice) return null
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
   return `${siteUrl}/invoice/${invoice.token}`
 }
 
@@ -775,7 +775,7 @@ export async function buildAndSendQuote(
   })
 
   // Send email
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
   const quoteUrl = `${siteUrl}/quote/view/${quoteToken}`
   const depositAmount = Math.round(pricing.total * pricing.depositPercent / 100)
 
@@ -828,7 +828,7 @@ export async function getQuotePublicLink(quoteId: string): Promise<string | null
 
   if (!quote?.quoteToken) return null
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://americanroyaltylasvegas.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
   return `${siteUrl}/quote/view/${quote.quoteToken}`
 }
 
