@@ -15,7 +15,10 @@ export function formatCurrency(amount: number): string {
 }
 
 export function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString('en-US', {
+  // Append T00:00:00 to date-only strings (YYYY-MM-DD) so they parse
+  // as local time instead of UTC, preventing off-by-one day errors
+  const d = date.includes('T') ? date : date + 'T00:00:00'
+  return new Date(d).toLocaleDateString('en-US', {
     weekday: 'short',
     year: 'numeric',
     month: 'short',
