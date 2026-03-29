@@ -344,7 +344,7 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, onDelete
               <div>
                 <h2 className="text-lg font-semibold text-white">Quote Details</h2>
                 <p className="text-sm text-gray-400">
-                  Submitted {formatDate(quote.created_at)}
+                  Submitted {formatDate(quote.created_at)} at {new Date(quote.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                 </p>
               </div>
               <button
