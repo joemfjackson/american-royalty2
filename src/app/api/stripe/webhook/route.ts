@@ -37,6 +37,8 @@ async function processQuoteDepositPayment(
   })
 
   if (quote) {
+    const paidInFull = Number(invoice.depositAmount) >= Number(quote.quotedAmount || 0)
+
     await prisma.booking.create({
       data: {
         quoteId: quote.id,
@@ -54,7 +56,7 @@ async function processQuoteDepositPayment(
         totalAmount: quote.quotedAmount,
         depositAmount: invoice.depositAmount,
         depositPaid: true,
-        status: 'DEPOSIT_PAID',
+        status: paidInFull ? 'CONFIRMED' : 'DEPOSIT_PAID',
         notes: quote.adminNotes,
         stripeCustomerId,
         stripePaymentMethod: stripePaymentMethodId,

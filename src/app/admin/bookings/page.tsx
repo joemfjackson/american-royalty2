@@ -527,12 +527,15 @@ export default function AdminBookingsPage() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-400">Deposit Status</span>
+                    <span className="text-gray-400">Payment Status</span>
                     <Badge variant={selectedBooking.deposit_paid ? 'green' : 'yellow'}>
-                      {selectedBooking.deposit_paid ? 'Paid' : 'Unpaid'}
+                      {selectedBooking.deposit_paid
+                        ? ((selectedBooking.deposit_amount || 0) >= (selectedBooking.total_amount || 0) ? 'Paid in Full' : 'Deposit Paid')
+                        : 'Unpaid'}
                     </Badge>
                   </div>
-                  {selectedBooking.total_amount && selectedBooking.deposit_amount && (
+                  {selectedBooking.total_amount && selectedBooking.deposit_amount &&
+                    (selectedBooking.deposit_amount || 0) < (selectedBooking.total_amount || 0) && (
                     <div className="flex items-center justify-between border-t border-dark-border pt-2 text-sm">
                       <span className="text-gray-400">Balance Due</span>
                       <span className="font-semibold text-gold">

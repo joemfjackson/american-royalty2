@@ -18,6 +18,7 @@ export interface PublicQuoteData {
   quote_sent_at: string | null
   is_booked: boolean
   is_paid: boolean
+  is_full_payment: boolean
   // Structured pricing
   hourly_rate: number | null
   base_fare: number | null
@@ -49,6 +50,7 @@ export async function getQuotePublic(token: string): Promise<PublicQuoteData | n
   const depositAmount = Math.round(totalAmount * quote.depositPercent / 100)
   const isBooked = quote.status === 'BOOKED' || quote.status === 'COMPLETED'
   const isPaid = quote.invoices.length > 0
+  const isFullPayment = quote.depositPercent >= 100
 
   return {
     id: quote.id,
@@ -68,6 +70,7 @@ export async function getQuotePublic(token: string): Promise<PublicQuoteData | n
     quote_sent_at: quote.quoteSentAt?.toISOString() || null,
     is_booked: isBooked,
     is_paid: isPaid,
+    is_full_payment: isFullPayment,
     hourly_rate: quote.hourlyRate ? Number(quote.hourlyRate) : null,
     base_fare: quote.baseFare ? Number(quote.baseFare) : null,
     fuel_surcharge: quote.fuelSurcharge ? Number(quote.fuelSurcharge) : null,

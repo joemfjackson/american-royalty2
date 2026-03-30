@@ -22,6 +22,7 @@ export default async function QuoteViewPage({ params }: Props) {
   }
 
   const balanceDue = quote.quoted_amount - quote.deposit_amount
+  const isFullPayment = quote.is_full_payment
   const hasStructuredPricing = quote.base_fare != null
 
   return (
@@ -187,19 +188,23 @@ export default async function QuoteViewPage({ params }: Props) {
             <span className="text-sm text-gray-400">Total Amount</span>
             <span className="text-white font-medium">{fmt(quote.quoted_amount)}</span>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-400">Deposit to Book ({quote.deposit_percent}%)</span>
-            <span className="text-gold font-bold">{fmt(quote.deposit_amount)}</span>
-          </div>
+          {!isFullPayment && (
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-400">Deposit to Book ({quote.deposit_percent}%)</span>
+              <span className="text-gold font-bold">{fmt(quote.deposit_amount)}</span>
+            </div>
+          )}
 
           <div className="border-t border-dark-border my-2" />
 
           <div className="flex justify-between items-center pt-1">
             <span className="text-base font-semibold text-white">
-              {quote.is_paid ? 'Deposit Paid' : 'Pay Now to Book'}
+              {quote.is_paid
+                ? (isFullPayment ? 'Paid in Full' : 'Deposit Paid')
+                : (isFullPayment ? 'Pay Now to Book' : 'Pay Deposit to Book')}
             </span>
             <span className="text-2xl font-bold text-gold">
-              {fmt(quote.deposit_amount)}
+              {fmt(isFullPayment ? quote.quoted_amount : quote.deposit_amount)}
             </span>
           </div>
 
@@ -208,6 +213,7 @@ export default async function QuoteViewPage({ params }: Props) {
             <QuotePayClient
               quoteToken={quote.token}
               depositAmount={quote.deposit_amount}
+              isFullPayment={isFullPayment}
             />
           )}
 
@@ -215,7 +221,9 @@ export default async function QuoteViewPage({ params }: Props) {
           {quote.is_paid && (
             <div className="rounded-lg bg-emerald-500/5 border border-emerald-500/20 p-4 text-center mt-2">
               <div className="text-3xl mb-2">&#10003;</div>
-              <p className="text-sm font-medium text-emerald-400">Deposit Received &mdash; You&apos;re Booked!</p>
+              <p className="text-sm font-medium text-emerald-400">
+                {isFullPayment ? 'Payment Complete' : 'Deposit Received'} &mdash; You&apos;re Booked!
+              </p>
               <p className="text-xs text-gray-500 mt-1">
                 We&apos;ll be in touch with final details before your event.
               </p>
@@ -224,7 +232,7 @@ export default async function QuoteViewPage({ params }: Props) {
         </div>
 
         {/* Balance note */}
-        {!quote.is_paid && balanceDue > 0 && (
+        {!quote.is_paid && !isFullPayment && balanceDue > 0 && (
           <div className="px-5 py-3 border-t border-dark-border bg-black/30">
             <p className="text-xs text-gray-500 text-center">
               Remaining balance of {fmt(balanceDue)} due 7 days before your event or cash upon arrival

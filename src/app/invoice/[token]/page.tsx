@@ -20,6 +20,7 @@ export default async function InvoicePage({ params }: Props) {
   const isPaid = invoice.status === 'paid'
   const isCancelled = invoice.status === 'cancelled'
   const balanceDue = invoice.total_amount - invoice.deposit_amount
+  const isFullPayment = invoice.deposit_percent >= 100
 
   return (
     <div className="space-y-6">
@@ -113,16 +114,20 @@ export default async function InvoicePage({ params }: Props) {
             <span className="text-gray-400">Total Amount</span>
             <span className="text-white font-medium">{formatCurrency(invoice.total_amount)}</span>
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-400">Deposit Required ({invoice.deposit_percent}%)</span>
-            <span className="text-gold font-bold">{formatCurrency(invoice.deposit_amount)}</span>
-          </div>
+          {!isFullPayment && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-400">Deposit Required ({invoice.deposit_percent}%)</span>
+              <span className="text-gold font-bold">{formatCurrency(invoice.deposit_amount)}</span>
+            </div>
+          )}
 
           <div className="border-t border-dark-border my-2" />
 
           <div className="flex justify-between items-center">
             <span className="text-base font-semibold text-white">
-              {isPaid ? 'Amount Paid' : 'Amount Due Now'}
+              {isPaid
+                ? (isFullPayment ? 'Paid in Full' : 'Deposit Paid')
+                : (isFullPayment ? 'Amount Due' : 'Deposit Due Now')}
             </span>
             <span className="text-2xl font-bold text-gold">
               {formatCurrency(invoice.deposit_amount)}
@@ -141,7 +146,9 @@ export default async function InvoicePage({ params }: Props) {
           {isPaid && invoice.paid_at && (
             <div className="rounded-lg bg-emerald-500/5 border border-emerald-500/20 p-4 text-center">
               <div className="text-3xl mb-2">&#10003;</div>
-              <p className="text-sm font-medium text-emerald-400">Payment Received</p>
+              <p className="text-sm font-medium text-emerald-400">
+                {isFullPayment ? 'Paid in Full' : 'Deposit Received'}
+              </p>
               <p className="text-xs text-gray-500 mt-1">
                 Paid on {formatDate(invoice.paid_at)}
               </p>

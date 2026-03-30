@@ -82,7 +82,10 @@ export async function POST(request: Request) {
     }
 
     const vehicleName = quote.preferredVehicle?.name || 'Luxury Vehicle'
-    const description = `Deposit — ${quote.eventType} on ${quote.eventDate} (${vehicleName})`
+    const paidInFull = depositAmount >= totalAmount
+    const description = paidInFull
+      ? `Full Payment — ${quote.eventType} on ${quote.eventDate} (${vehicleName})`
+      : `Deposit — ${quote.eventType} on ${quote.eventDate} (${vehicleName})`
 
     // Find or create Stripe Customer to save card on file
     const existingCustomers = await stripe.customers.list({ email: quote.email, limit: 1 })

@@ -372,6 +372,7 @@ export async function markDepositPaidOffPlatform(quoteId: string, paymentMethod:
   if (!quote.quotedAmount) throw new Error('Quote has no quoted amount')
 
   const depositAmount = Math.round(Number(quote.quotedAmount) * quote.depositPercent / 100)
+  const paidInFull = depositAmount >= Number(quote.quotedAmount)
 
   const booking = await prisma.booking.create({
     data: {
@@ -390,8 +391,8 @@ export async function markDepositPaidOffPlatform(quoteId: string, paymentMethod:
       totalAmount: quote.quotedAmount,
       depositAmount,
       depositPaid: true,
-      status: 'DEPOSIT_PAID',
-      notes: `${quote.adminNotes ? quote.adminNotes + '\n' : ''}Deposit paid via ${paymentMethod}`,
+      status: paidInFull ? 'CONFIRMED' : 'DEPOSIT_PAID',
+      notes: `${quote.adminNotes ? quote.adminNotes + '\n' : ''}${paidInFull ? 'Paid in full' : 'Deposit paid'} via ${paymentMethod}`,
     },
   })
 
@@ -415,6 +416,8 @@ async function createBookingFromQuote(quoteId: string, depositAmount: number): P
   const quote = await prisma.quote.findUnique({ where: { id: quoteId } })
   if (!quote) throw new Error('Quote not found')
 
+  const paidInFull = depositAmount >= Number(quote.quotedAmount || 0)
+
   const booking = await prisma.booking.create({
     data: {
       quoteId: quote.id,
@@ -432,7 +435,7 @@ async function createBookingFromQuote(quoteId: string, depositAmount: number): P
       totalAmount: quote.quotedAmount,
       depositAmount,
       depositPaid: true,
-      status: 'DEPOSIT_PAID',
+      status: paidInFull ? 'CONFIRMED' : 'DEPOSIT_PAID',
       notes: quote.adminNotes,
     },
   })
