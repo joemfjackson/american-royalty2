@@ -246,7 +246,7 @@ model Invoice {
   quote           Quote         @relation(fields: [quoteId], references: [id], onDelete: Cascade)
   totalAmount     Decimal       @db.Decimal(10, 2)
   depositAmount   Decimal       @db.Decimal(10, 2)
-  depositPercent  Int           @default(50)
+  depositPercent  Int           @default(25)
   status          InvoiceStatus @default(DRAFT)
   paymentMethod   PaymentMethod?
   stripeSessionId String?

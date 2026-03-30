@@ -7,6 +7,106 @@ import { buildBookingConfirmationEmailHtml } from '@/lib/emails/booking-confirma
 import { buildPackageBookingEmailHtml } from '@/lib/emails/package-booking-email'
 import type Stripe from 'stripe'
 
+async function processQuoteDepositPayment(
+  invoiceId: string,
+  stripePaymentId: string,
+  stripeCustomerId: string | null,
+  stripePaymentMethodId: string | null,
+  stripe: Stripe
+) {
+  const invoice = await prisma.invoice.findUnique({
+    where: { id: invoiceId },
+  })
+
+  if (!invoice || invoice.status === 'PAID') {
+    return
+  }
+
+  await prisma.invoice.update({
+    where: { id: invoiceId },
+    data: {
+      status: 'PAID',
+      paymentMethod: 'STRIPE',
+      stripePaymentId,
+      paidAt: new Date(),
+    },
+  })
+
+  const quote = await prisma.quote.findUnique({
+    where: { id: invoice.quoteId },
+  })
+
+  if (quote) {
+    await prisma.booking.create({
+      data: {
+        quoteId: quote.id,
+        clientName: quote.name,
+        clientEmail: quote.email,
+        clientPhone: quote.phone,
+        eventType: quote.eventType,
+        vehicleId: quote.preferredVehicleId,
+        bookingDate: quote.eventDate,
+        startTime: quote.pickupTime || 'TBD',
+        durationHours: quote.durationHours,
+        pickupLocation: quote.pickupLocation,
+        dropoffLocation: quote.dropoffLocation,
+        guestCount: quote.guestCount,
+        totalAmount: quote.quotedAmount,
+        depositAmount: invoice.depositAmount,
+        depositPaid: true,
+        status: 'DEPOSIT_PAID',
+        notes: quote.adminNotes,
+        stripeCustomerId,
+        stripePaymentMethod: stripePaymentMethodId,
+      },
+    })
+
+    await prisma.quote.update({
+      where: { id: quote.id },
+      data: { status: 'BOOKED' },
+    })
+
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const vehicle = quote.preferredVehicleId
+          ? await prisma.vehicle.findUnique({ where: { id: quote.preferredVehicleId }, select: { name: true } })
+          : null
+        const totalAmount = Number(quote.quotedAmount || 0)
+        const depositAmt = Number(invoice.depositAmount)
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
+        const resend = new Resend(process.env.RESEND_API_KEY)
+        await resend.emails.send({
+          from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
+          to: [quote.email],
+          subject: `Booking Confirmed — ${quote.eventType}, ${new Date(quote.eventDate + 'T00:00:00').toLocaleDateString('en-US')}`,
+          html: buildBookingConfirmationEmailHtml({
+            clientName: quote.name.split(' ')[0],
+            eventType: quote.eventType,
+            eventDate: quote.eventDate,
+            pickupTime: quote.pickupTime,
+            durationHours: quote.durationHours,
+            vehicleName: vehicle?.name || null,
+            guestCount: quote.guestCount,
+            pickupLocation: quote.pickupLocation,
+            dropoffLocation: quote.dropoffLocation,
+            totalAmount,
+            depositAmount: depositAmt,
+            balanceDue: totalAmount - depositAmt,
+            siteUrl,
+          }),
+        })
+      } catch (emailError) {
+        console.error('Booking confirmation email failed:', emailError)
+      }
+    }
+  }
+
+  revalidatePath('/admin/quotes')
+  revalidatePath('/admin/bookings')
+  revalidatePath('/admin/calendar')
+  revalidatePath('/admin')
+}
+
 export async function POST(request: Request) {
   const stripe = getStripe()
   if (!stripe) {
@@ -35,6 +135,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
+  // Handle legacy Checkout Session flow (backward compat for in-flight sessions)
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
 
@@ -45,120 +146,52 @@ export async function POST(request: Request) {
     }
 
     try {
-      const invoice = await prisma.invoice.findUnique({
-        where: { id: invoiceId },
-      })
-
-      if (!invoice || invoice.status === 'PAID') {
-        return NextResponse.json({ received: true })
+      const stripeCustomerId = session.customer as string | null
+      let stripePaymentMethodId: string | null = null
+      if (session.payment_intent && typeof session.payment_intent === 'string') {
+        const pi = await stripe.paymentIntents.retrieve(session.payment_intent)
+        stripePaymentMethodId = pi.payment_method as string | null
       }
 
-      // Mark invoice as paid
-      await prisma.invoice.update({
-        where: { id: invoiceId },
-        data: {
-          status: 'PAID',
-          paymentMethod: 'STRIPE',
-          stripePaymentId: session.payment_intent as string || null,
-          paidAt: new Date(),
-        },
-      })
-
-      // Get the quote to create booking
-      const quote = await prisma.quote.findUnique({
-        where: { id: invoice.quoteId },
-      })
-
-      if (quote) {
-        // Capture card-on-file data from the payment
-        const stripeCustomerId = session.customer as string | null
-        let stripePaymentMethod: string | null = null
-        if (session.payment_intent && typeof session.payment_intent === 'string') {
-          const pi = await stripe.paymentIntents.retrieve(session.payment_intent)
-          stripePaymentMethod = pi.payment_method as string | null
-        }
-
-        // Create booking with card on file
-        await prisma.booking.create({
-          data: {
-            quoteId: quote.id,
-            clientName: quote.name,
-            clientEmail: quote.email,
-            clientPhone: quote.phone,
-            eventType: quote.eventType,
-            vehicleId: quote.preferredVehicleId,
-            bookingDate: quote.eventDate,
-            startTime: quote.pickupTime || 'TBD',
-            durationHours: quote.durationHours,
-            pickupLocation: quote.pickupLocation,
-            dropoffLocation: quote.dropoffLocation,
-            guestCount: quote.guestCount,
-            totalAmount: quote.quotedAmount,
-            depositAmount: invoice.depositAmount,
-            depositPaid: true,
-            status: 'DEPOSIT_PAID',
-            notes: quote.adminNotes,
-            stripeCustomerId,
-            stripePaymentMethod,
-          },
-        })
-
-        // Update quote status
-        await prisma.quote.update({
-          where: { id: quote.id },
-          data: { status: 'BOOKED' },
-        })
-
-        // Send booking confirmation email
-        if (process.env.RESEND_API_KEY) {
-          try {
-            const vehicle = quote.preferredVehicleId
-              ? await prisma.vehicle.findUnique({ where: { id: quote.preferredVehicleId }, select: { name: true } })
-              : null
-            const totalAmount = Number(quote.quotedAmount || 0)
-            const depositAmt = Number(invoice.depositAmount)
-            const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
-            const resend = new Resend(process.env.RESEND_API_KEY)
-            await resend.emails.send({
-              from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
-              to: [quote.email],
-              subject: `Booking Confirmed — ${quote.eventType}, ${new Date(quote.eventDate + 'T00:00:00').toLocaleDateString('en-US')}`,
-              html: buildBookingConfirmationEmailHtml({
-                clientName: quote.name.split(' ')[0],
-                eventType: quote.eventType,
-                eventDate: quote.eventDate,
-                pickupTime: quote.pickupTime,
-                durationHours: quote.durationHours,
-                vehicleName: vehicle?.name || null,
-                guestCount: quote.guestCount,
-                pickupLocation: quote.pickupLocation,
-                dropoffLocation: quote.dropoffLocation,
-                totalAmount,
-                depositAmount: depositAmt,
-                balanceDue: totalAmount - depositAmt,
-                siteUrl,
-              }),
-            })
-          } catch (emailError) {
-            console.error('Booking confirmation email failed:', emailError)
-          }
-        }
-      }
-
-      revalidatePath('/admin/quotes')
-      revalidatePath('/admin/bookings')
-      revalidatePath('/admin/calendar')
-      revalidatePath('/admin')
+      await processQuoteDepositPayment(
+        invoiceId,
+        session.payment_intent as string || '',
+        stripeCustomerId,
+        stripePaymentMethodId,
+        stripe
+      )
     } catch (error) {
       console.error('Webhook processing error:', error)
       return NextResponse.json({ error: 'Processing failed' }, { status: 500 })
     }
   }
 
-  // Handle package bookings
+  // Handle PaymentIntent events (quote deposits + package bookings)
   if (event.type === 'payment_intent.succeeded') {
     const paymentIntent = event.data.object as Stripe.PaymentIntent
     const meta = paymentIntent.metadata
+
+    // Quote deposit via Stripe Elements
+    if (meta?.type === 'quote_deposit') {
+      const invoiceId = meta.invoiceId
+      if (!invoiceId) {
+        console.error('No invoiceId in payment_intent metadata')
+        return NextResponse.json({ received: true })
+      }
+
+      try {
+        await processQuoteDepositPayment(
+          invoiceId,
+          paymentIntent.id,
+          paymentIntent.customer as string | null,
+          paymentIntent.payment_method as string | null,
+          stripe
+        )
+      } catch (error) {
+        console.error('Quote deposit webhook error:', error)
+        return NextResponse.json({ error: 'Processing failed' }, { status: 500 })
+      }
+    }
 
     if (meta?.type === 'package_booking') {
       try {

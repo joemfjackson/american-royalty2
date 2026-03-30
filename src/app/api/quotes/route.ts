@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { Resend } from 'resend'
+import { buildQuoteRequestConfirmationEmailHtml } from '@/lib/emails/quote-request-confirmation-email'
 
 const quoteSchema = z.object({
   name: z.string().min(2),
@@ -78,6 +79,18 @@ export async function POST(request: Request) {
             <p><strong>Drop-off:</strong> ${data.dropoff_location || 'Not specified'}</p>
             <p><strong>Details:</strong> ${data.details || 'None'}</p>
           `,
+        })
+        // Send confirmation to customer
+        await resend.emails.send({
+          from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
+          to: [data.email],
+          subject: `We Got Your Request — ${data.event_type}`,
+          html: buildQuoteRequestConfirmationEmailHtml({
+            clientName: data.name.split(' ')[0],
+            eventType: data.event_type,
+            eventDate: data.event_date,
+            siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com',
+          }),
         })
       } catch (emailError) {
         console.error('Email notification failed:', emailError)

@@ -1,9 +1,8 @@
-interface QuoteEmailData {
+interface QuoteRequestConfirmationData {
   clientName: string
   eventType: string
   eventDate: string
-  quoteUrl: string
-  adminNotes: string | null
+  siteUrl: string
 }
 
 function formatDateDisplay(date: string): string {
@@ -11,7 +10,7 @@ function formatDateDisplay(date: string): string {
   return d.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
 }
 
-export function buildQuoteEmailHtml(data: QuoteEmailData): string {
+export function buildQuoteRequestConfirmationEmailHtml(data: QuoteRequestConfirmationData): string {
   return `
 <!DOCTYPE html>
 <html>
@@ -27,7 +26,7 @@ export function buildQuoteEmailHtml(data: QuoteEmailData): string {
           <!-- Header with Logo -->
           <tr>
             <td style="text-align:center;padding:0 0 32px;">
-              <img src="${data.quoteUrl.split('/quote/')[0]}/images/logo.png" alt="American Royalty" width="180" height="180" style="display:block;margin:0 auto;width:180px;height:auto;" />
+              <img src="${data.siteUrl}/images/logo.png" alt="American Royalty" width="180" height="180" style="display:block;margin:0 auto;width:180px;height:auto;" />
             </td>
           </tr>
 
@@ -43,46 +42,19 @@ export function buildQuoteEmailHtml(data: QuoteEmailData): string {
             <td style="padding:0 0 24px;">
               <p style="margin:0;font-size:16px;color:#ffffff;">Hi ${data.clientName},</p>
               <p style="margin:12px 0 0;font-size:15px;color:#cccccc;line-height:1.5;">
-                Thank you for reaching out to American Royalty! We'd love to be part of your ${data.eventType.toLowerCase()} on ${formatDateDisplay(data.eventDate)}.
+                Thank you for your quote request! We've received your details for your ${data.eventType.toLowerCase()} on ${formatDateDisplay(data.eventDate)}.
               </p>
               <p style="margin:12px 0 0;font-size:15px;color:#cccccc;line-height:1.5;">
-                Your custom quote is ready. Click the button below to view your pricing details and book online.
+                Our team is reviewing your request and will have your custom quote ready shortly. We'll send you another email with a link to view your quote and book online.
               </p>
             </td>
           </tr>
 
-          ${data.adminNotes ? `
-          <!-- Admin Notes -->
-          <tr>
-            <td style="padding:0 0 24px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#111111;border:1px solid #1E1E1E;border-radius:12px;">
-                <tr>
-                  <td style="padding:20px;">
-                    <p style="margin:0;font-size:14px;color:#cccccc;line-height:1.5;">${data.adminNotes}</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          ` : ''}
-
-          <!-- CTA Button -->
-          <tr>
-            <td style="text-align:center;padding:0 0 32px;">
-              <a href="${data.quoteUrl}" style="display:inline-block;background-color:#D6C08A;color:#000000;font-size:16px;font-weight:700;text-decoration:none;padding:16px 48px;border-radius:8px;letter-spacing:0.5px;">
-                VIEW YOUR QUOTE
-              </a>
-            </td>
-          </tr>
-
-          <!-- Alternative contact -->
+          <!-- Contact info -->
           <tr>
             <td style="text-align:center;padding:0 0 32px;">
               <p style="margin:0;font-size:14px;color:#cccccc;line-height:1.5;">
-                Questions? Reply to this email or call us at <strong style="color:#D6C08A;">(702) 666-4037</strong>.
-              </p>
-              <p style="margin:8px 0 0;font-size:13px;color:#999;">
-                We look forward to making your ${data.eventType.toLowerCase()} unforgettable!
+                Questions in the meantime? Call us at <strong style="color:#D6C08A;">(702) 666-4037</strong>.
               </p>
             </td>
           </tr>

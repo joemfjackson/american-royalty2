@@ -516,7 +516,7 @@ export async function deleteBooking(bookingId: string) {
 
 export async function createAndSendInvoice(
   quoteId: string,
-  depositPercent: number = 20
+  depositPercent: number = 25
 ): Promise<Invoice> {
   await requireAdmin()
 
@@ -790,18 +790,6 @@ export async function buildAndSendQuote(
           clientName: quote.name.split(' ')[0],
           eventType: quote.eventType,
           eventDate: quote.eventDate,
-          pickupTime: quote.pickupTime,
-          durationHours: pricing.durationHours,
-          hourlyRate: pricing.hourlyRate,
-          baseFare: pricing.baseFare,
-          fuelSurcharge: pricing.fuelSurcharge,
-          customItems: pricing.customItems,
-          taxAmount: pricing.taxAmount,
-          driverGratuity: pricing.driverGratuity,
-          gratuityPercent: pricing.gratuityPercent,
-          total: pricing.total,
-          depositPercent: pricing.depositPercent,
-          depositAmount,
           quoteUrl,
           adminNotes: adminNotes || null,
         }),

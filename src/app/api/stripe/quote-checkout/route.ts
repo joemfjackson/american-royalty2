@@ -81,7 +81,6 @@ export async function POST(request: Request) {
       })
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
     const vehicleName = quote.preferredVehicle?.name || 'Luxury Vehicle'
     const description = `Deposit — ${quote.eventType} on ${quote.eventDate} (${vehicleName})`
 
@@ -92,44 +91,32 @@ export async function POST(request: Request) {
       name: quote.name,
     })
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
+    // Create PaymentIntent for Stripe Elements (no redirect)
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(Number(invoice.depositAmount) * 100),
+      currency: 'usd',
       customer: customer.id,
-      payment_intent_data: {
-        setup_future_usage: 'off_session',
-      },
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            unit_amount: Math.round(Number(invoice.depositAmount) * 100),
-            product_data: {
-              name: 'American Royalty — Deposit',
-              description,
-            },
-          },
-          quantity: 1,
-        },
-      ],
+      setup_future_usage: 'off_session',
+      automatic_payment_methods: { enabled: true },
       metadata: {
+        type: 'quote_deposit',
         invoiceId: invoice.id,
         quoteId: quote.id,
       },
-      success_url: `${siteUrl}/quote/view/${quoteToken}/success`,
-      cancel_url: `${siteUrl}/quote/view/${quoteToken}`,
+      description,
     })
 
-    // Store the session ID on the invoice
+    // Store the payment intent ID on the invoice
     await prisma.invoice.update({
       where: { id: invoice.id },
-      data: { stripeSessionId: session.id },
+      data: { stripeSessionId: paymentIntent.id },
     })
 
-    return NextResponse.json({ url: session.url })
+    return NextResponse.json({ clientSecret: paymentIntent.client_secret })
   } catch (error) {
     console.error('Quote checkout error:', error)
     return NextResponse.json(
-      { error: 'Failed to create checkout session' },
+      { error: 'Failed to set up payment' },
       { status: 500 }
     )
   }
