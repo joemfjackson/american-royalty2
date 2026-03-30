@@ -257,7 +257,7 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
                 )}
                 {/* Most Popular badge */}
                 {i === 1 && (
-                  <div className="absolute -top-2 right-2 rounded-full bg-gold/20 border border-gold/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-gold">
+                  <div className="absolute top-1.5 right-1.5 rounded-full bg-gold/20 border border-gold/40 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-gold leading-none">
                     ★ Popular
                   </div>
                 )}
