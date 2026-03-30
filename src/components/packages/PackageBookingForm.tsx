@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import type { PackageConfig } from '@/lib/packages'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle, Check } from 'lucide-react'
 
 const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
@@ -12,6 +12,13 @@ const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
 function formatCurrency(n: number) {
   return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+const VEHICLE_RECOMMENDATIONS: Record<number, string> = {
+  0: 'Royal Sprinter recommended',
+  1: 'The Sovereign recommended',
+  2: 'The Crown Jewel recommended',
+  3: 'The Empire recommended',
 }
 
 interface BookingFormProps {
@@ -211,17 +218,20 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
     }
   }
 
+  const inputClasses = 'mt-1 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:border-gold/50 focus:ring-1 focus:ring-gold/20 focus:border-l-gold/80 focus:outline-none transition-colors'
+  const labelClasses = 'text-xs font-semibold uppercase tracking-widest text-white/50'
+
   return (
     <div ref={formRef} className="rounded-2xl border border-dark-border bg-dark-card overflow-hidden">
-      <div className="bg-gradient-to-r from-gold/10 to-royal/10 border-b border-dark-border p-5">
-        <h2 className="text-lg font-bold text-white">Book This Package</h2>
-        <p className="mt-1 text-xs text-gray-400">Select party size and fill in details</p>
+      <div className="bg-gradient-to-r from-royal/20 via-royal/10 to-gold/10 border-b border-dark-border border-t-2 border-t-gold/40 p-5">
+        <h2 className="text-xl font-bold text-white">Book This Package</h2>
+        <p className="mt-1 text-xs text-white/40">Instant confirmation &middot; Secure checkout</p>
       </div>
 
       <div className="p-5 space-y-5">
         {/* Tier selection */}
         <div>
-          <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+          <label className={labelClasses}>
             Party Size
           </label>
           <div className="mt-2 grid grid-cols-2 gap-2">
@@ -233,14 +243,33 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
                   setSelectedTier(i)
                   setClientSecret(null)
                 }}
-                className={`rounded-lg border p-3 text-left transition-all ${
+                className={`relative rounded-lg border p-3 text-left transition-all ${
                   selectedTier === i
-                    ? 'border-gold bg-gold/10 text-gold'
-                    : 'border-dark-border text-gray-400 hover:border-gray-600'
+                    ? 'border-gold bg-gold/10 shadow-[0_0_20px_rgba(214,192,138,0.15)]'
+                    : 'border-dark-border hover:border-gold/30 hover:bg-gold/5'
                 }`}
               >
-                <p className="text-xs font-medium">{tier.tier}</p>
-                <p className="text-sm font-bold">${tier.price}</p>
+                {/* Selected checkmark */}
+                {selectedTier === i && (
+                  <div className="absolute top-2 right-2">
+                    <Check className="h-4 w-4 text-gold" />
+                  </div>
+                )}
+                {/* Most Popular badge */}
+                {i === 1 && (
+                  <div className="absolute -top-2 right-2 rounded-full bg-gold/20 border border-gold/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-gold">
+                    ★ Popular
+                  </div>
+                )}
+                <p className={`text-xs font-medium uppercase tracking-wider ${
+                  selectedTier === i ? 'text-gold/70' : 'text-gray-400'
+                }`}>{tier.tier}</p>
+                <p className={`text-xl font-bold ${
+                  selectedTier === i ? 'text-gold' : 'text-white'
+                }`}>${tier.price}</p>
+                {selectedTier === i && VEHICLE_RECOMMENDATIONS[i] && (
+                  <p className="text-[10px] text-gold/50 mt-1">{VEHICLE_RECOMMENDATIONS[i]}</p>
+                )}
               </button>
             ))}
           </div>
@@ -251,20 +280,20 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
             {/* Form fields */}
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-medium text-gray-400">Date</label>
+                <label className={labelClasses}>Date</label>
                 <input
                   type="date"
                   value={formData.date}
                   onChange={(e) => updateField('date', e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none"
+                  className={inputClasses}
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-400">Pickup Time</label>
+                <label className={labelClasses}>Pickup Time</label>
                 <select
                   value={formData.time}
                   onChange={(e) => updateField('time', e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none"
+                  className={inputClasses}
                 >
                   <option value="">Select pickup time</option>
                   {Array.from({ length: 24 * 4 }, (_, i) => {
@@ -282,70 +311,70 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-400">Pickup Location</label>
+                <label className={labelClasses}>Pickup Location</label>
                 <input
                   type="text"
                   placeholder="Hotel name or address"
                   value={formData.pickup}
                   onChange={(e) => updateField('pickup', e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none"
+                  className={inputClasses}
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-400">Drop-off Location</label>
+                <label className={labelClasses}>Drop-off Location</label>
                 <input
                   type="text"
                   placeholder="Hotel name or address"
                   value={formData.dropoff}
                   onChange={(e) => updateField('dropoff', e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none"
+                  className={inputClasses}
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs font-medium text-gray-400">First Name</label>
+                  <label className={labelClasses}>First Name</label>
                   <input
                     type="text"
                     value={formData.firstName}
                     onChange={(e) => updateField('firstName', e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none"
+                    className={inputClasses}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-400">Last Name</label>
+                  <label className={labelClasses}>Last Name</label>
                   <input
                     type="text"
                     value={formData.lastName}
                     onChange={(e) => updateField('lastName', e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none"
+                    className={inputClasses}
                   />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-400">Email</label>
+                <label className={labelClasses}>Email</label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => updateField('email', e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none"
+                  className={inputClasses}
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-400">Phone</label>
+                <label className={labelClasses}>Phone</label>
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => updateField('phone', e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none"
+                  className={inputClasses}
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-400">Special Requests (optional)</label>
+                <label className={labelClasses}>Special Requests (optional)</label>
                 <textarea
                   rows={2}
                   value={formData.requests}
                   onChange={(e) => updateField('requests', e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none resize-none"
+                  className={inputClasses + ' resize-none'}
                 />
               </div>
             </div>
@@ -356,12 +385,21 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
               </p>
             )}
 
+            {/* Trust row */}
+            <div className="flex items-center justify-center gap-3 text-xs text-white/30">
+              <span>🔒 SSL Encrypted</span>
+              <span>&middot;</span>
+              <span>Powered by Stripe</span>
+              <span>&middot;</span>
+              <span>Instant Confirmation</span>
+            </div>
+
             <button
               onClick={handleCreatePayment}
               disabled={!isFormValid || loading}
-              className="w-full rounded-lg bg-gold px-4 py-3 text-sm font-bold text-black transition-all hover:bg-gold-light disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-lg bg-gold px-4 py-4 text-sm font-bold text-black transition-all hover:bg-gold-light disabled:opacity-50 disabled:cursor-not-allowed animate-pulse-glow"
             >
-              {loading ? 'Setting up payment...' : `Continue to Payment — $${pkg.pricing[selectedTier].price}`}
+              {loading ? 'Setting up payment...' : `Continue to Payment — $${pkg.pricing[selectedTier].price} →`}
             </button>
           </>
         )}
