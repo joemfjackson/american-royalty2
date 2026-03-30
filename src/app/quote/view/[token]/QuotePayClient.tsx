@@ -13,7 +13,7 @@ function formatCurrency(amount: number): string {
   return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 }
 
-function PaymentForm({ depositAmount }: { depositAmount: number }) {
+function PaymentForm({ depositAmount, isFullPayment }: { depositAmount: number; isFullPayment: boolean }) {
   const stripe = useStripe()
   const elements = useElements()
   const [processing, setProcessing] = useState(false)
@@ -30,7 +30,7 @@ function PaymentForm({ depositAmount }: { depositAmount: number }) {
     const result = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: window.location.href + '/success',
+        return_url: 'https://www.americanroyaltylasvegas.com',
       },
       redirect: 'if_required',
     })
@@ -41,6 +41,13 @@ function PaymentForm({ depositAmount }: { depositAmount: number }) {
     } else if (result.paymentIntent?.status === 'succeeded') {
       setSuccess(true)
       setProcessing(false)
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'conversion', {
+          send_to: 'AW-18039620267/nhKHCM7IhI8cEKuF-51D',
+          value: depositAmount,
+          currency: 'USD',
+        })
+      }
     }
   }
 
@@ -50,11 +57,14 @@ function PaymentForm({ depositAmount }: { depositAmount: number }) {
         <CheckCircle className="mx-auto h-10 w-10 text-emerald-400" />
         <h3 className="mt-3 text-lg font-bold text-white">You&apos;re Booked!</h3>
         <p className="mt-2 text-sm text-gray-400">
-          Your deposit of {formatCurrency(depositAmount)} has been received.
+          Your {isFullPayment ? 'payment' : 'deposit'} of {formatCurrency(depositAmount)} has been received.
         </p>
         <p className="mt-1 text-sm text-gray-400">
           We&apos;ll send a confirmation email with your booking details.
         </p>
+        <a href="/" className="mt-5 inline-block rounded-lg border border-emerald-500/30 px-6 py-2 text-sm font-semibold text-emerald-400 transition-colors hover:bg-emerald-500/10">
+          Return to Home
+        </a>
       </div>
     )
   }
@@ -74,7 +84,7 @@ function PaymentForm({ depositAmount }: { depositAmount: number }) {
         disabled={!stripe || processing}
         className="w-full rounded-lg bg-gold px-6 py-4 text-base font-bold text-black transition-all hover:bg-gold-light disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {processing ? 'Processing payment...' : `PAY DEPOSIT ${formatCurrency(depositAmount)}`}
+        {processing ? 'Processing payment...' : `${isFullPayment ? 'PAY' : 'PAY DEPOSIT'} ${formatCurrency(depositAmount)}`}
       </button>
       <p className="text-center text-xs text-gray-600">
         Secure payment powered by Stripe
@@ -86,9 +96,10 @@ function PaymentForm({ depositAmount }: { depositAmount: number }) {
 interface QuotePayClientProps {
   quoteToken: string
   depositAmount: number
+  isFullPayment: boolean
 }
 
-export function QuotePayClient({ quoteToken, depositAmount }: QuotePayClientProps) {
+export function QuotePayClient({ quoteToken, depositAmount, isFullPayment }: QuotePayClientProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -138,7 +149,7 @@ export function QuotePayClient({ quoteToken, depositAmount }: QuotePayClientProp
           },
         }}
       >
-        <PaymentForm depositAmount={depositAmount} />
+        <PaymentForm depositAmount={depositAmount} isFullPayment={isFullPayment} />
       </Elements>
     )
   }
@@ -150,7 +161,7 @@ export function QuotePayClient({ quoteToken, depositAmount }: QuotePayClientProp
         disabled={loading}
         className="w-full rounded-lg bg-gold px-6 py-4 text-base font-bold text-black transition-all hover:bg-gold-light disabled:opacity-50 animate-pulse-glow"
       >
-        {loading ? 'Setting up payment...' : `BOOK NOW — PAY DEPOSIT ${formatCurrency(depositAmount)}`}
+        {loading ? 'Setting up payment...' : `BOOK NOW — ${isFullPayment ? 'PAY' : 'PAY DEPOSIT'} ${formatCurrency(depositAmount)}`}
       </button>
 
       {error && (
