@@ -243,7 +243,7 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
                   setSelectedTier(i)
                   setClientSecret(null)
                 }}
-                className={`relative rounded-lg border p-3 text-left transition-all ${
+                className={`relative rounded-lg border p-3 ${i === 1 ? 'pt-5' : ''} text-left transition-all ${
                   selectedTier === i
                     ? 'border-gold bg-gold/10 shadow-[0_0_20px_rgba(214,192,138,0.15)]'
                     : 'border-dark-border hover:border-gold/30 hover:bg-gold/5'
