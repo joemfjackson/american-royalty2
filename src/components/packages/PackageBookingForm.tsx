@@ -222,7 +222,7 @@ export function PackageBookingForm({ pkg }: { pkg: PackageConfig }) {
   const labelClasses = 'text-xs font-semibold uppercase tracking-widest text-white/50'
 
   return (
-    <div ref={formRef} className="rounded-2xl border border-dark-border bg-dark-card overflow-hidden">
+    <div ref={formRef} className="rounded-2xl border border-gold/20 bg-dark-card overflow-hidden shadow-[0_0_40px_rgba(111,45,189,0.12),0_0_80px_rgba(214,192,138,0.06)]">
       <div className="bg-gradient-to-r from-royal/20 via-royal/10 to-gold/10 border-b border-dark-border border-t-2 border-t-gold/40 p-5">
         <h2 className="text-xl font-bold text-white">Book This Package</h2>
         <p className="mt-1 text-xs text-white/40">Instant confirmation &middot; Secure checkout</p>
