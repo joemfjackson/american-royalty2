@@ -118,6 +118,7 @@ export const PACKAGES: PackageConfig[] = [
     slug: 'fremont-street-experience',
     name: 'Fremont Street Experience',
     tagline: 'Old Vegas vibes and downtown energy',
+    image: '/images/packages/fremont-street-hero.webp',
     duration: '3 hours',
     durationHours: 3,
     description:
@@ -168,7 +169,6 @@ export const PACKAGES: PackageConfig[] = [
         a: 'Yes, but Fremont Street really comes alive after dark when the LED canopy lights up and the live entertainment starts. We recommend an evening booking for the full experience.',
       },
     ],
-    image: '/images/services/nightlife.webp',
     keywords:
       'fremont street party bus, downtown las vegas tour, fremont street experience party bus, old vegas tour',
   },

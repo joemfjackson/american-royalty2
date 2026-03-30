@@ -45,7 +45,7 @@ export default async function QuoteViewPage({ params }: Props) {
       </div>
 
       {/* Event details card */}
-      <div className="rounded-xl border border-dark-border bg-dark-card overflow-hidden">
+      <div className="rounded-xl bg-dark-card overflow-hidden glow-purple border border-gold/20 shadow-[0_0_40px_rgba(111,45,189,0.12)]">
         <div className="px-5 py-4 border-b border-dark-border">
           <h2 className="text-xs font-semibold tracking-wider text-gray-500 uppercase">Event Details</h2>
         </div>
@@ -102,8 +102,8 @@ export default async function QuoteViewPage({ params }: Props) {
       </div>
 
       {/* Pricing breakdown card */}
-      <div className="rounded-xl border border-dark-border bg-dark-card overflow-hidden">
-        {/* Gold accent line */}
+      <div className="rounded-xl bg-dark-card overflow-hidden border border-gold/20 shadow-[0_0_40px_rgba(111,45,189,0.12),0_0_80px_rgba(214,192,138,0.06)]">
+        {/* Gold-purple gradient accent line */}
         <div className="h-1 bg-gradient-to-r from-gold via-royal to-gold" />
 
         <div className="px-5 py-4 border-b border-dark-border">
