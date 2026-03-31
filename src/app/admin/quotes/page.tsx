@@ -2,12 +2,13 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Search, Filter, ArrowUpDown } from 'lucide-react'
+import { Search, Filter, ArrowUpDown, Plus, X } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { QuoteDetailPanel } from '@/components/admin/QuoteDetailPanel'
-import { getQuotes, getVehicleNames } from '@/lib/actions/admin'
+import { getQuotes, getVehicleNames, createQuoteManually } from '@/lib/actions/admin'
 import { formatDate } from '@/lib/utils'
+import { EVENT_TYPES } from '@/lib/constants'
 import type { Quote } from '@/types'
 
 type QuoteStatus = Quote['status']
@@ -46,6 +47,14 @@ export default function AdminQuotesPage() {
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [addingQuote, setAddingQuote] = useState(false)
+  const [newQuote, setNewQuote] = useState({
+    name: '', email: '', phone: '', event_type: 'Bachelor Party',
+    event_date: '', pickup_time: '', duration_hours: '',
+    guest_count: '', preferred_vehicle_id: '',
+    pickup_location: '', dropoff_location: '', details: '',
+  })
 
   useEffect(() => {
     async function load() {
@@ -111,6 +120,43 @@ export default function AdminQuotesPage() {
     setSelectedQuote(updated)
   }
 
+  const handleAddQuote = async () => {
+    if (!newQuote.name || !newQuote.email || !newQuote.phone || !newQuote.event_date) return
+    setAddingQuote(true)
+    try {
+      const created = await createQuoteManually({
+        name: newQuote.name,
+        email: newQuote.email,
+        phone: newQuote.phone,
+        event_type: newQuote.event_type,
+        event_date: newQuote.event_date,
+        pickup_time: newQuote.pickup_time || null,
+        duration_hours: newQuote.duration_hours ? parseInt(newQuote.duration_hours) : null,
+        guest_count: newQuote.guest_count ? parseInt(newQuote.guest_count) : null,
+        preferred_vehicle_id: newQuote.preferred_vehicle_id || null,
+        pickup_location: newQuote.pickup_location || null,
+        dropoff_location: newQuote.dropoff_location || null,
+        details: newQuote.details || null,
+      })
+      setQuotes((prev) => [created, ...prev])
+      setShowAddModal(false)
+      setNewQuote({
+        name: '', email: '', phone: '', event_type: 'Bachelor Party',
+        event_date: '', pickup_time: '', duration_hours: '',
+        guest_count: '', preferred_vehicle_id: '',
+        pickup_location: '', dropoff_location: '', details: '',
+      })
+    } catch (err) {
+      console.error('Failed to create quote:', err)
+    } finally {
+      setAddingQuote(false)
+    }
+  }
+
+  const handleDeleteQuote = (quoteId: string) => {
+    setQuotes((prev) => prev.filter((q) => q.id !== quoteId))
+  }
+
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = { all: quotes.length }
     quotes.forEach((q) => {
@@ -163,6 +209,13 @@ export default function AdminQuotesPage() {
             {quotes.length} total quotes
           </p>
         </div>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="inline-flex items-center gap-2 rounded-lg bg-gold px-4 py-2.5 text-sm font-semibold text-black transition-all hover:bg-gold-light"
+        >
+          <Plus className="h-4 w-4" />
+          Add Quote
+        </button>
       </div>
 
       {/* Status filter dropdown */}
@@ -320,6 +373,99 @@ export default function AdminQuotesPage() {
         onDeleteQuote={(id) => setQuotes((prev) => prev.filter((q) => q.id !== id))}
         vehicleNames={vehicleNames}
       />
+
+      {/* Add Quote Modal */}
+      {showAddModal && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowAddModal(false)} />
+          <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-dark-border bg-dark-card shadow-2xl max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-dark-border p-4">
+              <h2 className="text-lg font-semibold text-white">Add Quote</h2>
+              <button onClick={() => setShowAddModal(false)} className="rounded-lg p-2 text-gray-400 hover:bg-white/5 hover:text-white">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <label className="text-xs font-medium text-gray-400">Name *</label>
+                  <input type="text" value={newQuote.name} onChange={(e) => setNewQuote({ ...newQuote, name: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-400">Email *</label>
+                  <input type="email" value={newQuote.email} onChange={(e) => setNewQuote({ ...newQuote, email: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-400">Phone *</label>
+                  <input type="tel" value={newQuote.phone} onChange={(e) => setNewQuote({ ...newQuote, phone: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-400">Event Type</label>
+                  <select value={newQuote.event_type} onChange={(e) => setNewQuote({ ...newQuote, event_type: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none">
+                    {EVENT_TYPES.map((et) => <option key={et} value={et}>{et}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-400">Event Date *</label>
+                  <input type="date" value={newQuote.event_date} onChange={(e) => setNewQuote({ ...newQuote, event_date: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-400">Pickup Time</label>
+                  <input type="time" value={newQuote.pickup_time} onChange={(e) => setNewQuote({ ...newQuote, pickup_time: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-400">Duration (hours)</label>
+                  <input type="number" value={newQuote.duration_hours} onChange={(e) => setNewQuote({ ...newQuote, duration_hours: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-400">Guests</label>
+                  <input type="number" value={newQuote.guest_count} onChange={(e) => setNewQuote({ ...newQuote, guest_count: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-400">Vehicle</label>
+                  <select value={newQuote.preferred_vehicle_id} onChange={(e) => setNewQuote({ ...newQuote, preferred_vehicle_id: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none">
+                    <option value="">Not specified</option>
+                    {Object.entries(vehicleNames).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-400">Pickup Location</label>
+                  <input type="text" value={newQuote.pickup_location} onChange={(e) => setNewQuote({ ...newQuote, pickup_location: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-400">Drop-off Location</label>
+                  <input type="text" value={newQuote.dropoff_location} onChange={(e) => setNewQuote({ ...newQuote, dropoff_location: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
+                </div>
+                <div className="col-span-2">
+                  <label className="text-xs font-medium text-gray-400">Details / Notes</label>
+                  <textarea rows={2} value={newQuote.details} onChange={(e) => setNewQuote({ ...newQuote, details: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none resize-none" />
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-dark-border p-4">
+              <button
+                onClick={handleAddQuote}
+                disabled={addingQuote || !newQuote.name || !newQuote.email || !newQuote.phone || !newQuote.event_date}
+                className="w-full rounded-lg bg-gold px-4 py-2.5 text-sm font-semibold text-black transition-all hover:bg-gold-light disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {addingQuote ? 'Creating...' : 'Create Quote'}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

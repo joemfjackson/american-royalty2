@@ -295,6 +295,45 @@ export async function getQuotes(): Promise<Quote[]> {
   return quotes.map(mapQuote)
 }
 
+export async function createQuoteManually(data: {
+  name: string
+  email: string
+  phone: string
+  event_type: string
+  event_date: string
+  pickup_time?: string | null
+  duration_hours?: number | null
+  guest_count?: number | null
+  preferred_vehicle_id?: string | null
+  pickup_location?: string | null
+  dropoff_location?: string | null
+  details?: string | null
+}): Promise<Quote> {
+  await requireAdmin()
+
+  const quote = await prisma.quote.create({
+    data: {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      eventType: data.event_type,
+      eventDate: data.event_date,
+      pickupTime: data.pickup_time || null,
+      durationHours: data.duration_hours || null,
+      guestCount: data.guest_count || null,
+      preferredVehicleId: data.preferred_vehicle_id || null,
+      pickupLocation: data.pickup_location || null,
+      dropoffLocation: data.dropoff_location || null,
+      details: data.details || null,
+      status: 'NEW',
+    },
+  })
+
+  revalidatePath('/admin/quotes')
+  revalidatePath('/admin')
+  return mapQuote(quote)
+}
+
 export async function updateQuote(
   id: string,
   data: {
