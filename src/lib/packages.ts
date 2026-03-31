@@ -261,10 +261,10 @@ export const PACKAGES: PackageConfig[] = [
       { time: 'Return', label: 'Strip cruise back — drop-off at your hotel or destination' },
     ],
     pricing: [
-      { tier: '1-12 guests', price: 675 },
-      { tier: '13-20 guests', price: 825 },
-      { tier: '21-30 guests', price: 975 },
-      { tier: '31-40 guests', price: 1125 },
+      { tier: '1-12 guests', price: 800 },
+      { tier: '13-20 guests', price: 1000 },
+      { tier: '21-30 guests', price: 1200 },
+      { tier: '31-40 guests', price: 1400 },
     ],
     faqs: [
       {
