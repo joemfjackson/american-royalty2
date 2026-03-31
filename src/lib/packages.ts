@@ -322,7 +322,7 @@ export const PACKAGES: PackageConfig[] = [
         content: 'The Sphere is located at 255 Sands Avenue, just east of The Venetian Resort. Rideshare drop-off is at the corner of Sands Avenue and Koval Lane. Parking on-site runs $45-$75 and must be pre-booked. For groups, a private party bus is the most cost-effective and enjoyable way to arrive — your group travels together, the pregame happens on the way, and you have a guaranteed ride home the moment the show ends.',
       },
     ],
-    image: '/images/services/nightlife.webp',
+    image: '/images/packages/sphere-hero.jpg',
     keywords:
       'Sphere Las Vegas transportation, party bus to Sphere Las Vegas, how to get to Sphere Las Vegas, Sphere Las Vegas group transportation, Sphere Las Vegas limo service, ride to Sphere Las Vegas, Backstreet Boys Sphere transportation, Eagles Sphere Las Vegas party bus, Wizard of Oz Sphere Las Vegas transportation, no surge pricing Sphere Las Vegas, post-show pickup Sphere Las Vegas',
   },
