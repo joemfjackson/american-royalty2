@@ -414,7 +414,7 @@ export const PACKAGES: PackageConfig[] = [
         content: 'Allegiant Stadium is the highest-grossing stadium in the United States, hosting the Las Vegas Raiders NFL season, WrestleMania, BTS (May 23-27, 2026), Morgan Wallen (May 1-2, 2026), Queens of the Stone Age, UNLV Rebels football, and dozens of major concerts and events throughout the year. Our party bus and limo service is available for every event. Book your transportation at the same time you book your tickets.',
       },
     ],
-    image: '/images/packages/allegiant-stadium.webp',
+    image: '/images/packages/allegiant-stadium.jpg',
     keywords:
       'Allegiant Stadium transportation Las Vegas, party bus Allegiant Stadium, limo service Allegiant Stadium Las Vegas, Raiders game transportation Las Vegas, how to get to Allegiant Stadium, Allegiant Stadium parking alternative, BTS Allegiant Stadium transportation, WrestleMania Las Vegas transportation, Morgan Wallen Allegiant Stadium party bus, Las Vegas stadium limo service, group transportation Allegiant Stadium',
   },
