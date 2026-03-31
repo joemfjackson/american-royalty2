@@ -1,0 +1,19 @@
+{
+  "name": "American Royalty Admin",
+  "short_name": "AR Admin",
+  "description": "American Royalty Las Vegas — Admin Dashboard",
+  "start_url": "/admin",
+  "scope": "/admin",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#000000",
+  "theme_color": "#0A0A0A",
+  "icons": [
+    {
+      "src": "/images/logo.png",
+      "sizes": "822x822",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { SessionProvider, useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
@@ -36,6 +36,57 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { status } = useSession()
+
+  // Register PWA service worker and inject manifest/meta tags
+  useEffect(() => {
+    // Service worker registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/admin-sw.js', { scope: '/admin' }).catch(() => {})
+    }
+
+    // Inject PWA meta tags into <head>
+    const tags: HTMLElement[] = []
+
+    const manifest = document.createElement('link')
+    manifest.rel = 'manifest'
+    manifest.href = '/admin.webmanifest'
+    document.head.appendChild(manifest)
+    tags.push(manifest)
+
+    const themeColor = document.createElement('meta')
+    themeColor.name = 'theme-color'
+    themeColor.content = '#0A0A0A'
+    document.head.appendChild(themeColor)
+    tags.push(themeColor)
+
+    const appleMeta = document.createElement('meta')
+    appleMeta.name = 'apple-mobile-web-app-capable'
+    appleMeta.content = 'yes'
+    document.head.appendChild(appleMeta)
+    tags.push(appleMeta)
+
+    const appleStatus = document.createElement('meta')
+    appleStatus.name = 'apple-mobile-web-app-status-bar-style'
+    appleStatus.content = 'black-translucent'
+    document.head.appendChild(appleStatus)
+    tags.push(appleStatus)
+
+    const appleTitle = document.createElement('meta')
+    appleTitle.name = 'apple-mobile-web-app-title'
+    appleTitle.content = 'AR Admin'
+    document.head.appendChild(appleTitle)
+    tags.push(appleTitle)
+
+    const appleIcon = document.createElement('link')
+    appleIcon.rel = 'apple-touch-icon'
+    appleIcon.href = '/images/logo.png'
+    document.head.appendChild(appleIcon)
+    tags.push(appleIcon)
+
+    return () => {
+      tags.forEach((tag) => tag.remove())
+    }
+  }, [])
 
   // For the login page, render without sidebar or auth check
   if (pathname === '/admin/login') {
