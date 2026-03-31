@@ -329,20 +329,19 @@ export const PACKAGES: PackageConfig[] = [
   {
     slug: 'allegiant-stadium',
     name: 'Allegiant Stadium Transportation',
-    tagline: 'Door-to-door stadium transportation — your driver waits the whole time',
+    tagline: 'Skip the surge — private pickup, drop-off, and return ride',
     heroHeading: 'Las Vegas Allegiant Stadium Transportation | Party Bus & Limo Service',
     metaTitle: 'Allegiant Stadium Transportation Las Vegas | Party Bus & Limo | American Royalty',
-    metaDescription: 'Skip the $150 parking and post-game traffic. Book a private party bus or limo to Allegiant Stadium Las Vegas. Your driver waits during the entire event and brings you back. Raiders games, concerts, WrestleMania, BTS, and more.',
+    metaDescription: 'Skip the $150 parking and post-game traffic. Book a private party bus or limo to Allegiant Stadium Las Vegas. Hotel pickup, VIP drop-off, and guaranteed post-event return ride. Raiders games, concerts, WrestleMania, BTS, and more.',
     duration: 'Approx. 4 hours',
     durationHours: 4,
     description:
-      'Getting to Allegiant Stadium is easy. Getting out after 65,000 people try to leave at the same time is not. Skip the $60-$150 parking pass, the post-event traffic gridlock, and the Uber surge. Your private party bus or limo picks you up from your hotel, drops you at the stadium entrance on Diablo Drive and Procyon Street, and your driver waits the entire event — then brings you straight back. No surge pricing, no waiting in a rideshare crowd, no stress. Just show up, enjoy the event, and walk out to your ride.',
+      'Getting to Allegiant Stadium is easy. Getting out after 65,000 people try to leave at the same time is not. Skip the $60-$150 parking pass, the post-event traffic gridlock, and the Uber surge. Your private party bus or limo picks you up from your hotel, drops you at the stadium entrance on Diablo Drive and Procyon Street, and your driver returns when the event ends to bring you back. No surge pricing, no waiting in a rideshare crowd, no stress. Just show up, enjoy the event, and your ride is waiting.',
     includes: [
       'Private party bus or limo for your group',
       'Hotel or Strip pickup at your location',
       'Drop-off at Allegiant Stadium — Diablo Dr & Procyon St entrance',
-      'Driver waits the entire event on-site',
-      'Post-event pickup right at the stadium',
+      'Post-event pickup — driver returns when event ends',
       'Return trip to your hotel or destination',
       'Ice, cups, and water provided',
       'Professional licensed chauffeur',
@@ -352,28 +351,28 @@ export const PACKAGES: PackageConfig[] = [
       { time: 'Start', label: 'Private pickup at your hotel or Strip location' },
       { time: '~30 min', label: 'Drive to Allegiant Stadium' },
       { time: 'Arrival', label: 'Drop-off at Diablo Dr & Procyon St stadium entrance' },
-      { time: 'Event', label: 'Enjoy the game or show — your driver waits on-site' },
-      { time: 'Event ends', label: 'Walk out to your waiting vehicle — no searching for a ride' },
+      { time: 'Event', label: 'Enjoy the game or show — driver departs and returns at event end' },
+      { time: 'Event ends', label: 'Post-event pickup at designated meetup point' },
       { time: 'Return', label: 'Direct return to your hotel or destination' },
     ],
     pricing: [
-      { tier: '1-12 guests', price: 750 },
-      { tier: '13-20 guests', price: 950 },
-      { tier: '21-30 guests', price: 1125 },
-      { tier: '31-40 guests', price: 1500 },
+      { tier: '1-12 guests', price: 800 },
+      { tier: '13-20 guests', price: 1000 },
+      { tier: '21-30 guests', price: 1200 },
+      { tier: '31-40 guests', price: 1400 },
     ],
     faqs: [
       {
         q: 'What is the best way to get to Allegiant Stadium in Las Vegas?',
-        a: 'A private party bus or limo is the best option for groups. Official stadium parking runs $60-$150 per car and must be booked in advance through SpotHero. After the event, I-15 and surrounding streets gridlock immediately as 65,000 people leave at once. A pre-booked private vehicle means your driver is waiting at the stadium when the event ends — no surge pricing, no searching for a rideshare in a crowd.',
+        a: 'A private party bus or limo is the best option for groups. Official stadium parking runs $60-$150 per car and must be booked in advance through SpotHero. After the event, I-15 and surrounding streets gridlock immediately as 65,000 people leave at once. A pre-booked private vehicle means guaranteed post-event pickup with no surge pricing and no searching for a rideshare in a crowd.',
       },
       {
         q: 'Where does the driver drop off and pick up at Allegiant Stadium?',
-        a: 'Our standard drop-off and pickup location is at Diablo Drive and Procyon Street at the stadium entrance. This is the designated party bus and limo drop-off zone. If your group has a VIP parking pass, we can coordinate an alternate pickup location.',
+        a: 'Our standard drop-off location is at Diablo Drive and Procyon Street at the stadium entrance. For post-event pickup, your chauffeur will coordinate a designated nearby meetup point with you before the event. We confirm the exact location on the day of your booking.',
       },
       {
-        q: 'Does the driver wait during the entire event?',
-        a: 'Yes — unlike some venues, your driver waits on-site for the entire duration of your event. When the game or show ends, your vehicle is ready and waiting. You walk out and get in — no app, no wait, no surge.',
+        q: 'Does the driver wait during the event?',
+        a: 'No — your driver drops your group off at the stadium, then returns when the event ends to pick you up. We track event end times and coordinate timing so your group is not waiting long after the game or show.',
       },
       {
         q: 'How much does Allegiant Stadium parking cost?',
@@ -407,7 +406,7 @@ export const PACKAGES: PackageConfig[] = [
     extraSections: [
       {
         heading: 'Why Not Just Drive and Park at Allegiant Stadium?',
-        content: 'Parking at Allegiant Stadium costs $60-$150 per car and sells out fast for major events like Raiders games, WrestleMania, and BTS. Even with a parking pass, post-event traffic on I-15 and surrounding streets can add 45-60 minutes to your exit. For groups, a private party bus typically costs the same or less per person than multiple parking passes combined — and you skip the traffic entirely. Your driver handles everything while your group focuses on the experience.',
+        content: 'Parking at Allegiant Stadium costs $60-$150 per car and sells out fast for major events like Raiders games, WrestleMania, and BTS. Even with a parking pass, post-event traffic on I-15 and surrounding streets can add 45-60 minutes to your exit. For groups, a private party bus typically costs the same or less per person than multiple parking passes combined — and you skip the traffic entirely. Your driver drops you off, returns when it ends, and handles everything while your group focuses on the experience.',
       },
       {
         heading: 'Group Transportation to Every Major Allegiant Stadium Event',
