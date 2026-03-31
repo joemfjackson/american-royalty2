@@ -409,12 +409,10 @@ export default function AdminQuotesPage() {
                     className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none">
                     {EVENT_TYPES.map((et) => <option key={et} value={et}>{et}</option>)}
                   </select>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input type="date" value={newQuote.event_date} onChange={(e) => setNewQuote({ ...newQuote, event_date: e.target.value })}
-                      className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
-                    <input type="time" value={newQuote.pickup_time} onChange={(e) => setNewQuote({ ...newQuote, pickup_time: e.target.value })}
-                      className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
-                  </div>
+                  <input type="date" value={newQuote.event_date} onChange={(e) => setNewQuote({ ...newQuote, event_date: e.target.value })}
+                    className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
+                  <input type="time" value={newQuote.pickup_time} onChange={(e) => setNewQuote({ ...newQuote, pickup_time: e.target.value })}
+                    className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
                   <div className="grid grid-cols-3 gap-2">
                     <input type="number" placeholder="Guests" value={newQuote.guest_count} onChange={(e) => setNewQuote({ ...newQuote, guest_count: e.target.value })}
                       className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none" />
