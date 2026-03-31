@@ -247,27 +247,25 @@ export default function AdminBookingsPage() {
         </button>
       </div>
 
-      {/* Status filter tabs */}
-      <div className="flex flex-wrap gap-2">
-        {STATUS_TABS.map((tab) => {
-          const count = tab.value === 'all'
-            ? bookings.length
-            : bookings.filter((b) => b.status === tab.value).length
-          return (
-            <button
-              key={tab.value}
-              onClick={() => setStatusFilter(tab.value)}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-                statusFilter === tab.value
-                  ? 'bg-gold/15 text-gold'
-                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              {tab.label}
-              <span className="ml-1.5 text-xs opacity-60">({count})</span>
-            </button>
-          )
-        })}
+      {/* Status filter dropdown */}
+      <div className="flex items-center gap-3">
+        <Filter className="h-4 w-4 text-gray-500" />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as BookingStatus | 'all')}
+          className="rounded-lg border border-dark-border bg-dark-card px-3 py-2 text-sm font-medium text-white focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-colors"
+        >
+          {STATUS_TABS.map((tab) => {
+            const count = tab.value === 'all'
+              ? bookings.length
+              : bookings.filter((b) => b.status === tab.value).length
+            return (
+              <option key={tab.value} value={tab.value}>
+                {tab.label} ({count})
+              </option>
+            )
+          })}
+        </select>
       </div>
 
       {/* Search */}
