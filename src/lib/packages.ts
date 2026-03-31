@@ -231,29 +231,34 @@ export const PACKAGES: PackageConfig[] = [
   {
     slug: 'sphere-transportation',
     name: 'Sphere Transportation',
-    tagline: 'Arrive at the Sphere in style',
-    duration: '3 hours',
-    durationHours: 3,
+    tagline: 'Arrive at the Sphere in style — no surge, no stress',
+    heroHeading: 'Las Vegas Sphere Transportation — Party Bus To & From The Show',
+    metaTitle: 'Sphere Las Vegas Transportation | Party Bus To The Sphere | American Royalty',
+    metaDescription: 'Skip the Uber surge and parking chaos. Book a luxury party bus to the Sphere Las Vegas. Group pickup, liquor store stop, VIP drop-off, and guaranteed post-show ride back. Groups of 1-40.',
+    duration: 'Approx. 4 hours',
+    durationHours: 4,
     description:
-      "Make your Sphere experience unforgettable from the moment you leave your hotel. Skip the rideshare chaos and arrive like a VIP in a luxury party bus. We handle pickup from your hotel, a liquor store stop so your group can pregame on the ride over, and drop-off right at the Sphere entrance. After the show, your chauffeur is waiting to pick you up — no surge pricing, no waiting in line for a ride. Cruise the Strip on the way back and keep the party going.",
+      'The Sphere experience starts before you walk through the doors. Skip the $70 parking, the Uber surge after the show, and the chaos of 20,000 people all trying to leave at once. Your group gets a private luxury party bus from your hotel — with a liquor store stop on the way so you can pregame the ride over. We drop you at the Sphere entrance, then pick you up right after the show ends. No waiting, no surge pricing, no splitting a tiny Uber with your whole crew. Cap the night with a Strip cruise back to your hotel. Show tickets not included — transportation only.',
     includes: [
-      'Hotel pickup and return',
-      'Liquor store stop before the show',
-      'VIP drop-off at the Sphere entrance',
-      'Post-show pickup — no waiting for rideshare',
-      'Las Vegas Strip cruise on return',
-      'Professional chauffeur',
-      'Premium sound system & LED party lighting',
-      'Ice water and cups provided',
+      'Private luxury party bus for your group',
+      'Hotel or Strip pickup at your location',
+      'Liquor store stop on the way to the show',
+      'VIP drop-off at Sphere entrance (255 Sands Ave)',
+      'Post-show pickup — driver returns when show ends',
+      'Las Vegas Strip cruise on the return',
+      'Drop-off at your hotel or destination',
+      'Ice, cups, and water provided',
+      'Professional licensed chauffeur',
+      'Show tickets not included — bring your own',
     ],
     itinerary: [
-      { time: 'Start', label: 'Pickup at your hotel or location' },
-      { time: '15 min', label: 'Liquor store stop — stock up for the ride' },
-      { time: '30 min', label: 'Party bus cruise to the Sphere' },
-      { time: '45 min', label: 'VIP drop-off at the Sphere entrance' },
-      { time: 'Show', label: 'Enjoy the show — your chauffeur waits nearby' },
-      { time: 'After show', label: 'Post-show pickup at the Sphere' },
-      { time: '3 hrs', label: 'Strip cruise back and drop-off at your destination' },
+      { time: 'Start', label: 'Private pickup at your hotel or Strip location' },
+      { time: '~15 min', label: 'Liquor store stop — stock up and pregame on the ride' },
+      { time: '~30 min', label: 'Party bus cruise to the Sphere' },
+      { time: '~45 min', label: 'VIP drop-off at Sphere entrance — 255 Sands Ave' },
+      { time: 'Show time', label: 'Enjoy the show — driver departs and returns at show end' },
+      { time: 'After show', label: 'Post-show pickup at designated meetup point' },
+      { time: 'Return', label: 'Strip cruise back — drop-off at your hotel or destination' },
     ],
     pricing: [
       { tier: '1-12 guests', price: 675 },
@@ -263,29 +268,63 @@ export const PACKAGES: PackageConfig[] = [
     ],
     faqs: [
       {
+        q: 'What is the best way to get to the Sphere Las Vegas?',
+        a: 'A private party bus is the best way to get to the Sphere as a group. Rideshare pickup and drop-off at the Sphere is located at the corner of Sands Avenue and Koval Lane, but after a sold-out show that area is extremely congested and surge pricing is common. A pre-booked private party bus means guaranteed pickup with no surge, no waiting, and your whole group rides together.',
+      },
+      {
+        q: 'Where does my driver pick me up after the Sphere show?',
+        a: 'Your chauffeur will coordinate your post-show pickup location with you before the show. Since drivers cannot wait on Sphere property during the event, your driver will return at show end and meet your group at a designated nearby pickup point. We will confirm the exact meetup location on the day of your booking.',
+      },
+      {
+        q: 'Is there surge pricing after Sphere shows?',
+        a: 'Yes — post-show Uber and Lyft surge pricing at the Sphere can be significant, especially after sold-out concerts. With a pre-booked party bus your price is locked in at the time of booking with no surprises.',
+      },
+      {
+        q: 'How much does parking cost at the Sphere Las Vegas?',
+        a: 'Sphere parking ranges from $45 to $75 and must be booked in advance through the Sphere website or Ticketmaster. Valet is available at the Sands Avenue entrance. For groups, a private party bus typically costs less per person than parking plus Uber combined.',
+      },
+      {
         q: 'Does the chauffeur wait during the show?',
-        a: 'Yes — your chauffeur stays in the area while you enjoy the show and picks you up right at the Sphere entrance when it ends. No need to worry about finding a ride after.',
+        a: 'The Sphere does not allow vehicles to wait on property during events. Your driver will drop your group off, then return when the show ends to pick you up. We track show end times and coordinate timing so your group is not waiting long after the show.',
       },
       {
         q: 'How early should we book before a Sphere show?',
-        a: 'We recommend booking at least 1-2 weeks in advance, especially for weekend shows. Sphere events are popular and our vehicles fill up fast on show nights.',
+        a: 'We recommend booking at least 1-2 weeks in advance for weekend shows. Sphere residencies like the Backstreet Boys, Eagles, and Wizard of Oz draw large crowds and transportation fills up fast on show nights.',
       },
       {
         q: 'Can we make stops on the way to or from the Sphere?',
-        a: 'Absolutely. Most groups do a liquor store stop on the way there. On the way back, we can cruise the Strip, stop for photos, or take you directly to dinner, a club, or your hotel.',
+        a: 'Yes. Most groups do a liquor store stop on the way — that is built into every booking. On the return, we can cruise the Strip, stop for photos at the Welcome to Las Vegas sign, grab dinner, or take you to a club. Just let us know your plan.',
       },
       {
-        q: 'What time should we get picked up?',
-        a: "We recommend scheduling pickup about 1 hour before your show starts. This gives your group time for the liquor store stop and a relaxed cruise to the venue without rushing.",
+        q: 'What time should we get picked up for a Sphere show?',
+        a: 'We recommend scheduling pickup about 60-75 minutes before your show start time. This allows time for the liquor store stop, the drive to the Sphere, and arrival before doors open. Sphere doors open 45 minutes before showtime and there is no late seating.',
       },
       {
         q: 'Is this better than just taking an Uber to the Sphere?',
-        a: "Night and day. No surge pricing after the show, no waiting in a crowd for a rideshare, and your whole group rides together. Plus you get the pregame cruise, the sound system, and the VIP arrival experience. It's the difference between transportation and an experience.",
+        a: 'For groups, yes — significantly. A party bus means your whole group rides together, you get a pregame experience on the way, VIP drop-off, and a guaranteed post-show ride with no surge pricing. After a sold-out Sphere show, getting a rideshare for a large group can take 20-30 minutes with 2-3x surge pricing. Your party bus is waiting for you.',
+      },
+      {
+        q: 'What Sphere shows is this package available for?',
+        a: 'This package is available for any Sphere Las Vegas event including the Backstreet Boys Into the Millennium residency, Eagles at Sphere, ILLENIUM, Wizard of Oz, Kenny Chesney, No Doubt, and all future residencies. Book for any show date.',
+      },
+      {
+        q: 'Are show tickets included?',
+        a: 'No — this is transportation only. You purchase your own Sphere tickets separately through thesphere.com or Ticketmaster. We handle everything from your hotel to the Sphere and back.',
+      },
+    ],
+    extraSections: [
+      {
+        heading: 'Why Not Just Take an Uber to the Sphere?',
+        content: 'For a solo couple, an Uber works fine. For a group of 8, 12, or 20 people — it is a logistical nightmare. You are splitting into multiple cars, coordinating pickups, and hoping nobody gets left behind. After the show, you are competing with thousands of other concertgoers all trying to get a ride at the exact same moment. Post-show surge pricing at the Sphere regularly runs 2-3x normal rates. A private party bus costs less per person than parking plus Uber for most groups, and the ride itself becomes part of the experience — not a stressful afterthought.',
+      },
+      {
+        heading: 'The Best Group Transportation to the Sphere Las Vegas',
+        content: 'The Sphere is located at 255 Sands Avenue, just east of The Venetian Resort. Rideshare drop-off is at the corner of Sands Avenue and Koval Lane. Parking on-site runs $45-$75 and must be pre-booked. For groups, a private party bus is the most cost-effective and enjoyable way to arrive — your group travels together, the pregame happens on the way, and you have a guaranteed ride home the moment the show ends.',
       },
     ],
     image: '/images/services/nightlife.webp',
     keywords:
-      'sphere las vegas transportation, sphere party bus, sphere show transportation, vegas sphere limo, sphere vip transportation las vegas',
+      'Sphere Las Vegas transportation, party bus to Sphere Las Vegas, how to get to Sphere Las Vegas, Sphere Las Vegas group transportation, Sphere Las Vegas limo service, ride to Sphere Las Vegas, Backstreet Boys Sphere transportation, Eagles Sphere Las Vegas party bus, Wizard of Oz Sphere Las Vegas transportation, no surge pricing Sphere Las Vegas, post-show pickup Sphere Las Vegas',
   },
 ]
 
