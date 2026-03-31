@@ -165,24 +165,20 @@ export default function AdminQuotesPage() {
         </div>
       </div>
 
-      {/* Status filter tabs */}
-      <div className="flex flex-wrap gap-2">
-        {STATUS_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => setStatusFilter(tab.value)}
-            className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-              statusFilter === tab.value
-                ? 'bg-gold/15 text-gold'
-                : 'text-gray-400 hover:bg-white/5 hover:text-white'
-            }`}
-          >
-            {tab.label}
-            {statusCounts[tab.value] !== undefined && (
-              <span className="ml-1.5 text-xs opacity-60">({statusCounts[tab.value] || 0})</span>
-            )}
-          </button>
-        ))}
+      {/* Status filter dropdown */}
+      <div className="flex items-center gap-3">
+        <Filter className="h-4 w-4 text-gray-500" />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as QuoteStatus | 'all')}
+          className="rounded-lg border border-dark-border bg-dark-card px-3 py-2 text-sm font-medium text-white focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-colors"
+        >
+          {STATUS_TABS.map((tab) => (
+            <option key={tab.value} value={tab.value}>
+              {tab.label}{statusCounts[tab.value] !== undefined ? ` (${statusCounts[tab.value] || 0})` : ''}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Search */}
