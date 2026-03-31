@@ -297,7 +297,17 @@ export async function getQuotes(): Promise<Quote[]> {
 
 export async function updateQuote(
   id: string,
-  data: { status?: string; admin_notes?: string | null; quoted_amount?: number | null }
+  data: {
+    status?: string
+    admin_notes?: string | null
+    quoted_amount?: number | null
+    event_type?: string
+    event_date?: string
+    pickup_time?: string | null
+    duration_hours?: number | null
+    guest_count?: number | null
+    preferred_vehicle_id?: string | null
+  }
 ) {
   await requireAdmin()
 
@@ -310,6 +320,24 @@ export async function updateQuote(
   }
   if (data.quoted_amount !== undefined) {
     updateData.quotedAmount = data.quoted_amount
+  }
+  if (data.event_type !== undefined) {
+    updateData.eventType = data.event_type
+  }
+  if (data.event_date !== undefined) {
+    updateData.eventDate = data.event_date
+  }
+  if (data.pickup_time !== undefined) {
+    updateData.pickupTime = data.pickup_time
+  }
+  if (data.duration_hours !== undefined) {
+    updateData.durationHours = data.duration_hours
+  }
+  if (data.guest_count !== undefined) {
+    updateData.guestCount = data.guest_count
+  }
+  if (data.preferred_vehicle_id !== undefined) {
+    updateData.preferredVehicleId = data.preferred_vehicle_id
   }
 
   const updated = await prisma.quote.update({

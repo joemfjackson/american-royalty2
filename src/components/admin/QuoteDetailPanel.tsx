@@ -22,6 +22,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import type { Quote, QuoteLineItem, Invoice, Vehicle } from '@/types'
+import { EVENT_TYPES } from '@/lib/constants'
 import { Badge } from '@/components/ui/Badge'
 import {
   updateQuote,
@@ -93,6 +94,12 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, onDelete
   const [depositProcessing, setDepositProcessing] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [editEventType, setEditEventType] = useState(quote?.event_type || '')
+  const [editEventDate, setEditEventDate] = useState(quote?.event_date || '')
+  const [editPickupTime, setEditPickupTime] = useState(quote?.pickup_time || '')
+  const [editDuration, setEditDuration] = useState(quote?.duration_hours?.toString() || '')
+  const [editGuests, setEditGuests] = useState(quote?.guest_count?.toString() || '')
+  const [editVehicleId, setEditVehicleId] = useState(quote?.preferred_vehicle_id || '')
 
   // Update local state when quote changes
   useEffect(() => {
@@ -105,6 +112,12 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, onDelete
       setActionMessage(null)
       setCopied(false)
       setQuoteLinkCopied(false)
+      setEditEventType(quote.event_type)
+      setEditEventDate(quote.event_date)
+      setEditPickupTime(quote.pickup_time || '')
+      setEditDuration(quote.duration_hours?.toString() || '')
+      setEditGuests(quote.guest_count?.toString() || '')
+      setEditVehicleId(quote.preferred_vehicle_id || '')
 
       // Load line items
       getQuoteWithLineItems(quote.id)
@@ -147,6 +160,12 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, onDelete
         status,
         admin_notes: adminNotes || null,
         quoted_amount: quotedAmount ? parseFloat(quotedAmount) : null,
+        event_type: editEventType,
+        event_date: editEventDate,
+        pickup_time: editPickupTime || null,
+        duration_hours: editDuration ? parseInt(editDuration) : null,
+        guest_count: editGuests ? parseInt(editGuests) : null,
+        preferred_vehicle_id: editVehicleId || null,
       })
       // If status changed to booked directly (legacy path), create booking
       if (status === 'booked' && quote.status !== 'booked') {
@@ -393,35 +412,70 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, onDelete
                 </div>
               </div>
 
-              {/* Event details — 3-col grid */}
+              {/* Event details — editable 3-col grid */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="rounded-lg border border-dark-border p-2.5">
-                  <p className="text-xs text-gray-500">Event</p>
-                  <p className="text-sm font-medium text-white">{quote.event_type}</p>
+                  <p className="text-xs text-gray-500 mb-1">Event</p>
+                  <select
+                    value={editEventType}
+                    onChange={(e) => setEditEventType(e.target.value)}
+                    className="w-full bg-transparent text-sm font-medium text-white focus:outline-none"
+                  >
+                    {EVENT_TYPES.map((et) => (
+                      <option key={et} value={et}>{et}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="rounded-lg border border-dark-border p-2.5">
-                  <p className="text-xs text-gray-500">Vehicle</p>
-                  <p className="text-sm font-medium text-white truncate">
-                    {quote.preferred_vehicle_id ? vehicleNames[quote.preferred_vehicle_id] || 'Unknown' : 'N/A'}
-                  </p>
+                  <p className="text-xs text-gray-500 mb-1">Vehicle</p>
+                  <select
+                    value={editVehicleId}
+                    onChange={(e) => setEditVehicleId(e.target.value)}
+                    className="w-full bg-transparent text-sm font-medium text-white focus:outline-none truncate"
+                  >
+                    <option value="">N/A</option>
+                    {Object.entries(vehicleNames).map(([id, name]) => (
+                      <option key={id} value={id}>{name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="rounded-lg border border-dark-border p-2.5">
-                  <p className="text-xs text-gray-500">Date</p>
-                  <p className="text-sm font-medium text-white">{formatDate(quote.event_date)}</p>
+                  <p className="text-xs text-gray-500 mb-1">Date</p>
+                  <input
+                    type="date"
+                    value={editEventDate}
+                    onChange={(e) => setEditEventDate(e.target.value)}
+                    className="w-full bg-transparent text-sm font-medium text-white focus:outline-none"
+                  />
                 </div>
                 <div className="rounded-lg border border-dark-border p-2.5">
-                  <p className="text-xs text-gray-500">Time</p>
-                  <p className="text-sm font-medium text-white">{quote.pickup_time ? formatTime(quote.pickup_time) : 'TBD'}</p>
+                  <p className="text-xs text-gray-500 mb-1">Time</p>
+                  <input
+                    type="time"
+                    value={editPickupTime}
+                    onChange={(e) => setEditPickupTime(e.target.value)}
+                    className="w-full bg-transparent text-sm font-medium text-white focus:outline-none"
+                  />
                 </div>
                 <div className="rounded-lg border border-dark-border p-2.5">
-                  <p className="text-xs text-gray-500">Guests</p>
-                  <p className="text-sm font-medium text-white">{quote.guest_count || 'TBD'}</p>
+                  <p className="text-xs text-gray-500 mb-1">Guests</p>
+                  <input
+                    type="number"
+                    value={editGuests}
+                    onChange={(e) => setEditGuests(e.target.value)}
+                    placeholder="TBD"
+                    className="w-full bg-transparent text-sm font-medium text-white focus:outline-none placeholder:text-gray-600"
+                  />
                 </div>
                 <div className="rounded-lg border border-dark-border p-2.5">
-                  <p className="text-xs text-gray-500">Duration</p>
-                  <p className="text-sm font-medium text-white">
-                    {quote.duration_hours ? `${quote.duration_hours}h` : 'TBD'}
-                  </p>
+                  <p className="text-xs text-gray-500 mb-1">Duration (hrs)</p>
+                  <input
+                    type="number"
+                    value={editDuration}
+                    onChange={(e) => setEditDuration(e.target.value)}
+                    placeholder="TBD"
+                    className="w-full bg-transparent text-sm font-medium text-white focus:outline-none placeholder:text-gray-600"
+                  />
                 </div>
               </div>
 
