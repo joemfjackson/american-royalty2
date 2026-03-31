@@ -404,24 +404,28 @@ export default function AdminQuotesPage() {
               {/* Event Info */}
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Event</p>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-2">
                   <select value={newQuote.event_type} onChange={(e) => setNewQuote({ ...newQuote, event_type: e.target.value })}
                     className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none">
                     {EVENT_TYPES.map((et) => <option key={et} value={et}>{et}</option>)}
                   </select>
-                  <input type="date" value={newQuote.event_date} onChange={(e) => setNewQuote({ ...newQuote, event_date: e.target.value })}
-                    className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
-                  <input type="time" value={newQuote.pickup_time} onChange={(e) => setNewQuote({ ...newQuote, pickup_time: e.target.value })}
-                    className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
-                  <input type="number" placeholder="Guests" value={newQuote.guest_count} onChange={(e) => setNewQuote({ ...newQuote, guest_count: e.target.value })}
-                    className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none" />
-                  <input type="number" placeholder="Hours" value={newQuote.duration_hours} onChange={(e) => setNewQuote({ ...newQuote, duration_hours: e.target.value })}
-                    className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none" />
-                  <select value={newQuote.preferred_vehicle_id} onChange={(e) => setNewQuote({ ...newQuote, preferred_vehicle_id: e.target.value })}
-                    className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none">
-                    <option value="">Vehicle</option>
-                    {Object.entries(vehicleNames).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
-                  </select>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input type="date" value={newQuote.event_date} onChange={(e) => setNewQuote({ ...newQuote, event_date: e.target.value })}
+                      className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
+                    <input type="time" value={newQuote.pickup_time} onChange={(e) => setNewQuote({ ...newQuote, pickup_time: e.target.value })}
+                      className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none" />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <input type="number" placeholder="Guests" value={newQuote.guest_count} onChange={(e) => setNewQuote({ ...newQuote, guest_count: e.target.value })}
+                      className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none" />
+                    <input type="number" placeholder="Hours" value={newQuote.duration_hours} onChange={(e) => setNewQuote({ ...newQuote, duration_hours: e.target.value })}
+                      className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none" />
+                    <select value={newQuote.preferred_vehicle_id} onChange={(e) => setNewQuote({ ...newQuote, preferred_vehicle_id: e.target.value })}
+                      className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none">
+                      <option value="">Vehicle</option>
+                      {Object.entries(vehicleNames).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+                    </select>
+                  </div>
                 </div>
               </div>
 
