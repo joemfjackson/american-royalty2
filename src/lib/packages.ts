@@ -326,6 +326,98 @@ export const PACKAGES: PackageConfig[] = [
     keywords:
       'Sphere Las Vegas transportation, party bus to Sphere Las Vegas, how to get to Sphere Las Vegas, Sphere Las Vegas group transportation, Sphere Las Vegas limo service, ride to Sphere Las Vegas, Backstreet Boys Sphere transportation, Eagles Sphere Las Vegas party bus, Wizard of Oz Sphere Las Vegas transportation, no surge pricing Sphere Las Vegas, post-show pickup Sphere Las Vegas',
   },
+  {
+    slug: 'allegiant-stadium',
+    name: 'Allegiant Stadium Transportation',
+    tagline: 'Door-to-door stadium transportation — your driver waits the whole time',
+    heroHeading: 'Las Vegas Allegiant Stadium Transportation | Party Bus & Limo Service',
+    metaTitle: 'Allegiant Stadium Transportation Las Vegas | Party Bus & Limo | American Royalty',
+    metaDescription: 'Skip the $150 parking and post-game traffic. Book a private party bus or limo to Allegiant Stadium Las Vegas. Your driver waits during the entire event and brings you back. Raiders games, concerts, WrestleMania, BTS, and more.',
+    duration: 'Approx. 4 hours',
+    durationHours: 4,
+    description:
+      'Getting to Allegiant Stadium is easy. Getting out after 65,000 people try to leave at the same time is not. Skip the $60-$150 parking pass, the post-event traffic gridlock, and the Uber surge. Your private party bus or limo picks you up from your hotel, drops you at the stadium entrance on Diablo Drive and Procyon Street, and your driver waits the entire event — then brings you straight back. No surge pricing, no waiting in a rideshare crowd, no stress. Just show up, enjoy the event, and walk out to your ride.',
+    includes: [
+      'Private party bus or limo for your group',
+      'Hotel or Strip pickup at your location',
+      'Drop-off at Allegiant Stadium — Diablo Dr & Procyon St entrance',
+      'Driver waits the entire event on-site',
+      'Post-event pickup right at the stadium',
+      'Return trip to your hotel or destination',
+      'Ice, cups, and water provided',
+      'Professional licensed chauffeur',
+      'Event tickets not included — bring your own',
+    ],
+    itinerary: [
+      { time: 'Start', label: 'Private pickup at your hotel or Strip location' },
+      { time: '~30 min', label: 'Drive to Allegiant Stadium' },
+      { time: 'Arrival', label: 'Drop-off at Diablo Dr & Procyon St stadium entrance' },
+      { time: 'Event', label: 'Enjoy the game or show — your driver waits on-site' },
+      { time: 'Event ends', label: 'Walk out to your waiting vehicle — no searching for a ride' },
+      { time: 'Return', label: 'Direct return to your hotel or destination' },
+    ],
+    pricing: [
+      { tier: '1-12 guests', price: 750 },
+      { tier: '13-20 guests', price: 950 },
+      { tier: '21-30 guests', price: 1125 },
+      { tier: '31-40 guests', price: 1500 },
+    ],
+    faqs: [
+      {
+        q: 'What is the best way to get to Allegiant Stadium in Las Vegas?',
+        a: 'A private party bus or limo is the best option for groups. Official stadium parking runs $60-$150 per car and must be booked in advance through SpotHero. After the event, I-15 and surrounding streets gridlock immediately as 65,000 people leave at once. A pre-booked private vehicle means your driver is waiting at the stadium when the event ends — no surge pricing, no searching for a rideshare in a crowd.',
+      },
+      {
+        q: 'Where does the driver drop off and pick up at Allegiant Stadium?',
+        a: 'Our standard drop-off and pickup location is at Diablo Drive and Procyon Street at the stadium entrance. This is the designated party bus and limo drop-off zone. If your group has a VIP parking pass, we can coordinate an alternate pickup location.',
+      },
+      {
+        q: 'Does the driver wait during the entire event?',
+        a: 'Yes — unlike some venues, your driver waits on-site for the entire duration of your event. When the game or show ends, your vehicle is ready and waiting. You walk out and get in — no app, no wait, no surge.',
+      },
+      {
+        q: 'How much does Allegiant Stadium parking cost?',
+        a: 'Official Allegiant Stadium parking ranges from $60 to $150 per car depending on the event and lot location. Lots must be booked in advance through SpotHero or ParkMobile and sell out quickly for major events. For a group of 12 in three cars, parking alone can cost $180-$450 before the event starts.',
+      },
+      {
+        q: 'Is there surge pricing after Allegiant Stadium events?',
+        a: 'Yes — post-event Uber and Lyft surge pricing is significant after sold-out Raiders games and major concerts. With 65,000 people leaving at once, wait times can be 20-40 minutes with 2-3x normal rates. A pre-booked party bus locks in your price with no surprises.',
+      },
+      {
+        q: 'What events at Allegiant Stadium is this package available for?',
+        a: 'This package is available for all Allegiant Stadium events including Las Vegas Raiders NFL games, WrestleMania, BTS, Morgan Wallen, Queens of the Stone Age, UNLV Rebels football, and all concerts and special events throughout the year. Book for any event date.',
+      },
+      {
+        q: 'How early should we get picked up before an Allegiant Stadium event?',
+        a: 'We recommend scheduling pickup 90 minutes before your event start time. This allows comfortable travel time from the Strip, drop-off at the stadium, and arrival before gates open. For Raiders games and major concerts, arriving early also means beating the worst inbound traffic.',
+      },
+      {
+        q: 'Can we walk to Allegiant Stadium from the Strip?',
+        a: 'Yes — the Hacienda Bridge from Mandalay Bay is the official pedestrian walkway to the stadium, about a 15-20 minute walk. It is closed to vehicles on event days. However for groups of 8 or more, a private party bus is more comfortable, eliminates the walk in Las Vegas heat, and guarantees a ride home.',
+      },
+      {
+        q: 'Is Allegiant Stadium cashless?',
+        a: 'Yes — Allegiant Stadium is a fully cashless venue. All concessions, merchandise, and parking accept credit cards and mobile payments only.',
+      },
+      {
+        q: 'Are event tickets included in the transportation package?',
+        a: 'No — this is transportation only. You purchase your own event tickets separately through Ticketmaster or allegiantstadium.com. We handle everything from your hotel to the stadium and back.',
+      },
+    ],
+    extraSections: [
+      {
+        heading: 'Why Not Just Drive and Park at Allegiant Stadium?',
+        content: 'Parking at Allegiant Stadium costs $60-$150 per car and sells out fast for major events like Raiders games, WrestleMania, and BTS. Even with a parking pass, post-event traffic on I-15 and surrounding streets can add 45-60 minutes to your exit. For groups, a private party bus typically costs the same or less per person than multiple parking passes combined — and you skip the traffic entirely. Your driver handles everything while your group focuses on the experience.',
+      },
+      {
+        heading: 'Group Transportation to Every Major Allegiant Stadium Event',
+        content: 'Allegiant Stadium is the highest-grossing stadium in the United States, hosting the Las Vegas Raiders NFL season, WrestleMania, BTS (May 23-27, 2026), Morgan Wallen (May 1-2, 2026), Queens of the Stone Age, UNLV Rebels football, and dozens of major concerts and events throughout the year. Our party bus and limo service is available for every event. Book your transportation at the same time you book your tickets.',
+      },
+    ],
+    image: '/images/packages/allegiant-stadium.webp',
+    keywords:
+      'Allegiant Stadium transportation Las Vegas, party bus Allegiant Stadium, limo service Allegiant Stadium Las Vegas, Raiders game transportation Las Vegas, how to get to Allegiant Stadium, Allegiant Stadium parking alternative, BTS Allegiant Stadium transportation, WrestleMania Las Vegas transportation, Morgan Wallen Allegiant Stadium party bus, Las Vegas stadium limo service, group transportation Allegiant Stadium',
+  },
 ]
 
 export const PACKAGE_GENERAL_FAQS = [
