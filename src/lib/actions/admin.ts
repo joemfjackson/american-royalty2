@@ -291,6 +291,7 @@ export async function getQuotes(): Promise<Quote[]> {
   await requireAdmin()
   const quotes = await prisma.quote.findMany({
     orderBy: { createdAt: 'desc' },
+    take: 500,
   })
   return quotes.map(mapQuote)
 }
@@ -438,34 +439,42 @@ export async function markDepositPaidOffPlatform(quoteId: string, paymentMethod:
   if (!quote) throw new Error('Quote not found')
   if (!quote.quotedAmount) throw new Error('Quote has no quoted amount')
 
+  // Prevent duplicate bookings
+  const existingBooking = await prisma.booking.findFirst({ where: { quoteId: quote.id } })
+  if (existingBooking) throw new Error('Booking already exists for this quote')
+
   const depositAmount = Math.round(Number(quote.quotedAmount) * quote.depositPercent / 100)
   const paidInFull = depositAmount >= Number(quote.quotedAmount)
 
-  const booking = await prisma.booking.create({
-    data: {
-      quoteId: quote.id,
-      clientName: quote.name,
-      clientEmail: quote.email,
-      clientPhone: quote.phone,
-      eventType: quote.eventType,
-      vehicleId: quote.preferredVehicleId,
-      bookingDate: quote.eventDate,
-      startTime: quote.pickupTime || 'TBD',
-      durationHours: quote.durationHours,
-      pickupLocation: quote.pickupLocation,
-      dropoffLocation: quote.dropoffLocation,
-      guestCount: quote.guestCount,
-      totalAmount: quote.quotedAmount,
-      depositAmount,
-      depositPaid: true,
-      status: paidInFull ? 'CONFIRMED' : 'DEPOSIT_PAID',
-      notes: `${quote.adminNotes ? quote.adminNotes + '\n' : ''}${paidInFull ? 'Paid in full' : 'Deposit paid'} via ${paymentMethod}`,
-    },
-  })
+  const booking = await prisma.$transaction(async (tx) => {
+    const b = await tx.booking.create({
+      data: {
+        quoteId: quote.id,
+        clientName: quote.name,
+        clientEmail: quote.email,
+        clientPhone: quote.phone,
+        eventType: quote.eventType,
+        vehicleId: quote.preferredVehicleId,
+        bookingDate: quote.eventDate,
+        startTime: quote.pickupTime || 'TBD',
+        durationHours: quote.durationHours,
+        pickupLocation: quote.pickupLocation,
+        dropoffLocation: quote.dropoffLocation,
+        guestCount: quote.guestCount,
+        totalAmount: quote.quotedAmount,
+        depositAmount,
+        depositPaid: true,
+        status: paidInFull ? 'CONFIRMED' : 'DEPOSIT_PAID',
+        notes: `${quote.adminNotes ? quote.adminNotes + '\n' : ''}${paidInFull ? 'Paid in full' : 'Deposit paid'} via ${paymentMethod}`,
+      },
+    })
 
-  await prisma.quote.update({
-    where: { id: quoteId },
-    data: { status: 'BOOKED' },
+    await tx.quote.update({
+      where: { id: quoteId },
+      data: { status: 'BOOKED' },
+    })
+
+    return b
   })
 
   await sendBookingConfirmationEmail(quote, depositAmount)
@@ -483,33 +492,41 @@ async function createBookingFromQuote(quoteId: string, depositAmount: number): P
   const quote = await prisma.quote.findUnique({ where: { id: quoteId } })
   if (!quote) throw new Error('Quote not found')
 
+  // Prevent duplicate bookings
+  const existingBooking = await prisma.booking.findFirst({ where: { quoteId } })
+  if (existingBooking) throw new Error('Booking already exists for this quote')
+
   const paidInFull = depositAmount >= Number(quote.quotedAmount || 0)
 
-  const booking = await prisma.booking.create({
-    data: {
-      quoteId: quote.id,
-      clientName: quote.name,
-      clientEmail: quote.email,
-      clientPhone: quote.phone,
-      eventType: quote.eventType,
-      vehicleId: quote.preferredVehicleId,
-      bookingDate: quote.eventDate,
-      startTime: quote.pickupTime || 'TBD',
-      durationHours: quote.durationHours,
-      pickupLocation: quote.pickupLocation,
-      dropoffLocation: quote.dropoffLocation,
-      guestCount: quote.guestCount,
-      totalAmount: quote.quotedAmount,
-      depositAmount,
-      depositPaid: true,
-      status: paidInFull ? 'CONFIRMED' : 'DEPOSIT_PAID',
-      notes: quote.adminNotes,
-    },
-  })
+  const booking = await prisma.$transaction(async (tx) => {
+    const b = await tx.booking.create({
+      data: {
+        quoteId: quote.id,
+        clientName: quote.name,
+        clientEmail: quote.email,
+        clientPhone: quote.phone,
+        eventType: quote.eventType,
+        vehicleId: quote.preferredVehicleId,
+        bookingDate: quote.eventDate,
+        startTime: quote.pickupTime || 'TBD',
+        durationHours: quote.durationHours,
+        pickupLocation: quote.pickupLocation,
+        dropoffLocation: quote.dropoffLocation,
+        guestCount: quote.guestCount,
+        totalAmount: quote.quotedAmount,
+        depositAmount,
+        depositPaid: true,
+        status: paidInFull ? 'CONFIRMED' : 'DEPOSIT_PAID',
+        notes: quote.adminNotes,
+      },
+    })
 
-  await prisma.quote.update({
-    where: { id: quoteId },
-    data: { status: 'BOOKED' },
+    await tx.quote.update({
+      where: { id: quoteId },
+      data: { status: 'BOOKED' },
+    })
+
+    return b
   })
 
   revalidatePath('/admin/quotes')
@@ -824,6 +841,7 @@ export async function buildAndSendQuote(
 
   const quoteToken = quote.quoteToken || require('crypto').randomUUID()
 
+  // Save pricing data first (but don't mark as QUOTED yet)
   await prisma.quote.update({
     where: { id: quoteId },
     data: {
@@ -837,37 +855,39 @@ export async function buildAndSendQuote(
       customItems: pricing.customItems,
       quotedAmount: pricing.total,
       depositPercent: pricing.depositPercent,
-      status: 'QUOTED',
       quoteToken,
-      quoteSentAt: new Date(),
       adminNotes: adminNotes ?? quote.adminNotes,
     },
   })
 
-  // Send email
+  // Send email BEFORE marking as QUOTED — if email fails, admin can retry
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
   const quoteUrl = `${siteUrl}/quote/view/${quoteToken}`
-  const depositAmount = Math.round(pricing.total * pricing.depositPercent / 100)
 
   if (process.env.RESEND_API_KEY) {
-    try {
-      const resend = new Resend(process.env.RESEND_API_KEY)
-      await resend.emails.send({
-        from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
-        to: [quote.email],
-        subject: `Your American Royalty Quote — ${quote.eventType}, ${new Date(quote.eventDate + 'T00:00:00').toLocaleDateString('en-US')}`,
-        html: buildQuoteEmailHtml({
-          clientName: quote.name.split(' ')[0],
-          eventType: quote.eventType,
-          eventDate: quote.eventDate,
-          quoteUrl,
-          adminNotes: adminNotes || null,
-        }),
-      })
-    } catch (emailError) {
-      console.error('Quote email failed:', emailError)
-    }
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    await resend.emails.send({
+      from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
+      to: [quote.email],
+      subject: `Your American Royalty Quote — ${quote.eventType}, ${new Date(quote.eventDate + 'T00:00:00').toLocaleDateString('en-US')}`,
+      html: buildQuoteEmailHtml({
+        clientName: quote.name.split(' ')[0],
+        eventType: quote.eventType,
+        eventDate: quote.eventDate,
+        quoteUrl,
+        adminNotes: adminNotes || null,
+      }),
+    })
   }
+
+  // Only mark as QUOTED after email sent successfully
+  await prisma.quote.update({
+    where: { id: quoteId },
+    data: {
+      status: 'QUOTED',
+      quoteSentAt: new Date(),
+    },
+  })
 
   const updated = await prisma.quote.findUnique({ where: { id: quoteId } })
 
@@ -896,6 +916,7 @@ export async function getBookings(): Promise<Booking[]> {
   await requireAdmin()
   const bookings = await prisma.booking.findMany({
     orderBy: { bookingDate: 'asc' },
+    take: 500,
   })
   return bookings.map(mapBooking)
 }

@@ -18,28 +18,36 @@ async function processQuoteDepositPayment(
     where: { id: invoiceId },
   })
 
-  if (!invoice || invoice.status === 'PAID') {
+  // Skip if already paid, cancelled, or missing
+  if (!invoice || invoice.status === 'PAID' || invoice.status === 'CANCELLED') {
     return
   }
-
-  await prisma.invoice.update({
-    where: { id: invoiceId },
-    data: {
-      status: 'PAID',
-      paymentMethod: 'STRIPE',
-      stripePaymentId,
-      paidAt: new Date(),
-    },
-  })
 
   const quote = await prisma.quote.findUnique({
     where: { id: invoice.quoteId },
   })
 
-  if (quote) {
-    const paidInFull = Number(invoice.depositAmount) >= Number(quote.quotedAmount || 0)
+  if (!quote) return
 
-    await prisma.booking.create({
+  // Prevent duplicate bookings
+  const existingBooking = await prisma.booking.findFirst({ where: { quoteId: quote.id } })
+  if (existingBooking) return
+
+  const paidInFull = Number(invoice.depositAmount) >= Number(quote.quotedAmount || 0)
+
+  // Wrap in transaction for atomicity
+  await prisma.$transaction(async (tx) => {
+    await tx.invoice.update({
+      where: { id: invoiceId },
+      data: {
+        status: 'PAID',
+        paymentMethod: 'STRIPE',
+        stripePaymentId,
+        paidAt: new Date(),
+      },
+    })
+
+    await tx.booking.create({
       data: {
         quoteId: quote.id,
         clientName: quote.name,
@@ -63,43 +71,44 @@ async function processQuoteDepositPayment(
       },
     })
 
-    await prisma.quote.update({
+    await tx.quote.update({
       where: { id: quote.id },
       data: { status: 'BOOKED' },
     })
+  })
 
-    if (process.env.RESEND_API_KEY) {
-      try {
-        const vehicle = quote.preferredVehicleId
-          ? await prisma.vehicle.findUnique({ where: { id: quote.preferredVehicleId }, select: { name: true } })
-          : null
-        const totalAmount = Number(quote.quotedAmount || 0)
-        const depositAmt = Number(invoice.depositAmount)
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
-        const resend = new Resend(process.env.RESEND_API_KEY)
-        await resend.emails.send({
-          from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
-          to: [quote.email],
-          subject: `Booking Confirmed — ${quote.eventType}, ${new Date(quote.eventDate + 'T00:00:00').toLocaleDateString('en-US')}`,
-          html: buildBookingConfirmationEmailHtml({
-            clientName: quote.name.split(' ')[0],
-            eventType: quote.eventType,
-            eventDate: quote.eventDate,
-            pickupTime: quote.pickupTime,
-            durationHours: quote.durationHours,
-            vehicleName: vehicle?.name || null,
-            guestCount: quote.guestCount,
-            pickupLocation: quote.pickupLocation,
-            dropoffLocation: quote.dropoffLocation,
-            totalAmount,
-            depositAmount: depositAmt,
-            balanceDue: totalAmount - depositAmt,
-            siteUrl,
-          }),
-        })
-      } catch (emailError) {
-        console.error('Booking confirmation email failed:', emailError)
-      }
+  // Send confirmation email (outside transaction — non-critical)
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const vehicle = quote.preferredVehicleId
+        ? await prisma.vehicle.findUnique({ where: { id: quote.preferredVehicleId }, select: { name: true } })
+        : null
+      const totalAmount = Number(quote.quotedAmount || 0)
+      const depositAmt = Number(invoice.depositAmount)
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
+      const resend = new Resend(process.env.RESEND_API_KEY)
+      await resend.emails.send({
+        from: 'American Royalty <noreply@americanroyaltylasvegas.com>',
+        to: [quote.email],
+        subject: `Booking Confirmed — ${quote.eventType}, ${new Date(quote.eventDate + 'T00:00:00').toLocaleDateString('en-US')}`,
+        html: buildBookingConfirmationEmailHtml({
+          clientName: quote.name.split(' ')[0],
+          eventType: quote.eventType,
+          eventDate: quote.eventDate,
+          pickupTime: quote.pickupTime,
+          durationHours: quote.durationHours,
+          vehicleName: vehicle?.name || null,
+          guestCount: quote.guestCount,
+          pickupLocation: quote.pickupLocation,
+          dropoffLocation: quote.dropoffLocation,
+          totalAmount,
+          depositAmount: depositAmt,
+          balanceDue: totalAmount - depositAmt,
+          siteUrl,
+        }),
+      })
+    } catch (emailError) {
+      console.error('Booking confirmation email failed:', emailError)
     }
   }
 
