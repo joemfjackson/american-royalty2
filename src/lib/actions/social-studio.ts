@@ -255,7 +255,7 @@ export async function generateFlyer(eventName: string, referenceImageUrl?: strin
     const formData = new FormData()
     formData.append('prompt', prompt)
     formData.append('num_images', '4')
-    formData.append('aspect_ratio', 'ASPECT_1_1')
+    formData.append('aspect_ratio', '1x1')
     formData.append('style_type', 'DESIGN')
     formData.append('magic_prompt', 'ON')
     formData.append('rendering_speed', 'DEFAULT')
