@@ -350,7 +350,8 @@ export default function SocialStudioPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-lg border border-dark-border bg-dark-card p-1">
+      <div className="overflow-x-auto -mx-4 px-4 lg:mx-0 lg:px-0">
+        <div className="inline-flex gap-1 rounded-lg border border-dark-border bg-dark-card p-1 min-w-full lg:flex">
         {([
           { key: 'ideas' as Tab, label: 'Ideas', icon: Sparkles },
           { key: 'compose' as Tab, label: 'Compose', icon: PenTool },
@@ -360,24 +361,25 @@ export default function SocialStudioPage() {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all ${
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
               tab === key
                 ? 'bg-gold/15 text-gold'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             {label}
             {key === 'queue' && posts.filter((p) => p.status === 'SCHEDULED').length > 0 && (
-              <span className="ml-1 rounded-full bg-gold/20 px-1.5 py-0.5 text-[10px] font-bold text-gold">
+              <span className="rounded-full bg-gold/20 px-1.5 py-0.5 text-[10px] font-bold text-gold">
                 {posts.filter((p) => p.status === 'SCHEDULED').length}
               </span>
             )}
             {key === 'photos' && photos.length > 0 && (
-              <span className="ml-1 text-[10px] text-gray-600">{photos.length}</span>
+              <span className="text-[10px] text-gray-600">{photos.length}</span>
             )}
           </button>
         ))}
+        </div>
       </div>
 
       {/* ═══ IDEAS TAB ═══ */}
