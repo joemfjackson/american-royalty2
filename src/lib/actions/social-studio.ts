@@ -172,16 +172,16 @@ Return ONLY the JSON object, no other text.`,
 
 // ─── Flyer Generation (Ideogram + Vercel Blob) ─────────
 
-export async function generateFlyer(eventName: string, referenceImageUrl?: string | null): Promise<{ urls: string[]; error?: string }> {
+export async function generateFlyer(eventName: string, referenceImageUrl?: string | null, customPrompt?: string | null): Promise<{ urls: string[]; error?: string }> {
   await requireAdmin()
 
   const apiKey = process.env.IDEOGRAM_API_KEY
   if (!apiKey) return { urls: [], error: 'IDEOGRAM_API_KEY not configured — add it in Vercel environment variables' }
 
   try {
-    const prompt = referenceImageUrl
-      ? `Create a promotional flyer incorporating this party bus photo. Las Vegas party bus promotional flyer for ${eventName}, luxury black and gold design, neon Vegas nightlife aesthetic, bold typography, ${eventName} text prominent, 'Book Your Ride' call to action, phone number (702) 666-4037, website americanroyaltylasvegas.com, professional marketing graphic`
-      : `Las Vegas party bus promotional flyer for ${eventName}, luxury black and gold design, neon Vegas nightlife aesthetic, white party bus vehicle, bold typography, ${eventName} text prominent, 'Book Your Ride' call to action, phone number (702) 666-4037, website americanroyaltylasvegas.com, professional marketing graphic`
+    const prompt = customPrompt || (referenceImageUrl
+      ? `${eventName} promotional flyer. Use the reference image as the party bus. Las Vegas neon nightlife aesthetic. Bold typography. BOOK YOUR RIDE NOW. (702) 666-4037. americanroyaltylasvegas.com. Black background with gold and neon accents.`
+      : `${eventName} promotional flyer. White luxury party bus. Las Vegas neon nightlife aesthetic. Bold typography. BOOK YOUR RIDE NOW. (702) 666-4037. americanroyaltylasvegas.com. Black background with gold and neon accents.`)
 
     const body: Record<string, unknown> = {
       prompt,

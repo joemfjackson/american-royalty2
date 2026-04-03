@@ -21,6 +21,7 @@ import {
   Upload,
   X,
   Camera,
+  ChevronDown,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import {
@@ -101,6 +102,11 @@ export default function SocialStudioPage() {
   const [copied, setCopied] = useState(false)
   const [composeMessage, setComposeMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  // Flyer prompt state
+  const [flyerPrompt, setFlyerPrompt] = useState('')
+  const [promptLocked, setPromptLocked] = useState(false)
+  const [showPromptEditor, setShowPromptEditor] = useState(false)
+
   // Photo library state
   const [photos, setPhotos] = useState<SocialPhoto[]>([])
   const [selectedRefPhoto, setSelectedRefPhoto] = useState<string | null>(null)
@@ -124,6 +130,20 @@ export default function SocialStudioPage() {
     getSocialPosts().then(setPosts).catch(() => {}).finally(() => setLoadingPosts(false))
     getSocialPhotos().then(setPhotos).catch(() => {})
   }, [])
+
+  // Auto-update flyer prompt when event name or reference photo changes (unless manually edited)
+  const getDefaultPrompt = useCallback((name: string, hasRef: boolean) => {
+    if (!name) return ''
+    return hasRef
+      ? `${name} promotional flyer. Use the reference image as the party bus. Las Vegas neon nightlife aesthetic. Bold typography. BOOK YOUR RIDE NOW. (702) 666-4037. americanroyaltylasvegas.com. Black background with gold and neon accents.`
+      : `${name} promotional flyer. White luxury party bus. Las Vegas neon nightlife aesthetic. Bold typography. BOOK YOUR RIDE NOW. (702) 666-4037. americanroyaltylasvegas.com. Black background with gold and neon accents.`
+  }, [])
+
+  useEffect(() => {
+    if (!promptLocked) {
+      setFlyerPrompt(getDefaultPrompt(eventName, !!selectedRefPhoto))
+    }
+  }, [eventName, selectedRefPhoto, promptLocked, getDefaultPrompt])
 
   // ─── Ideas handlers ───────────────────────────────────
 
@@ -190,7 +210,7 @@ export default function SocialStudioPage() {
     setFlyerUrls([])
     setSelectedFlyer(null)
     try {
-      const result = await generateFlyer(eventName, selectedRefPhoto)
+      const result = await generateFlyer(eventName, selectedRefPhoto, flyerPrompt || null)
       if (result.error) {
         setComposeMessage({ type: 'error', text: result.error })
       } else {
@@ -238,6 +258,8 @@ export default function SocialStudioPage() {
       setFlyerUrls([])
       setSelectedFlyer(null)
       setScheduledAt('')
+      setPromptLocked(false)
+      setShowPromptEditor(false)
     } catch (err) {
       setComposeMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to save post' })
     } finally {
@@ -530,6 +552,42 @@ export default function SocialStudioPage() {
               {/* Flyer generation */}
               <div className="rounded-xl border border-dark-border bg-dark-card p-4 space-y-3">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Flyer</p>
+
+                {/* Editable prompt */}
+                <div>
+                  <button
+                    onClick={() => setShowPromptEditor(!showPromptEditor)}
+                    className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gold transition-colors"
+                  >
+                    <ChevronDown className={`h-3 w-3 transition-transform ${showPromptEditor ? 'rotate-180' : ''}`} />
+                    {showPromptEditor ? 'Hide Prompt' : 'Advanced: Edit Prompt'}
+                    {promptLocked && <span className="text-[9px] text-gold/60">(edited)</span>}
+                  </button>
+
+                  {showPromptEditor && (
+                    <div className="mt-2 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] text-gray-600">Edit to customize your flyer style</p>
+                        {promptLocked && (
+                          <button
+                            onClick={() => { setPromptLocked(false); setFlyerPrompt(getDefaultPrompt(eventName, !!selectedRefPhoto)) }}
+                            className="text-[10px] text-gold/60 hover:text-gold transition-colors"
+                          >
+                            Reset to default
+                          </button>
+                        )}
+                      </div>
+                      <textarea
+                        rows={3}
+                        value={flyerPrompt}
+                        onChange={(e) => { setFlyerPrompt(e.target.value); setPromptLocked(true) }}
+                        placeholder="Enter event name first..."
+                        className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none resize-none"
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <button onClick={handleGenerateFlyer} disabled={!eventName || generatingFlyer}
                   className="w-full rounded-lg border border-gold/30 px-4 py-2.5 text-sm font-semibold text-gold transition-all hover:bg-gold/10 disabled:opacity-50 disabled:cursor-not-allowed">
                   <span className="inline-flex items-center gap-2">
