@@ -62,22 +62,23 @@ function mapPost(p: {
 
 // ─── Content Ideas (Claude + Web Search) ────────────────
 
-export async function getContentIdeas(): Promise<ContentIdea[]> {
+export async function getContentIdeas(): Promise<{ ideas: ContentIdea[]; error?: string }> {
   await requireAdmin()
 
   const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
+  if (!apiKey) return { ideas: [], error: 'ANTHROPIC_API_KEY not configured' }
 
-  const client = new Anthropic({ apiKey })
+  try {
+    const client = new Anthropic({ apiKey })
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 2000,
-    tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 5 }],
-    messages: [
-      {
-        role: 'user',
-        content: `You are a social media strategist for American Royalty Las Vegas, a luxury party bus and limo company. Search the web for:
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 5 }],
+      messages: [
+        {
+          role: 'user',
+          content: `You are a social media strategist for American Royalty Las Vegas, a luxury party bus and limo company. Search the web for:
 1. Las Vegas events happening this week and next 2 weeks
 2. Upcoming concerts at Allegiant Stadium 2026
 3. Upcoming shows at the Sphere Las Vegas 2026
@@ -93,42 +94,47 @@ Based on your research, return exactly 6-8 ranked social media post ideas as a J
 - hashtags: 5-8 relevant hashtags as a string
 
 Return ONLY the JSON array, no other text. Format: [{"priority":"High","event":"...","timing":"...","platform":"...","hook":"...","caption":"...","hashtags":"..."},...]`,
-      },
-    ],
-  })
+        },
+      ],
+    })
 
-  // Extract text from response
-  let text = ''
-  for (const block of response.content) {
-    if (block.type === 'text') {
-      text += block.text
+    // Extract text from response
+    let text = ''
+    for (const block of response.content) {
+      if (block.type === 'text') {
+        text += block.text
+      }
     }
+
+    // Parse JSON from response
+    const jsonMatch = text.match(/\[[\s\S]*\]/)
+    if (!jsonMatch) return { ideas: [], error: 'Failed to parse content ideas from AI response' }
+
+    return { ideas: JSON.parse(jsonMatch[0]) as ContentIdea[] }
+  } catch (err) {
+    console.error('Content ideas error:', err)
+    return { ideas: [], error: 'Failed to fetch content ideas — please try again' }
   }
-
-  // Parse JSON from response
-  const jsonMatch = text.match(/\[[\s\S]*\]/)
-  if (!jsonMatch) throw new Error('Failed to parse content ideas')
-
-  return JSON.parse(jsonMatch[0]) as ContentIdea[]
 }
 
 // ─── Caption Generation (Claude) ────────────────────────
 
-export async function generateCaption(eventName: string, postType: string, platforms: string[]): Promise<{ caption: string; hashtags: string }> {
+export async function generateCaption(eventName: string, postType: string, platforms: string[]): Promise<{ caption: string; hashtags: string; error?: string }> {
   await requireAdmin()
 
   const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
+  if (!apiKey) return { caption: '', hashtags: '', error: 'ANTHROPIC_API_KEY not configured' }
 
-  const client = new Anthropic({ apiKey })
+  try {
+    const client = new Anthropic({ apiKey })
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1000,
-    messages: [
-      {
-        role: 'user',
-        content: `You are the social media copywriter for American Royalty Las Vegas — a premium party bus and limo rental company.
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [
+        {
+          role: 'user',
+          content: `You are the social media copywriter for American Royalty Las Vegas — a premium party bus and limo rental company.
 
 Brand voice: Premium, confident, direct, Las Vegas VIP energy. Never cheesy or desperate.
 Key selling points: No surge pricing, luxury group transportation, professional chauffeurs, party bus experience, VIP arrival.
@@ -143,76 +149,85 @@ Return JSON with exactly two fields:
 - hashtags: 8-12 relevant hashtags as a single string
 
 Return ONLY the JSON object, no other text.`,
-      },
-    ],
-  })
+        },
+      ],
+    })
 
-  let text = ''
-  for (const block of response.content) {
-    if (block.type === 'text') {
-      text += block.text
+    let text = ''
+    for (const block of response.content) {
+      if (block.type === 'text') {
+        text += block.text
+      }
     }
+
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) return { caption: '', hashtags: '', error: 'Failed to parse caption from AI response' }
+
+    return JSON.parse(jsonMatch[0])
+  } catch (err) {
+    console.error('Caption generation error:', err)
+    return { caption: '', hashtags: '', error: 'Failed to generate caption — please try again' }
   }
-
-  const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('Failed to parse caption')
-
-  return JSON.parse(jsonMatch[0])
 }
 
 // ─── Flyer Generation (Ideogram + Vercel Blob) ─────────
 
-export async function generateFlyer(eventName: string): Promise<string[]> {
+export async function generateFlyer(eventName: string): Promise<{ urls: string[]; error?: string }> {
   await requireAdmin()
 
   const apiKey = process.env.IDEOGRAM_API_KEY
-  if (!apiKey) throw new Error('IDEOGRAM_API_KEY not configured')
+  if (!apiKey) return { urls: [], error: 'IDEOGRAM_API_KEY not configured — add it in Vercel environment variables' }
 
-  const prompt = `Las Vegas party bus promotional flyer for ${eventName}, luxury black and gold design, neon Vegas nightlife aesthetic, white party bus vehicle, bold typography, ${eventName} text prominent, 'Book Your Ride' call to action, phone number (702) 666-4037, website americanroyaltylasvegas.com, professional marketing graphic`
+  try {
+    const prompt = `Las Vegas party bus promotional flyer for ${eventName}, luxury black and gold design, neon Vegas nightlife aesthetic, white party bus vehicle, bold typography, ${eventName} text prominent, 'Book Your Ride' call to action, phone number (702) 666-4037, website americanroyaltylasvegas.com, professional marketing graphic`
 
-  const res = await fetch('https://api.ideogram.ai/generate', {
-    method: 'POST',
-    headers: {
-      'Api-Key': apiKey,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      image_request: {
-        prompt,
-        model: 'V_3',
-        aspect_ratio: 'ASPECT_1_1',
-        num_images: 4,
+    const res = await fetch('https://api.ideogram.ai/generate', {
+      method: 'POST',
+      headers: {
+        'Api-Key': apiKey,
+        'Content-Type': 'application/json',
       },
-    }),
-  })
+      body: JSON.stringify({
+        image_request: {
+          prompt,
+          model: 'V_3',
+          aspect_ratio: 'ASPECT_1_1',
+          num_images: 4,
+        },
+      }),
+    })
 
-  if (!res.ok) {
-    const err = await res.text()
-    console.error('Ideogram error:', err)
-    throw new Error('Failed to generate flyer')
+    if (!res.ok) {
+      const err = await res.text()
+      console.error('Ideogram error:', err)
+      return { urls: [], error: 'Ideogram API error — check API key and billing' }
+    }
+
+    const data = await res.json()
+    const imageUrls: string[] = []
+
+    // Download each image and upload to Vercel Blob (Ideogram URLs expire)
+    for (let i = 0; i < data.data.length; i++) {
+      const imgUrl = data.data[i].url
+      const imgRes = await fetch(imgUrl)
+      if (!imgRes.ok) continue
+
+      const buffer = Buffer.from(await imgRes.arrayBuffer())
+
+      // Upload to Vercel Blob
+      const blob = await put(
+        `social-studio/flyers/${Date.now()}-${i}.png`,
+        buffer,
+        { access: 'public' }
+      )
+      imageUrls.push(blob.url)
+    }
+
+    return { urls: imageUrls }
+  } catch (err) {
+    console.error('Flyer generation error:', err)
+    return { urls: [], error: 'Failed to generate flyer — please try again' }
   }
-
-  const data = await res.json()
-  const imageUrls: string[] = []
-
-  // Download each image and upload to Vercel Blob (Ideogram URLs expire)
-  for (let i = 0; i < data.data.length; i++) {
-    const imgUrl = data.data[i].url
-    const imgRes = await fetch(imgUrl)
-    if (!imgRes.ok) continue
-
-    const buffer = Buffer.from(await imgRes.arrayBuffer())
-
-    // Upload to Vercel Blob
-    const blob = await put(
-      `social-studio/flyers/${Date.now()}-${i}.png`,
-      buffer,
-      { access: 'public' }
-    )
-    imageUrls.push(blob.url)
-  }
-
-  return imageUrls
 }
 
 // ─── CRUD for Social Posts ──────────────────────────────

@@ -82,7 +82,11 @@ export default function SocialStudioPage() {
     setIdeasError(null)
     try {
       const result = await getContentIdeas()
-      setIdeas(result)
+      if (result.error) {
+        setIdeasError(result.error)
+      } else {
+        setIdeas(result.ideas)
+      }
     } catch (err) {
       setIdeasError(err instanceof Error ? err.message : 'Failed to fetch ideas')
     } finally {
@@ -106,8 +110,12 @@ export default function SocialStudioPage() {
     setComposeMessage(null)
     try {
       const result = await generateCaption(eventName, postType, selectedPlatforms)
-      setCaption(result.caption)
-      setHashtags(result.hashtags)
+      if (result.error) {
+        setComposeMessage({ type: 'error', text: result.error })
+      } else {
+        setCaption(result.caption)
+        setHashtags(result.hashtags)
+      }
     } catch (err) {
       setComposeMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to generate caption' })
     } finally {
@@ -122,9 +130,13 @@ export default function SocialStudioPage() {
     setFlyerUrls([])
     setSelectedFlyer(null)
     try {
-      const urls = await generateFlyer(eventName)
-      setFlyerUrls(urls)
-      if (urls.length > 0) setSelectedFlyer(urls[0])
+      const result = await generateFlyer(eventName)
+      if (result.error) {
+        setComposeMessage({ type: 'error', text: result.error })
+      } else {
+        setFlyerUrls(result.urls)
+        if (result.urls.length > 0) setSelectedFlyer(result.urls[0])
+      }
     } catch (err) {
       setComposeMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to generate flyer' })
     } finally {
