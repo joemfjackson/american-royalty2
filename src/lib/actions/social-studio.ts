@@ -243,14 +243,8 @@ export async function generateFlyer(eventName: string, referenceImageUrl?: strin
   if (!apiKey) return { urls: [], error: 'IDEOGRAM_API_KEY not configured — add it in Vercel environment variables' }
 
   try {
-    const isRemix = !!referenceImageUrl
-    const endpoint = isRemix
-      ? 'https://api.ideogram.ai/v1/ideogram-v3/remix'
-      : 'https://api.ideogram.ai/v1/ideogram-v3/generate'
-
-    const prompt = customPrompt || (isRemix
-      ? `${eventName} party bus promotional flyer. Las Vegas neon nightlife. Bold typography. White luxury party bus. Vibrant colors.`
-      : `${eventName} party bus promotional flyer. White luxury party bus. Las Vegas Strip neon nightlife background. Bold promotional typography. Vibrant gold and neon accents.`)
+    const defaultPrompt = `Luxury promotional event flyer. Las Vegas neon nightlife. White party bus arriving at venue. ${eventName}. Bold graphic design. Vibrant gold and purple accents. Dark background.`
+    const prompt = customPrompt || defaultPrompt
 
     const formData = new FormData()
     formData.append('prompt', prompt)
@@ -258,21 +252,18 @@ export async function generateFlyer(eventName: string, referenceImageUrl?: strin
     formData.append('aspect_ratio', '1x1')
     formData.append('style_type', 'DESIGN')
     formData.append('magic_prompt', 'ON')
+    formData.append('negative_prompt', 'garage, indoor, plain background, realistic photo, no design elements')
     formData.append('rendering_speed', 'DEFAULT')
 
-    if (isRemix) {
-      formData.append('negative_prompt', 'gold bus, dark bus, black bus, misspelled text, wrong text')
-      formData.append('image_weight', '75')
-      // Download reference image and attach as file
-      const imgRes = await fetch(referenceImageUrl!)
+    // Pass reference photo as style_reference_images if provided
+    if (referenceImageUrl) {
+      const imgRes = await fetch(referenceImageUrl)
       if (!imgRes.ok) return { urls: [], error: 'Failed to download reference photo' }
       const imgBlob = await imgRes.blob()
-      formData.append('image', imgBlob, 'reference.jpg')
-    } else {
-      formData.append('negative_prompt', 'dark bus, black bus, misspelled text')
+      formData.append('style_reference_images', imgBlob, 'reference.jpg')
     }
 
-    const res = await fetch(endpoint, {
+    const res = await fetch('https://api.ideogram.ai/v1/ideogram-v3/generate', {
       method: 'POST',
       headers: { 'Api-Key': apiKey },
       body: formData,

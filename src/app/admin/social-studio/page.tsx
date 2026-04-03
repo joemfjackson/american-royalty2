@@ -132,18 +132,16 @@ export default function SocialStudioPage() {
   }, [])
 
   // Auto-update flyer prompt when event name or reference photo changes (unless manually edited)
-  const getDefaultPrompt = useCallback((name: string, hasRef: boolean) => {
+  const getDefaultPrompt = useCallback((name: string) => {
     if (!name) return ''
-    return hasRef
-      ? `${name} party bus promotional flyer. Las Vegas neon nightlife. Bold typography. White luxury party bus. Vibrant colors.`
-      : `${name} party bus promotional flyer. White luxury party bus. Las Vegas Strip neon nightlife background. Bold promotional typography. Vibrant gold and neon accents.`
+    return `Luxury promotional event flyer. Las Vegas neon nightlife. White party bus arriving at venue. ${name}. Bold graphic design. Vibrant gold and purple accents. Dark background.`
   }, [])
 
   useEffect(() => {
     if (!promptLocked) {
-      setFlyerPrompt(getDefaultPrompt(eventName, !!selectedRefPhoto))
+      setFlyerPrompt(getDefaultPrompt(eventName))
     }
-  }, [eventName, selectedRefPhoto, promptLocked, getDefaultPrompt])
+  }, [eventName, promptLocked, getDefaultPrompt])
 
   // ─── Ideas handlers ───────────────────────────────────
 
@@ -570,7 +568,7 @@ export default function SocialStudioPage() {
                         <p className="text-[10px] text-gray-600">Edit to customize style. Text/logo added automatically after generation.</p>
                         {promptLocked && (
                           <button
-                            onClick={() => { setPromptLocked(false); setFlyerPrompt(getDefaultPrompt(eventName, !!selectedRefPhoto)) }}
+                            onClick={() => { setPromptLocked(false); setFlyerPrompt(getDefaultPrompt(eventName)) }}
                             className="text-[10px] text-gold/60 hover:text-gold transition-colors"
                           >
                             Reset to default
