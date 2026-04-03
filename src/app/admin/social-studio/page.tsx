@@ -135,8 +135,8 @@ export default function SocialStudioPage() {
   const getDefaultPrompt = useCallback((name: string, hasRef: boolean) => {
     if (!name) return ''
     return hasRef
-      ? `${name} promotional flyer. Use the reference image as the party bus. Las Vegas neon nightlife aesthetic. Bold typography. BOOK YOUR RIDE NOW. (702) 666-4037. americanroyaltylasvegas.com. Black background with gold and neon accents.`
-      : `${name} promotional flyer. White luxury party bus. Las Vegas neon nightlife aesthetic. Bold typography. BOOK YOUR RIDE NOW. (702) 666-4037. americanroyaltylasvegas.com. Black background with gold and neon accents.`
+      ? `${name} party bus promotional flyer. Las Vegas neon nightlife. Bold typography. White luxury party bus. Vibrant colors.`
+      : `${name} party bus promotional flyer. White luxury party bus. Las Vegas Strip neon nightlife background. Bold promotional typography. Vibrant gold and neon accents.`
   }, [])
 
   useEffect(() => {
@@ -567,7 +567,7 @@ export default function SocialStudioPage() {
                   {showPromptEditor && (
                     <div className="mt-2 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <p className="text-[10px] text-gray-600">Edit to customize your flyer style</p>
+                        <p className="text-[10px] text-gray-600">Edit to customize style. Text/logo added automatically after generation.</p>
                         {promptLocked && (
                           <button
                             onClick={() => { setPromptLocked(false); setFlyerPrompt(getDefaultPrompt(eventName, !!selectedRefPhoto)) }}

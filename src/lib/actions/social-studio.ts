@@ -170,7 +170,71 @@ Return ONLY the JSON object, no other text.`,
   }
 }
 
-// ─── Flyer Generation (Ideogram + Vercel Blob) ─────────
+// ─── Flyer Generation (Ideogram V3 + Sharp overlay + Vercel Blob) ─────────
+
+import sharp from 'sharp'
+import path from 'path'
+import fs from 'fs'
+
+async function applyTextOverlay(imageBuffer: Buffer, eventName: string): Promise<Buffer> {
+  const img = sharp(imageBuffer)
+  const metadata = await img.metadata()
+  const w = metadata.width || 1024
+  const h = metadata.height || 1024
+
+  // Load logo
+  let logoComposite: sharp.OverlayOptions[] = []
+  try {
+    const logoPath = path.join(process.cwd(), 'public', 'images', 'logo.png')
+    if (fs.existsSync(logoPath)) {
+      const logoSize = Math.round(w * 0.15)
+      const logoBuffer = await sharp(logoPath)
+        .resize(logoSize, logoSize, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .ensureAlpha(0.85)
+        .toBuffer()
+      logoComposite = [{ input: logoBuffer, gravity: 'southeast' }]
+    }
+  } catch { /* logo optional */ }
+
+  // Escape XML special characters
+  const safeEvent = eventName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+  // SVG text overlays
+  const topBarHeight = Math.round(h * 0.09)
+  const bottomBarHeight = Math.round(h * 0.13)
+  const fontSize = Math.round(w * 0.04)
+  const eventFontSize = Math.round(w * 0.045)
+
+  const svgOverlay = Buffer.from(`
+    <svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+      <!-- Top bar: event name -->
+      <rect x="0" y="0" width="${w}" height="${topBarHeight}" fill="rgba(0,0,0,0.7)" />
+      <text x="${w / 2}" y="${topBarHeight * 0.65}" text-anchor="middle"
+        font-family="Arial,Helvetica,sans-serif" font-weight="bold" font-size="${eventFontSize}"
+        fill="white">${safeEvent.toUpperCase()}</text>
+
+      <!-- Bottom bar: CTA + contact -->
+      <rect x="0" y="${h - bottomBarHeight}" width="${w}" height="${bottomBarHeight}" fill="rgba(0,0,0,0.75)" />
+      <text x="${w / 2}" y="${h - bottomBarHeight + bottomBarHeight * 0.35}" text-anchor="middle"
+        font-family="Arial,Helvetica,sans-serif" font-weight="bold" font-size="${fontSize * 1.1}"
+        fill="#D6C08A">BOOK YOUR RIDE NOW</text>
+      <text x="${w / 2}" y="${h - bottomBarHeight + bottomBarHeight * 0.62}" text-anchor="middle"
+        font-family="Arial,Helvetica,sans-serif" font-size="${fontSize * 0.85}"
+        fill="white">(702) 666-4037</text>
+      <text x="${w / 2}" y="${h - bottomBarHeight + bottomBarHeight * 0.85}" text-anchor="middle"
+        font-family="Arial,Helvetica,sans-serif" font-size="${fontSize * 0.75}"
+        fill="rgba(255,255,255,0.7)">americanroyaltylasvegas.com</text>
+    </svg>
+  `)
+
+  return img
+    .composite([
+      { input: svgOverlay, top: 0, left: 0 },
+      ...logoComposite,
+    ])
+    .png()
+    .toBuffer()
+}
 
 export async function generateFlyer(eventName: string, referenceImageUrl?: string | null, customPrompt?: string | null): Promise<{ urls: string[]; error?: string }> {
   await requireAdmin()
@@ -179,48 +243,65 @@ export async function generateFlyer(eventName: string, referenceImageUrl?: strin
   if (!apiKey) return { urls: [], error: 'IDEOGRAM_API_KEY not configured — add it in Vercel environment variables' }
 
   try {
-    const prompt = customPrompt || (referenceImageUrl
-      ? `${eventName} promotional flyer. Use the reference image as the party bus. Las Vegas neon nightlife aesthetic. Bold typography. BOOK YOUR RIDE NOW. (702) 666-4037. americanroyaltylasvegas.com. Black background with gold and neon accents.`
-      : `${eventName} promotional flyer. White luxury party bus. Las Vegas neon nightlife aesthetic. Bold typography. BOOK YOUR RIDE NOW. (702) 666-4037. americanroyaltylasvegas.com. Black background with gold and neon accents.`)
+    const isRemix = !!referenceImageUrl
+    const endpoint = isRemix
+      ? 'https://api.ideogram.ai/v1/ideogram-v3/remix'
+      : 'https://api.ideogram.ai/v1/ideogram-v3/generate'
 
-    const body: Record<string, unknown> = {
-      prompt,
-      aspect_ratio: '1x1',
-      num_images: 4,
+    const prompt = customPrompt || (isRemix
+      ? `${eventName} party bus promotional flyer. Las Vegas neon nightlife. Bold typography. White luxury party bus. Vibrant colors.`
+      : `${eventName} party bus promotional flyer. White luxury party bus. Las Vegas Strip neon nightlife background. Bold promotional typography. Vibrant gold and neon accents.`)
+
+    const formData = new FormData()
+    formData.append('prompt', prompt)
+    formData.append('num_images', '4')
+    formData.append('aspect_ratio', 'ASPECT_1_1')
+    formData.append('style_type', 'DESIGN')
+    formData.append('magic_prompt', 'ON')
+    formData.append('rendering_speed', 'DEFAULT')
+
+    if (isRemix) {
+      formData.append('negative_prompt', 'gold bus, dark bus, black bus, misspelled text, wrong text')
+      formData.append('image_weight', '75')
+      // Download reference image and attach as file
+      const imgRes = await fetch(referenceImageUrl!)
+      if (!imgRes.ok) return { urls: [], error: 'Failed to download reference photo' }
+      const imgBlob = await imgRes.blob()
+      formData.append('image', imgBlob, 'reference.jpg')
+    } else {
+      formData.append('negative_prompt', 'dark bus, black bus, misspelled text')
     }
 
-    if (referenceImageUrl) {
-      body.image = referenceImageUrl
-      body.image_weight = 50
-    }
-
-    const res = await fetch('https://api.ideogram.ai/v1/ideogram-v3/generate', {
+    const res = await fetch(endpoint, {
       method: 'POST',
-      headers: {
-        'Api-Key': apiKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
+      headers: { 'Api-Key': apiKey },
+      body: formData,
     })
 
     if (!res.ok) {
       const err = await res.text()
       console.error('Ideogram error:', err)
-      return { urls: [], error: 'Ideogram API error — check API key and billing' }
+      return { urls: [], error: `Ideogram API error: ${err.substring(0, 200)}` }
     }
 
     const data = await res.json()
     const imageUrls: string[] = []
 
-    // Download each image and upload to Vercel Blob (Ideogram URLs expire)
+    // Download each image, apply text overlay, upload to Vercel Blob
     for (let i = 0; i < data.data.length; i++) {
       const imgUrl = data.data[i].url
       const imgRes = await fetch(imgUrl)
       if (!imgRes.ok) continue
 
-      const buffer = Buffer.from(await imgRes.arrayBuffer())
+      let buffer: Buffer = Buffer.from(await imgRes.arrayBuffer())
 
-      // Upload to Vercel Blob
+      // Apply text + logo overlay via sharp
+      try {
+        buffer = Buffer.from(await applyTextOverlay(buffer, eventName))
+      } catch (overlayErr) {
+        console.error('Overlay failed, using raw image:', overlayErr)
+      }
+
       const blob = await put(
         `social-studio/flyers/${Date.now()}-${i}.png`,
         buffer,
