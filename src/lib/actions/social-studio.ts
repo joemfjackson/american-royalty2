@@ -5,7 +5,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import Anthropic from '@anthropic-ai/sdk'
-import { put } from '@vercel/blob'
+import { put, del } from '@vercel/blob'
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions)
@@ -172,14 +172,27 @@ Return ONLY the JSON object, no other text.`,
 
 // ─── Flyer Generation (Ideogram + Vercel Blob) ─────────
 
-export async function generateFlyer(eventName: string): Promise<{ urls: string[]; error?: string }> {
+export async function generateFlyer(eventName: string, referenceImageUrl?: string | null): Promise<{ urls: string[]; error?: string }> {
   await requireAdmin()
 
   const apiKey = process.env.IDEOGRAM_API_KEY
   if (!apiKey) return { urls: [], error: 'IDEOGRAM_API_KEY not configured — add it in Vercel environment variables' }
 
   try {
-    const prompt = `Las Vegas party bus promotional flyer for ${eventName}, luxury black and gold design, neon Vegas nightlife aesthetic, white party bus vehicle, bold typography, ${eventName} text prominent, 'Book Your Ride' call to action, phone number (702) 666-4037, website americanroyaltylasvegas.com, professional marketing graphic`
+    const prompt = referenceImageUrl
+      ? `Create a promotional flyer incorporating this party bus photo. Las Vegas party bus promotional flyer for ${eventName}, luxury black and gold design, neon Vegas nightlife aesthetic, bold typography, ${eventName} text prominent, 'Book Your Ride' call to action, phone number (702) 666-4037, website americanroyaltylasvegas.com, professional marketing graphic`
+      : `Las Vegas party bus promotional flyer for ${eventName}, luxury black and gold design, neon Vegas nightlife aesthetic, white party bus vehicle, bold typography, ${eventName} text prominent, 'Book Your Ride' call to action, phone number (702) 666-4037, website americanroyaltylasvegas.com, professional marketing graphic`
+
+    const body: Record<string, unknown> = {
+      prompt,
+      aspect_ratio: '1x1',
+      num_images: 4,
+    }
+
+    if (referenceImageUrl) {
+      body.image = referenceImageUrl
+      body.image_weight = 50
+    }
 
     const res = await fetch('https://api.ideogram.ai/v1/ideogram-v3/generate', {
       method: 'POST',
@@ -187,11 +200,7 @@ export async function generateFlyer(eventName: string): Promise<{ urls: string[]
         'Api-Key': apiKey,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        prompt,
-        aspect_ratio: '1x1',
-        num_images: 4,
-      }),
+      body: JSON.stringify(body),
     })
 
     if (!res.ok) {
@@ -297,4 +306,110 @@ export async function deleteSocialPost(id: string): Promise<void> {
   await requireAdmin()
   await prisma.socialPost.delete({ where: { id } })
   revalidatePath('/admin/social-studio')
+}
+
+// ─── Photo Library ──────────────────────────────────────
+
+export interface SocialPhoto {
+  id: string
+  url: string
+  filename: string
+  tags: string | null
+  created_at: string
+}
+
+export async function getSocialPhotos(): Promise<SocialPhoto[]> {
+  await requireAdmin()
+  const photos = await prisma.socialPhoto.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 200,
+  })
+  return photos.map((p) => ({
+    id: p.id,
+    url: p.url,
+    filename: p.filename,
+    tags: p.tags,
+    created_at: p.createdAt.toISOString(),
+  }))
+}
+
+export async function uploadSocialPhoto(formData: FormData): Promise<{ photo?: SocialPhoto; error?: string }> {
+  await requireAdmin()
+
+  const file = formData.get('file') as File
+  if (!file) return { error: 'No file provided' }
+
+  if (file.size > 10 * 1024 * 1024) return { error: 'File too large (max 10MB)' }
+
+  const allowed = ['image/jpeg', 'image/png', 'image/webp']
+  if (!allowed.includes(file.type)) return { error: 'Invalid file type. Use JPG, PNG, or WebP.' }
+
+  try {
+    const blob = await put(
+      `social-studio/photos/${Date.now()}-${file.name}`,
+      file,
+      { access: 'public' }
+    )
+
+    const photo = await prisma.socialPhoto.create({
+      data: {
+        url: blob.url,
+        filename: file.name,
+      },
+    })
+
+    revalidatePath('/admin/social-studio')
+    return {
+      photo: {
+        id: photo.id,
+        url: photo.url,
+        filename: photo.filename,
+        tags: photo.tags,
+        created_at: photo.createdAt.toISOString(),
+      },
+    }
+  } catch (err) {
+    console.error('Photo upload error:', err)
+    return { error: 'Failed to upload photo' }
+  }
+}
+
+export async function deleteSocialPhoto(id: string): Promise<{ error?: string }> {
+  await requireAdmin()
+
+  try {
+    const photo = await prisma.socialPhoto.findUnique({ where: { id } })
+    if (!photo) return { error: 'Photo not found' }
+
+    // Delete from Vercel Blob
+    try { await del(photo.url) } catch { /* blob may already be gone */ }
+
+    await prisma.socialPhoto.delete({ where: { id } })
+    revalidatePath('/admin/social-studio')
+    return {}
+  } catch (err) {
+    console.error('Photo delete error:', err)
+    return { error: 'Failed to delete photo' }
+  }
+}
+
+export async function uploadFlyerManually(formData: FormData): Promise<{ url?: string; error?: string }> {
+  await requireAdmin()
+
+  const file = formData.get('file') as File
+  if (!file) return { error: 'No file provided' }
+
+  if (file.size > 10 * 1024 * 1024) return { error: 'File too large (max 10MB)' }
+
+  try {
+    const blob = await put(
+      `social-studio/flyers/${Date.now()}-${file.name}`,
+      file,
+      { access: 'public' }
+    )
+    return { url: blob.url }
+  } catch (err) {
+    console.error('Flyer upload error:', err)
+    return { error: 'Failed to upload flyer' }
+  }
 }

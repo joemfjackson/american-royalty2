@@ -330,3 +330,13 @@ model SocialPost {
 
   @@map("social_posts")
 }
+
+model SocialPhoto {
+  id        String   @id @default(cuid())
+  url       String
+  filename  String
+  tags      String?
+  createdAt DateTime @default(now())
+
+  @@map("social_photos")
+}
