@@ -181,19 +181,16 @@ export async function generateFlyer(eventName: string): Promise<{ urls: string[]
   try {
     const prompt = `Las Vegas party bus promotional flyer for ${eventName}, luxury black and gold design, neon Vegas nightlife aesthetic, white party bus vehicle, bold typography, ${eventName} text prominent, 'Book Your Ride' call to action, phone number (702) 666-4037, website americanroyaltylasvegas.com, professional marketing graphic`
 
-    const res = await fetch('https://api.ideogram.ai/generate', {
+    const res = await fetch('https://api.ideogram.ai/v1/ideogram-v3/generate', {
       method: 'POST',
       headers: {
         'Api-Key': apiKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        image_request: {
-          prompt,
-          model: 'V_3',
-          aspect_ratio: 'ASPECT_1_1',
-          num_images: 4,
-        },
+        prompt,
+        aspect_ratio: '1x1',
+        num_images: 4,
       }),
     })
 
