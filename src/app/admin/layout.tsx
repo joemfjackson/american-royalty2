@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   Package,
+  Sparkles,
 } from 'lucide-react'
 
 const NAV_ITEMS = [
@@ -26,6 +27,7 @@ const NAV_ITEMS = [
   { label: 'Bookings', href: '/admin/bookings', icon: ClipboardList },
   { label: 'Packages', href: '/admin/packages', icon: Package },
   { label: 'Calendar', href: '/admin/calendar', icon: CalendarDays },
+  { label: 'Social Studio', href: '/admin/social-studio', icon: Sparkles },
   { label: 'Fleet', href: '/admin/fleet', icon: Car },
   { label: 'Testimonials', href: '/admin/testimonials', icon: Star },
   { label: 'Settings', href: '/admin/settings', icon: Settings },

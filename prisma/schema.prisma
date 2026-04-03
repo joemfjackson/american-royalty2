@@ -308,3 +308,25 @@ model PackagePhoto {
 
   @@map("package_photos")
 }
+
+// ─── Social Studio ──────────────────────────────────────
+
+enum SocialPostStatus {
+  DRAFT
+  SCHEDULED
+  POSTED
+}
+
+model SocialPost {
+  id          String           @id @default(cuid())
+  title       String
+  caption     String           @db.Text
+  platform    String
+  imageUrl    String?
+  scheduledAt DateTime?
+  status      SocialPostStatus @default(DRAFT)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("social_posts")
+}
