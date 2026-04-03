@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Sparkles,
   RefreshCw,
@@ -17,7 +17,7 @@ import {
   CheckCircle,
   Clock,
   FileText,
-  X,
+  ArrowLeft,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import {
@@ -44,11 +44,38 @@ const PLATFORM_ICONS: Record<string, typeof Instagram> = {
 const POST_TYPES = ['Event Promo', 'Vehicle Showcase', 'Package Promo', 'General']
 const PLATFORMS = ['Instagram', 'Facebook', 'TikTok', 'YouTube']
 
+const IDEAS_STORAGE_KEY = 'ar-social-studio-ideas'
+
+function getStoredIdeas(): { ideas: ContentIdea[]; fetchedAt: string } | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(IDEAS_STORAGE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw)
+  } catch { return null }
+}
+
+function storeIdeas(ideas: ContentIdea[]) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(IDEAS_STORAGE_KEY, JSON.stringify({ ideas, fetchedAt: new Date().toISOString() }))
+}
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  return `${Math.floor(hrs / 24)}d ago`
+}
+
 export default function SocialStudioPage() {
   const [tab, setTab] = useState<Tab>('ideas')
 
-  // Ideas state
+  // Ideas state — persisted in localStorage
   const [ideas, setIdeas] = useState<ContentIdea[]>([])
+  const [ideasFetchedAt, setIdeasFetchedAt] = useState<string | null>(null)
   const [loadingIdeas, setLoadingIdeas] = useState(false)
   const [ideasError, setIdeasError] = useState<string | null>(null)
 
@@ -71,13 +98,19 @@ export default function SocialStudioPage() {
   const [posts, setPosts] = useState<SocialPost[]>([])
   const [loadingPosts, setLoadingPosts] = useState(true)
 
+  // Load persisted ideas from localStorage on mount
   useEffect(() => {
+    const stored = getStoredIdeas()
+    if (stored && stored.ideas.length > 0) {
+      setIdeas(stored.ideas)
+      setIdeasFetchedAt(stored.fetchedAt)
+    }
     getSocialPosts().then(setPosts).catch(() => {}).finally(() => setLoadingPosts(false))
   }, [])
 
   // ─── Ideas handlers ───────────────────────────────────
 
-  const handleRefreshIdeas = async () => {
+  const handleRefreshIdeas = useCallback(async () => {
     setLoadingIdeas(true)
     setIdeasError(null)
     try {
@@ -86,13 +119,23 @@ export default function SocialStudioPage() {
         setIdeasError(result.error)
       } else {
         setIdeas(result.ideas)
+        const now = new Date().toISOString()
+        setIdeasFetchedAt(now)
+        storeIdeas(result.ideas)
       }
     } catch (err) {
       setIdeasError(err instanceof Error ? err.message : 'Failed to fetch ideas')
     } finally {
       setLoadingIdeas(false)
     }
-  }
+  }, [])
+
+  const handleClearAndRefresh = useCallback(async () => {
+    setIdeas([])
+    setIdeasFetchedAt(null)
+    localStorage.removeItem(IDEAS_STORAGE_KEY)
+    await handleRefreshIdeas()
+  }, [handleRefreshIdeas])
 
   const handleUseIdea = (idea: ContentIdea) => {
     setEventName(idea.event)
@@ -172,7 +215,6 @@ export default function SocialStudioPage() {
       })
       setPosts((prev) => [post, ...prev])
       setComposeMessage({ type: 'success', text: scheduledAt ? 'Post scheduled!' : 'Draft saved!' })
-      // Reset compose
       setEventName('')
       setCaption('')
       setHashtags('')
@@ -254,16 +296,32 @@ export default function SocialStudioPage() {
       {/* ═══ IDEAS TAB ═══ */}
       {tab === 'ideas' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-400">AI-researched content ideas based on upcoming Vegas events</p>
-            <button
-              onClick={handleRefreshIdeas}
-              disabled={loadingIdeas}
-              className="inline-flex items-center gap-2 rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black transition-all hover:bg-gold-light disabled:opacity-50"
-            >
-              <RefreshCw className={`h-4 w-4 ${loadingIdeas ? 'animate-spin' : ''}`} />
-              {loadingIdeas ? 'Researching...' : 'Refresh Ideas'}
-            </button>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm text-gray-400">AI-researched content ideas based on upcoming Vegas events</p>
+              {ideasFetchedAt && ideas.length > 0 && (
+                <p className="text-xs text-gray-600 mt-0.5">Last researched: {timeAgo(ideasFetchedAt)}</p>
+              )}
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {ideas.length > 0 && (
+                <button
+                  onClick={handleClearAndRefresh}
+                  disabled={loadingIdeas}
+                  className="text-xs text-gray-500 hover:text-gold transition-colors whitespace-nowrap"
+                >
+                  Clear &amp; Refresh
+                </button>
+              )}
+              <button
+                onClick={handleRefreshIdeas}
+                disabled={loadingIdeas}
+                className="inline-flex items-center gap-2 rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black transition-all hover:bg-gold-light disabled:opacity-50"
+              >
+                <RefreshCw className={`h-4 w-4 ${loadingIdeas ? 'animate-spin' : ''}`} />
+                {loadingIdeas ? 'Researching...' : 'Refresh Ideas'}
+              </button>
+            </div>
           </div>
 
           {ideasError && (
@@ -298,7 +356,7 @@ export default function SocialStudioPage() {
                     onClick={() => handleUseIdea(idea)}
                     className="w-full rounded-lg border border-gold/30 px-3 py-1.5 text-xs font-semibold text-gold transition-all hover:bg-gold/10"
                   >
-                    Use This →
+                    Use This &rarr;
                   </button>
                 </div>
               )
@@ -310,6 +368,17 @@ export default function SocialStudioPage() {
       {/* ═══ COMPOSE TAB ═══ */}
       {tab === 'compose' && (
         <div className="space-y-4">
+          {/* Back to ideas link */}
+          {ideas.length > 0 && (
+            <button
+              onClick={() => setTab('ideas')}
+              className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gold transition-colors"
+            >
+              <ArrowLeft className="h-3 w-3" />
+              Back to Ideas
+            </button>
+          )}
+
           {composeMessage && (
             <div className={`rounded-lg px-3 py-2 text-sm font-medium ${
               composeMessage.type === 'success'
@@ -490,8 +559,8 @@ export default function SocialStudioPage() {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-white truncate">{post.title}</p>
+                    <div className="flex items-start gap-2">
+                      <p className="text-sm font-medium text-white line-clamp-2 leading-snug">{post.title}</p>
                       <Badge variant={statusVariant[post.status] || 'outline'}>{post.status}</Badge>
                     </div>
                     <p className="mt-0.5 text-xs text-gray-500">{post.platform}</p>
