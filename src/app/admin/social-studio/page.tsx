@@ -372,15 +372,15 @@ export default function SocialStudioPage() {
 
               {/* ── GENERATION STUDIO ── */}
               <div className="rounded-xl border border-gold/20 bg-dark-card overflow-hidden shadow-[0_0_30px_rgba(111,45,189,0.08)]">
-                <div className="bg-gradient-to-r from-royal/15 via-royal/5 to-gold/10 border-b border-dark-border px-4 py-3">
-                  <p className="text-xs font-bold uppercase tracking-widest text-gold/80">Generation Studio</p>
+                <div className="bg-gradient-to-r from-royal/15 via-royal/5 to-gold/10 border-b border-dark-border px-3 sm:px-4 py-2.5">
+                  <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gold/80">Generation Studio</p>
                 </div>
-                <div className="p-4 space-y-4">
+                <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
                   {/* Prompt */}
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-1">Prompt</p>
-                    <textarea rows={4} value={genPrompt} onChange={e => setGenPrompt(e.target.value)} placeholder="Describe the image you want to generate..."
-                      className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none resize-none" />
+                    <textarea rows={3} value={genPrompt} onChange={e => setGenPrompt(e.target.value)} placeholder="Describe the image you want to generate..."
+                      className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-xs sm:text-sm text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none resize-none" />
                   </div>
 
                   {/* Negative prompt */}
@@ -426,8 +426,8 @@ export default function SocialStudioPage() {
                             <p className="text-[9px] uppercase tracking-wider text-gray-600 mb-1">{g.group}</p>
                             <div className="grid grid-cols-2 gap-1">
                               {g.presets.map(p => (
-                                <button key={p} onClick={() => setStylePreset(p)} className={`rounded-lg border px-2.5 py-1.5 text-[11px] text-left transition-all ${stylePreset === p ? 'border-gold bg-gold/10 text-gold' : 'border-dark-border text-gray-500 hover:border-gray-600'}`}>
-                                  {stylePreset === p && <Check className="inline h-3 w-3 mr-1" />}{p.replace(/_/g, ' ')}
+                                <button key={p} onClick={() => setStylePreset(p)} className={`rounded-lg border px-2 py-1.5 text-[10px] sm:text-[11px] text-left transition-all ${stylePreset === p ? 'border-gold bg-gold/10 text-gold' : 'border-dark-border text-gray-500 hover:border-gray-600'}`}>
+                                  {stylePreset === p && <Check className="inline h-3 w-3 mr-0.5" />}{p.replace(/_/g, ' ')}
                                 </button>
                               ))}
                             </div>
@@ -438,13 +438,13 @@ export default function SocialStudioPage() {
                   </div>
 
                   {/* Settings row */}
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                     {/* Aspect Ratio */}
                     <div>
                       <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Ratio</p>
                       <div className="flex flex-wrap gap-1">
                         {ASPECT_RATIOS.map(r => <button key={r.value} onClick={() => setAspectRatio(r.value)} title={r.desc}
-                          className={`rounded border px-2 py-1 text-[10px] font-medium transition-all ${aspectRatio === r.value ? 'border-gold bg-gold/10 text-gold' : 'border-dark-border text-gray-600 hover:border-gray-600'}`}>{r.label}</button>)}
+                          className={`rounded border px-1.5 sm:px-2 py-1 text-[9px] sm:text-[10px] font-medium transition-all ${aspectRatio === r.value ? 'border-gold bg-gold/10 text-gold' : 'border-dark-border text-gray-600 hover:border-gray-600'}`}>{r.label}</button>)}
                       </div>
                     </div>
                     {/* Speed */}
@@ -452,7 +452,7 @@ export default function SocialStudioPage() {
                       <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Speed</p>
                       <div className="flex gap-1">
                         {SPEEDS.map(s => <button key={s} onClick={() => setSpeed(s)}
-                          className={`rounded border px-2 py-1 text-[10px] font-medium transition-all ${speed === s ? 'border-gold bg-gold/10 text-gold' : 'border-dark-border text-gray-600 hover:border-gray-600'}`}>{s[0]}{s.slice(1).toLowerCase()}</button>)}
+                          className={`rounded border px-1.5 sm:px-2 py-1 text-[9px] sm:text-[10px] font-medium transition-all ${speed === s ? 'border-gold bg-gold/10 text-gold' : 'border-dark-border text-gray-600 hover:border-gray-600'}`}>{s[0]}{s.slice(1).toLowerCase()}</button>)}
                       </div>
                     </div>
                     {/* Num images */}
@@ -504,7 +504,7 @@ export default function SocialStudioPage() {
                         {photos.slice(0, 12).map(p => (
                           <button key={p.id} onClick={() => setSelectedRefPhoto(p.url)}
                             className={`relative shrink-0 overflow-hidden rounded-lg border-2 transition-all ${selectedRefPhoto === p.url ? 'border-gold' : 'border-dark-border hover:border-gray-600'}`}>
-                            <img src={p.url} alt={p.filename} className="h-14 w-14 object-cover" />
+                            <img src={p.url} alt={p.filename} className="h-12 w-12 sm:h-14 sm:w-14 object-cover" />
                             {selectedRefPhoto === p.url && <div className="absolute top-0.5 right-0.5 rounded-full bg-gold p-0.5"><Check className="h-2.5 w-2.5 text-black" /></div>}
                           </button>
                         ))}
@@ -535,14 +535,14 @@ export default function SocialStudioPage() {
                               <img src={url} alt={`Generated ${i + 1}`} className="w-full aspect-square object-cover" />
                             </button>
                             {selectedFlyer === url && <div className="absolute top-1.5 left-1.5 rounded-full bg-gold p-0.5"><Check className="h-3 w-3 text-black" /></div>}
-                            <div className="absolute bottom-0 left-0 right-0 flex gap-0.5 bg-black/80 p-1">
-                              <button onClick={() => handleUpscale(url)} disabled={upscaling === url} className="flex-1 rounded px-1 py-1 text-[9px] text-gray-400 hover:text-gold hover:bg-white/5 transition-colors" title="Upscale">
+                            <div className="absolute bottom-0 left-0 right-0 flex bg-black/80 p-0.5 sm:p-1">
+                              <button onClick={() => handleUpscale(url)} disabled={upscaling === url} className="flex-1 rounded px-0.5 py-1 text-[8px] sm:text-[9px] text-gray-400 hover:text-gold hover:bg-white/5 transition-colors" title="Upscale">
                                 {upscaling === url ? '...' : <><ArrowUpCircle className="inline h-3 w-3" /> HD</>}
                               </button>
-                              <button onClick={() => handleDownload(url)} className="flex-1 rounded px-1 py-1 text-[9px] text-gray-400 hover:text-gold hover:bg-white/5 transition-colors" title="Download">
-                                <Download className="inline h-3 w-3" /> Save
+                              <button onClick={() => handleDownload(url)} className="flex-1 rounded px-0.5 py-1 text-[8px] sm:text-[9px] text-gray-400 hover:text-gold hover:bg-white/5 transition-colors" title="Download">
+                                <Download className="inline h-3 w-3" />
                               </button>
-                              <button onClick={() => setSelectedFlyer(url)} className="flex-1 rounded px-1 py-1 text-[9px] text-gray-400 hover:text-gold hover:bg-white/5 transition-colors" title="Use this">
+                              <button onClick={() => setSelectedFlyer(url)} className="flex-1 rounded px-0.5 py-1 text-[8px] sm:text-[9px] text-gray-400 hover:text-gold hover:bg-white/5 transition-colors" title="Use this">
                                 📅 Use
                               </button>
                             </div>
