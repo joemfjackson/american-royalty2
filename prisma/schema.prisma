@@ -340,3 +340,15 @@ model SocialPhoto {
 
   @@map("social_photos")
 }
+
+model SocialGeneration {
+  id          String   @id @default(cuid())
+  prompt      String   @db.Text
+  styleType   String?
+  stylePreset String?
+  aspectRatio String?
+  imageUrls   String[] @default([])
+  createdAt   DateTime @default(now())
+
+  @@map("social_generations")
+}

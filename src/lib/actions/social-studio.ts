@@ -170,10 +170,10 @@ Return ONLY the JSON object, no other text.`,
   }
 }
 
-// ─── Flyer Generation (Ideogram V3 + Sharp overlay + Vercel Blob) ─────────
+// ─── Image Generation (Ideogram V3 + Sharp overlay + Vercel Blob) ─────────
 
 import sharp from 'sharp'
-import path from 'path'
+import pathModule from 'path'
 import fs from 'fs'
 
 async function applyTextOverlay(imageBuffer: Buffer, eventName: string): Promise<Buffer> {
@@ -182,10 +182,9 @@ async function applyTextOverlay(imageBuffer: Buffer, eventName: string): Promise
   const w = metadata.width || 1024
   const h = metadata.height || 1024
 
-  // Load logo
   let logoComposite: sharp.OverlayOptions[] = []
   try {
-    const logoPath = path.join(process.cwd(), 'public', 'images', 'logo.png')
+    const logoPath = pathModule.join(process.cwd(), 'public', 'images', 'logo.png')
     if (fs.existsSync(logoPath)) {
       const logoSize = Math.round(w * 0.15)
       const logoBuffer = await sharp(logoPath)
@@ -196,68 +195,73 @@ async function applyTextOverlay(imageBuffer: Buffer, eventName: string): Promise
     }
   } catch { /* logo optional */ }
 
-  // Escape XML special characters
   const safeEvent = eventName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-
-  // SVG text overlays
-  const topBarHeight = Math.round(h * 0.09)
-  const bottomBarHeight = Math.round(h * 0.13)
-  const fontSize = Math.round(w * 0.04)
-  const eventFontSize = Math.round(w * 0.045)
+  const topH = Math.round(h * 0.09)
+  const botH = Math.round(h * 0.13)
+  const fs1 = Math.round(w * 0.04)
+  const fs2 = Math.round(w * 0.045)
 
   const svgOverlay = Buffer.from(`
     <svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
-      <!-- Top bar: event name -->
-      <rect x="0" y="0" width="${w}" height="${topBarHeight}" fill="rgba(0,0,0,0.7)" />
-      <text x="${w / 2}" y="${topBarHeight * 0.65}" text-anchor="middle"
-        font-family="Arial,Helvetica,sans-serif" font-weight="bold" font-size="${eventFontSize}"
-        fill="white">${safeEvent.toUpperCase()}</text>
-
-      <!-- Bottom bar: CTA + contact -->
-      <rect x="0" y="${h - bottomBarHeight}" width="${w}" height="${bottomBarHeight}" fill="rgba(0,0,0,0.75)" />
-      <text x="${w / 2}" y="${h - bottomBarHeight + bottomBarHeight * 0.35}" text-anchor="middle"
-        font-family="Arial,Helvetica,sans-serif" font-weight="bold" font-size="${fontSize * 1.1}"
-        fill="#D6C08A">BOOK YOUR RIDE NOW</text>
-      <text x="${w / 2}" y="${h - bottomBarHeight + bottomBarHeight * 0.62}" text-anchor="middle"
-        font-family="Arial,Helvetica,sans-serif" font-size="${fontSize * 0.85}"
-        fill="white">(702) 666-4037</text>
-      <text x="${w / 2}" y="${h - bottomBarHeight + bottomBarHeight * 0.85}" text-anchor="middle"
-        font-family="Arial,Helvetica,sans-serif" font-size="${fontSize * 0.75}"
-        fill="rgba(255,255,255,0.7)">americanroyaltylasvegas.com</text>
+      <rect x="0" y="0" width="${w}" height="${topH}" fill="rgba(0,0,0,0.7)"/>
+      <text x="${w / 2}" y="${topH * 0.65}" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="bold" font-size="${fs2}" fill="white">${safeEvent.toUpperCase()}</text>
+      <rect x="0" y="${h - botH}" width="${w}" height="${botH}" fill="rgba(0,0,0,0.75)"/>
+      <text x="${w / 2}" y="${h - botH + botH * 0.35}" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="bold" font-size="${fs1 * 1.1}" fill="#D6C08A">BOOK YOUR RIDE NOW</text>
+      <text x="${w / 2}" y="${h - botH + botH * 0.62}" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="${fs1 * 0.85}" fill="white">(702) 666-4037</text>
+      <text x="${w / 2}" y="${h - botH + botH * 0.85}" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="${fs1 * 0.75}" fill="rgba(255,255,255,0.7)">americanroyaltylasvegas.com</text>
     </svg>
   `)
 
-  return img
-    .composite([
-      { input: svgOverlay, top: 0, left: 0 },
-      ...logoComposite,
-    ])
-    .png()
-    .toBuffer()
+  return img.composite([{ input: svgOverlay, top: 0, left: 0 }, ...logoComposite]).png().toBuffer()
 }
 
-export async function generateFlyer(eventName: string, referenceImageUrl?: string | null, customPrompt?: string | null): Promise<{ urls: string[]; error?: string }> {
+export interface GenerateImageParams {
+  prompt: string
+  negativePrompt?: string
+  styleType?: string
+  stylePreset?: string
+  aspectRatio?: string
+  numImages?: number
+  magicPrompt?: boolean
+  renderingSpeed?: string
+  referenceImageUrl?: string | null
+  eventName?: string
+  colorPalette?: string[]
+}
+
+export interface GenerationResult {
+  id?: string
+  urls: string[]
+  error?: string
+}
+
+export async function generateImages(params: GenerateImageParams): Promise<GenerationResult> {
   await requireAdmin()
 
   const apiKey = process.env.IDEOGRAM_API_KEY
-  if (!apiKey) return { urls: [], error: 'IDEOGRAM_API_KEY not configured — add it in Vercel environment variables' }
+  if (!apiKey) return { urls: [], error: 'IDEOGRAM_API_KEY not configured' }
 
   try {
-    const defaultPrompt = `Luxury promotional event flyer. Las Vegas neon nightlife. White party bus arriving at venue. ${eventName}. Bold graphic design. Vibrant gold and purple accents. Dark background.`
-    const prompt = customPrompt || defaultPrompt
-
     const formData = new FormData()
-    formData.append('prompt', prompt)
-    formData.append('num_images', '4')
-    formData.append('aspect_ratio', '1x1')
-    formData.append('style_type', 'DESIGN')
-    formData.append('magic_prompt', 'ON')
-    formData.append('negative_prompt', 'garage, indoor, plain background, realistic photo, no design elements')
-    formData.append('rendering_speed', 'DEFAULT')
+    formData.append('prompt', params.prompt)
+    formData.append('num_images', String(params.numImages || 4))
+    formData.append('aspect_ratio', params.aspectRatio || '1x1')
+    formData.append('style_type', params.styleType || 'DESIGN')
+    formData.append('magic_prompt', params.magicPrompt !== false ? 'ON' : 'OFF')
+    formData.append('rendering_speed', params.renderingSpeed || 'DEFAULT')
 
-    // Pass reference photo as style_reference_images if provided
-    if (referenceImageUrl) {
-      const imgRes = await fetch(referenceImageUrl)
+    if (params.negativePrompt) {
+      formData.append('negative_prompt', params.negativePrompt)
+    }
+    if (params.stylePreset) {
+      formData.append('style_preset', params.stylePreset)
+    }
+    if (params.colorPalette && params.colorPalette.length > 0) {
+      formData.append('color_palette', JSON.stringify({ members: params.colorPalette.map(c => ({ color_hex: c })) }))
+    }
+
+    if (params.referenceImageUrl) {
+      const imgRes = await fetch(params.referenceImageUrl)
       if (!imgRes.ok) return { urls: [], error: 'Failed to download reference photo' }
       const imgBlob = await imgRes.blob()
       formData.append('style_reference_images', imgBlob, 'reference.jpg')
@@ -278,7 +282,6 @@ export async function generateFlyer(eventName: string, referenceImageUrl?: strin
     const data = await res.json()
     const imageUrls: string[] = []
 
-    // Download each image, apply text overlay, upload to Vercel Blob
     for (let i = 0; i < data.data.length; i++) {
       const imgUrl = data.data[i].url
       const imgRes = await fetch(imgUrl)
@@ -286,25 +289,85 @@ export async function generateFlyer(eventName: string, referenceImageUrl?: strin
 
       let buffer: Buffer = Buffer.from(await imgRes.arrayBuffer())
 
-      // Apply text + logo overlay via sharp
-      try {
-        buffer = Buffer.from(await applyTextOverlay(buffer, eventName))
-      } catch (overlayErr) {
-        console.error('Overlay failed, using raw image:', overlayErr)
+      if (params.eventName) {
+        try {
+          buffer = Buffer.from(await applyTextOverlay(buffer, params.eventName))
+        } catch (e) {
+          console.error('Overlay failed:', e)
+        }
       }
 
-      const blob = await put(
-        `social-studio/flyers/${Date.now()}-${i}.png`,
-        buffer,
-        { access: 'public' }
-      )
+      const blob = await put(`social-studio/generated/${Date.now()}-${i}.png`, buffer, { access: 'public' })
       imageUrls.push(blob.url)
     }
 
-    return { urls: imageUrls }
+    // Save generation record
+    const gen = await prisma.socialGeneration.create({
+      data: {
+        prompt: params.prompt,
+        styleType: params.styleType || null,
+        stylePreset: params.stylePreset || null,
+        aspectRatio: params.aspectRatio || '1x1',
+        imageUrls,
+      },
+    })
+
+    return { id: gen.id, urls: imageUrls }
   } catch (err) {
-    console.error('Flyer generation error:', err)
-    return { urls: [], error: 'Failed to generate flyer — please try again' }
+    console.error('Generation error:', err)
+    return { urls: [], error: 'Failed to generate images — please try again' }
+  }
+}
+
+// Keep backward-compat wrapper
+export async function generateFlyer(eventName: string, referenceImageUrl?: string | null, customPrompt?: string | null): Promise<{ urls: string[]; error?: string }> {
+  return generateImages({
+    prompt: customPrompt || `Luxury promotional event flyer. Las Vegas neon nightlife. White party bus arriving at venue. ${eventName}. Bold graphic design. Vibrant gold and purple accents. Dark background.`,
+    eventName,
+    referenceImageUrl,
+    negativePrompt: 'garage, indoor, plain background, realistic photo, no design elements',
+  })
+}
+
+export async function upscaleImage(imageUrl: string): Promise<{ url?: string; error?: string }> {
+  await requireAdmin()
+
+  const apiKey = process.env.IDEOGRAM_API_KEY
+  if (!apiKey) return { error: 'IDEOGRAM_API_KEY not configured' }
+
+  try {
+    const imgRes = await fetch(imageUrl)
+    if (!imgRes.ok) return { error: 'Failed to download image for upscale' }
+    const imgBlob = await imgRes.blob()
+
+    const formData = new FormData()
+    formData.append('image', imgBlob, 'image.png')
+
+    const res = await fetch('https://api.ideogram.ai/v1/ideogram-v3/upscale', {
+      method: 'POST',
+      headers: { 'Api-Key': apiKey },
+      body: formData,
+    })
+
+    if (!res.ok) {
+      const err = await res.text()
+      console.error('Upscale error:', err)
+      return { error: `Upscale failed: ${err.substring(0, 200)}` }
+    }
+
+    const data = await res.json()
+    if (!data.data?.[0]?.url) return { error: 'No upscaled image returned' }
+
+    // Download and save to blob
+    const upRes = await fetch(data.data[0].url)
+    if (!upRes.ok) return { error: 'Failed to download upscaled image' }
+    const buffer = Buffer.from(await upRes.arrayBuffer())
+    const blob = await put(`social-studio/generated/${Date.now()}-upscaled.png`, buffer, { access: 'public' })
+
+    return { url: blob.url }
+  } catch (err) {
+    console.error('Upscale error:', err)
+    return { error: 'Upscale failed — please try again' }
   }
 }
 
