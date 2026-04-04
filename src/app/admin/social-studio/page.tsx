@@ -124,7 +124,7 @@ export default function SocialStudioPage() {
 
   // Generation Studio
   const [genPrompt, setGenPrompt] = useState('')
-  const [negPrompt, setNegPrompt] = useState('garage, indoor, plain background, realistic photo')
+  const [negPrompt, setNegPrompt] = useState('wrong phone number, wrong website, wrong text, misspelled words')
   const [showNegPrompt, setShowNegPrompt] = useState(false)
   const [magicPrompt, setMagicPrompt] = useState(true)
   const [styleType, setStyleType] = useState('DESIGN')
@@ -165,7 +165,7 @@ export default function SocialStudioPage() {
   // Auto-update gen prompt from event name
   useEffect(() => {
     if (eventName && !genPrompt) {
-      setGenPrompt(`Luxury promotional event flyer. Las Vegas neon nightlife. White party bus arriving at venue. ${eventName}. Bold graphic design. Vibrant gold and purple accents. Dark background.`)
+      setGenPrompt(`I want to create an event flyer for my party bus company American Royalty. The event is ${eventName}. Phone number is (702) 666-4037 and website is americanroyaltylasvegas.com`)
     }
   }, [eventName]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -185,7 +185,7 @@ export default function SocialStudioPage() {
   const handleUseIdea = (idea: ContentIdea) => {
     setEventName(idea.event); setCaption(idea.caption); setHashtags(idea.hashtags)
     setSelectedPlatforms(idea.platform === 'All' ? ['Instagram', 'Facebook', 'TikTok'] : [idea.platform])
-    setGenPrompt(`Luxury promotional event flyer. Las Vegas neon nightlife. White party bus arriving at venue. ${idea.event}. Bold graphic design. Vibrant gold and purple accents. Dark background.`)
+    setGenPrompt(`I want to create an event flyer for my party bus company American Royalty. The event is ${idea.event}. Phone number is (702) 666-4037 and website is americanroyaltylasvegas.com`)
     setTab('compose')
   }
 

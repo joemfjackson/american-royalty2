@@ -266,8 +266,8 @@ export async function generateImages(params: GenerateImageParams): Promise<Gener
       const imgArrayBuffer = await imgRes.arrayBuffer()
       const imgBuffer = Buffer.from(imgArrayBuffer)
       const imgBlob = new Blob([imgBuffer], { type: 'image/jpeg' })
-      formData.append('style_reference_images', imgBlob, 'reference.jpg')
-      formData.append('style_reference_weight', '0.9')
+      formData.append('image', imgBlob, 'reference.jpg')
+      formData.append('image_weight', '50')
     }
 
     const res = await fetch('https://api.ideogram.ai/v1/ideogram-v3/generate', {
@@ -325,10 +325,10 @@ export async function generateImages(params: GenerateImageParams): Promise<Gener
 // Keep backward-compat wrapper
 export async function generateFlyer(eventName: string, referenceImageUrl?: string | null, customPrompt?: string | null): Promise<{ urls: string[]; error?: string }> {
   return generateImages({
-    prompt: customPrompt || `Luxury promotional event flyer. Las Vegas neon nightlife. White party bus arriving at venue. ${eventName}. Bold graphic design. Vibrant gold and purple accents. Dark background.`,
+    prompt: customPrompt || `I want to create an event flyer for my party bus company American Royalty. The event is ${eventName}. Phone number is (702) 666-4037 and website is americanroyaltylasvegas.com`,
     eventName,
     referenceImageUrl,
-    negativePrompt: 'garage, indoor, plain background, realistic photo, no design elements',
+    negativePrompt: 'wrong phone number, wrong website, wrong text, misspelled words',
   })
 }
 
