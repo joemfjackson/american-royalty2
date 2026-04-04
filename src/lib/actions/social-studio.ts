@@ -263,8 +263,11 @@ export async function generateImages(params: GenerateImageParams): Promise<Gener
     if (params.referenceImageUrl) {
       const imgRes = await fetch(params.referenceImageUrl)
       if (!imgRes.ok) return { urls: [], error: 'Failed to download reference photo' }
-      const imgBlob = await imgRes.blob()
+      const imgArrayBuffer = await imgRes.arrayBuffer()
+      const imgBuffer = Buffer.from(imgArrayBuffer)
+      const imgBlob = new Blob([imgBuffer], { type: 'image/jpeg' })
       formData.append('style_reference_images', imgBlob, 'reference.jpg')
+      formData.append('style_reference_weight', '0.9')
     }
 
     const res = await fetch('https://api.ideogram.ai/v1/ideogram-v3/generate', {
