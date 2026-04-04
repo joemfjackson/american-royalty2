@@ -247,7 +247,7 @@ export async function generateImages(params: GenerateImageParams): Promise<Gener
     formData.append('num_images', String(params.numImages || 4))
     formData.append('aspect_ratio', params.aspectRatio || '1x1')
     formData.append('style_type', params.styleType || 'DESIGN')
-    formData.append('magic_prompt', params.magicPrompt !== false ? 'ON' : 'OFF')
+    formData.append('magic_prompt', params.magicPrompt ? 'ON' : 'OFF')
     formData.append('rendering_speed', params.renderingSpeed || 'DEFAULT')
 
     if (params.negativePrompt) {
@@ -267,7 +267,7 @@ export async function generateImages(params: GenerateImageParams): Promise<Gener
       const imgBuffer = Buffer.from(imgArrayBuffer)
       const imgBlob = new Blob([imgBuffer], { type: 'image/jpeg' })
       formData.append('image', imgBlob, 'reference.jpg')
-      formData.append('image_weight', '25')
+      formData.append('image_weight', '30')
     }
 
     const res = await fetch('https://api.ideogram.ai/v1/ideogram-v3/generate', {

@@ -126,7 +126,7 @@ export default function SocialStudioPage() {
   const [genPrompt, setGenPrompt] = useState('')
   const [negPrompt, setNegPrompt] = useState('wrong phone number, wrong website, wrong text, misspelled words')
   const [showNegPrompt, setShowNegPrompt] = useState(false)
-  const [magicPrompt, setMagicPrompt] = useState(true)
+  const [magicPrompt, setMagicPrompt] = useState(false)
   const [styleType, setStyleType] = useState('DESIGN')
   const [stylePreset, setStylePreset] = useState<string | null>(null)
   const [showPresets, setShowPresets] = useState(false)
@@ -379,7 +379,7 @@ export default function SocialStudioPage() {
                   {/* Prompt */}
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-1">Prompt</p>
-                    <textarea rows={3} value={genPrompt} onChange={e => setGenPrompt(e.target.value)} placeholder="Describe the image you want to generate..."
+                    <textarea rows={3} value={genPrompt} onChange={e => setGenPrompt(e.target.value)} placeholder="I want to create an event flyer for my party bus company American Royalty. The event is..."
                       className="w-full rounded-lg border border-dark-border bg-black/50 px-3 py-2 text-xs sm:text-sm text-white placeholder:text-gray-600 focus:border-gold/50 focus:outline-none resize-none" />
                   </div>
 
@@ -395,7 +395,7 @@ export default function SocialStudioPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-gray-400">Magic Prompt</p>
-                      <p className="text-[10px] text-gray-600">{magicPrompt ? 'AI will enhance your prompt' : 'Using exact prompt'}</p>
+                      <p className="text-[10px] text-gray-600">{magicPrompt ? 'AI will enhance your prompt' : 'Using your exact prompt (recommended)'}</p>
                     </div>
                     <button onClick={() => setMagicPrompt(!magicPrompt)} className={`relative h-6 w-11 rounded-full transition-colors ${magicPrompt ? 'bg-gold' : 'bg-gray-700'}`}>
                       <div className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${magicPrompt ? 'translate-x-5' : 'translate-x-0.5'}`} />
