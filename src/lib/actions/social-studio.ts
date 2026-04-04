@@ -267,7 +267,7 @@ export async function generateImages(params: GenerateImageParams): Promise<Gener
       const imgBuffer = Buffer.from(imgArrayBuffer)
       const imgBlob = new Blob([imgBuffer], { type: 'image/jpeg' })
       formData.append('image', imgBlob, 'reference.jpg')
-      formData.append('image_weight', '50')
+      formData.append('image_weight', '25')
     }
 
     const res = await fetch('https://api.ideogram.ai/v1/ideogram-v3/generate', {
