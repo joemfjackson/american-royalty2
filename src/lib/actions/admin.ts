@@ -347,6 +347,7 @@ export async function updateQuote(
     duration_hours?: number | null
     guest_count?: number | null
     preferred_vehicle_id?: string | null
+    deposit_percent?: number
   }
 ) {
   await requireAdmin()
@@ -378,6 +379,9 @@ export async function updateQuote(
   }
   if (data.preferred_vehicle_id !== undefined) {
     updateData.preferredVehicleId = data.preferred_vehicle_id
+  }
+  if (data.deposit_percent !== undefined) {
+    updateData.depositPercent = data.deposit_percent
   }
 
   const updated = await prisma.quote.update({
@@ -432,7 +436,7 @@ export async function convertQuoteToBooking(quoteId: string): Promise<Booking> {
   return mapBooking(booking)
 }
 
-export async function markDepositPaidOffPlatform(quoteId: string, paymentMethod: string): Promise<Booking> {
+export async function markDepositPaidOffPlatform(quoteId: string, paymentMethod: string, sendEmail: boolean = true): Promise<Booking> {
   await requireAdmin()
 
   const quote = await prisma.quote.findUnique({ where: { id: quoteId } })
@@ -477,7 +481,9 @@ export async function markDepositPaidOffPlatform(quoteId: string, paymentMethod:
     return b
   })
 
-  await sendBookingConfirmationEmail(quote, depositAmount)
+  if (sendEmail) {
+    await sendBookingConfirmationEmail(quote, depositAmount)
+  }
 
   revalidatePath('/admin/quotes')
   revalidatePath('/admin/bookings')

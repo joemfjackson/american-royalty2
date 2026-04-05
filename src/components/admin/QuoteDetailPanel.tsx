@@ -94,6 +94,12 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, onDelete
   const [depositProcessing, setDepositProcessing] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [showQuickBook, setShowQuickBook] = useState(false)
+  const [quickBookTotal, setQuickBookTotal] = useState('')
+  const [quickBookDeposit, setQuickBookDeposit] = useState(25)
+  const [quickBookMethod, setQuickBookMethod] = useState('Zelle')
+  const [quickBookSendEmail, setQuickBookSendEmail] = useState(true)
+  const [quickBookProcessing, setQuickBookProcessing] = useState(false)
   const [editEventType, setEditEventType] = useState(quote?.event_type || '')
   const [editEventDate, setEditEventDate] = useState(quote?.event_date || '')
   const [editPickupTime, setEditPickupTime] = useState(quote?.pickup_time || '')
@@ -308,6 +314,30 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, onDelete
       setActionMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to process' })
     } finally {
       setDepositProcessing(false)
+    }
+  }
+
+  const handleQuickBook = async () => {
+    const total = parseFloat(quickBookTotal)
+    if (!total || total <= 0) return
+    setQuickBookProcessing(true)
+    setActionMessage(null)
+    try {
+      // Set the total and deposit % on the quote first
+      await updateQuote(quote.id, {
+        quoted_amount: total,
+        deposit_percent: quickBookDeposit,
+      })
+      // Create booking via off-platform deposit
+      await markDepositPaidOffPlatform(quote.id, quickBookMethod, quickBookSendEmail)
+      onUpdateQuote({ ...quote, status: 'booked', quoted_amount: total })
+      setShowQuickBook(false)
+      setActionMessage({ type: 'success', text: `Booked at ${formatCurrency(total)} via ${quickBookMethod}${quickBookSendEmail ? ' — confirmation sent' : ''}` })
+    } catch (err) {
+      console.error('Quick book failed:', err)
+      setActionMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to book' })
+    } finally {
+      setQuickBookProcessing(false)
     }
   }
 
@@ -654,6 +684,102 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, onDelete
                 />
               )}
 
+              {/* Quick Book form */}
+              {showQuickBook && (
+                <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 space-y-3">
+                  <h3 className="text-sm font-semibold text-emerald-400 flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4" />
+                    Quick Book
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-gray-400 block mb-1">Total Price</label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                        <input
+                          type="number"
+                          value={quickBookTotal}
+                          onChange={(e) => setQuickBookTotal(e.target.value)}
+                          placeholder="0.00"
+                          className="w-full rounded-lg border border-dark-border bg-black py-2 pl-9 pr-3 text-sm text-white placeholder:text-gray-500 focus:border-gold/50 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-400 block mb-1">Deposit %</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min={10}
+                          max={100}
+                          value={quickBookDeposit}
+                          onChange={(e) => setQuickBookDeposit(Math.min(100, Math.max(10, parseInt(e.target.value) || 25)))}
+                          className="w-20 rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none"
+                        />
+                        <span className="text-sm text-gray-400">%</span>
+                      </div>
+                    </div>
+                  </div>
+                  {quickBookTotal && parseFloat(quickBookTotal) > 0 && (
+                    <div className="rounded-lg border border-dark-border bg-black/50 p-2.5 space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">Total</span>
+                        <span className="text-white">{formatCurrency(parseFloat(quickBookTotal))}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">Deposit ({quickBookDeposit}%)</span>
+                        <span className="font-bold text-gold">{formatCurrency(Math.round(parseFloat(quickBookTotal) * quickBookDeposit / 100))}</span>
+                      </div>
+                      {quickBookDeposit < 100 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Balance due</span>
+                          <span className="text-gray-300">{formatCurrency(parseFloat(quickBookTotal) - Math.round(parseFloat(quickBookTotal) * quickBookDeposit / 100))}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div>
+                    <label className="text-xs text-gray-400 block mb-1">Payment Method</label>
+                    <select
+                      value={quickBookMethod}
+                      onChange={(e) => setQuickBookMethod(e.target.value)}
+                      className="w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none"
+                    >
+                      <option value="Zelle">Zelle</option>
+                      <option value="Venmo">Venmo</option>
+                      <option value="CashApp">CashApp</option>
+                      <option value="Cash">Cash</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={quickBookSendEmail}
+                      onChange={(e) => setQuickBookSendEmail(e.target.checked)}
+                      className="rounded border-dark-border bg-black text-gold focus:ring-gold/20"
+                    />
+                    <span className="text-xs text-gray-400">Send booking confirmation email to customer</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleQuickBook}
+                      disabled={quickBookProcessing || !quickBookTotal || parseFloat(quickBookTotal) <= 0}
+                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-500 disabled:opacity-50"
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                      {quickBookProcessing ? 'Booking...' : 'Book & Confirm'}
+                    </button>
+                    <button
+                      onClick={() => setShowQuickBook(false)}
+                      className="rounded-lg border border-dark-border px-4 py-2.5 text-sm font-medium text-gray-400 transition-all hover:bg-white/5 hover:text-white"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Send Invoice form (inline) */}
               {showInvoiceForm && amount > 0 && (
                 <div className="rounded-lg border border-gold/20 bg-gold/5 p-3 space-y-3">
@@ -735,13 +861,24 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, onDelete
                 )}
 
                 {(quote.status === 'new' || quote.status === 'contacted' || quote.status === 'quoted') && !showQuoteBuilder && (
-                  <button
-                    onClick={() => setShowQuoteBuilder(true)}
-                    className="inline-flex items-center gap-2 rounded-lg border border-royal/40 bg-royal/10 px-4 py-2.5 text-sm font-semibold text-royal-light transition-all hover:bg-royal/20"
-                  >
-                    <FileText className="h-4 w-4" />
-                    Build Quote
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setShowQuoteBuilder(true)}
+                      className="inline-flex items-center gap-2 rounded-lg border border-royal/40 bg-royal/10 px-4 py-2.5 text-sm font-semibold text-royal-light transition-all hover:bg-royal/20"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Build Quote
+                    </button>
+                    {!showQuickBook && (
+                      <button
+                        onClick={() => { setShowQuickBook(true); setQuickBookTotal(quote.quoted_amount?.toString() || '') }}
+                        className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-500"
+                      >
+                        <CheckCircle className="h-4 w-4" />
+                        Quick Book
+                      </button>
+                    )}
+                  </>
                 )}
 
                 {(quote.status === 'quoted') && amount > 0 && !showInvoiceForm && (
