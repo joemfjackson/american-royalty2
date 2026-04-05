@@ -167,7 +167,7 @@ export default function SocialStudioPage() {
       const post = await createSocialPost({
         title: eventName, caption: caption + (hashtags ? '\n\n' + hashtags : ''),
         platform: selectedPlatforms.join(', '), image_url: imageUrl,
-        scheduled_at: status === 'SCHEDULED' && scheduledAt ? scheduledAt : null, status,
+        scheduled_at: status === 'SCHEDULED' && scheduledAt ? new Date(scheduledAt).toISOString() : null, status,
       })
       setPosts(prev => [post, ...prev])
       setComposeMessage({ type: 'success', text: status === 'SCHEDULED' ? 'Post scheduled!' : 'Draft saved!' })
@@ -494,7 +494,7 @@ export default function SocialStudioPage() {
                   {viewingPost.scheduled_at && (
                     <div className="flex items-center gap-2 text-sm text-gray-400">
                       <Clock className="h-4 w-4" />
-                      <span>Scheduled for {new Date(viewingPost.scheduled_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>
+                      <span>Scheduled for {new Date(viewingPost.scheduled_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Los_Angeles' })}</span>
                     </div>
                   )}
 
@@ -528,7 +528,7 @@ export default function SocialStudioPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start gap-2"><p className="text-sm font-medium text-white line-clamp-2 leading-snug">{post.title}</p><Badge variant={statusV[post.status] || 'outline'}>{post.status}</Badge></div>
                       <p className="mt-0.5 text-xs text-gray-500">{post.platform}</p>
-                      {post.scheduled_at && <p className="mt-0.5 text-xs text-gray-500 flex items-center gap-1"><Clock className="h-3 w-3" />{new Date(post.scheduled_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>}
+                      {post.scheduled_at && <p className="mt-0.5 text-xs text-gray-500 flex items-center gap-1"><Clock className="h-3 w-3" />{new Date(post.scheduled_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Los_Angeles' })}</p>}
                       <p className="mt-1 text-xs text-gray-400 line-clamp-1">{post.caption}</p>
                     </div>
                   </div>
