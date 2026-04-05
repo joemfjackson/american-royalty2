@@ -86,6 +86,7 @@ export default function SocialStudioPage() {
   // Queue
   const [posts, setPosts] = useState<SocialPost[]>([])
   const [loadingPosts, setLoadingPosts] = useState(true)
+  const [viewingPost, setViewingPost] = useState<SocialPost | null>(null)
 
   // Buffer settings
   const [showSettings, setShowSettings] = useState(false)
@@ -455,26 +456,86 @@ export default function SocialStudioPage() {
       {/* ═══ QUEUE ═══ */}
       {tab === 'queue' && (
         <div className="space-y-3">
-          {loadingPosts ? <div className="flex justify-center py-12"><div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" /></div>
-          : posts.length === 0 ? <div className="rounded-xl border border-dark-border bg-dark-card p-12 text-center"><Calendar className="mx-auto h-10 w-10 text-gray-600" /><p className="mt-3 text-sm text-gray-500">No posts yet. Create one in the Compose tab.</p></div>
-          : posts.map(post => (
-            <div key={post.id} className="rounded-xl border border-dark-border bg-dark-card p-4">
-              <div className="flex items-start gap-3">
-                {post.image_url ? <img src={post.image_url} alt="" className="h-14 w-14 rounded-lg object-cover shrink-0" />
-                : <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-white/5 shrink-0"><FileText className="h-5 w-5 text-gray-600" /></div>}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start gap-2"><p className="text-sm font-medium text-white line-clamp-2 leading-snug">{post.title}</p><Badge variant={statusV[post.status] || 'outline'}>{post.status}</Badge></div>
-                  <p className="mt-0.5 text-xs text-gray-500">{post.platform}</p>
-                  {post.scheduled_at && <p className="mt-0.5 text-xs text-gray-500 flex items-center gap-1"><Clock className="h-3 w-3" />{new Date(post.scheduled_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>}
-                  <p className="mt-1 text-xs text-gray-400 line-clamp-1">{post.caption}</p>
+          {/* Post detail view */}
+          {viewingPost ? (
+            <div className="space-y-4">
+              <button onClick={() => setViewingPost(null)} className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gold transition-colors">
+                <ArrowLeft className="h-3 w-3" /> Back to Queue
+              </button>
+
+              <div className="rounded-xl border border-dark-border bg-dark-card overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-dark-border px-4 py-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-white">{viewingPost.title}</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">{viewingPost.platform}</p>
+                  </div>
+                  <Badge variant={statusV[viewingPost.status] || 'outline'}>{viewingPost.status}</Badge>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  {post.status !== 'POSTED' && <button onClick={() => handleMarkPosted(post.id)} className="rounded-lg p-2 text-gray-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors" title="Mark as Posted"><CheckCircle className="h-4 w-4" /></button>}
-                  <button onClick={() => handleDeletePost(post.id)} className="rounded-lg p-2 text-gray-500 hover:bg-red-500/10 hover:text-red-400 transition-colors" title="Delete"><Trash2 className="h-4 w-4" /></button>
+
+                {/* Image */}
+                {viewingPost.image_url && (
+                  <img src={viewingPost.image_url} alt={viewingPost.title} className="w-full object-cover" />
+                )}
+
+                {/* Caption */}
+                <div className="p-4 space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Caption</p>
+                      <button onClick={() => { navigator.clipboard.writeText(viewingPost.caption); setCopiedCaption(true); setTimeout(() => setCopiedCaption(false), 2000) }}
+                        className="text-xs text-gray-500 hover:text-gold transition-colors">
+                        {copiedCaption ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                      </button>
+                    </div>
+                    <p className="text-sm text-gray-300 whitespace-pre-wrap">{viewingPost.caption}</p>
+                  </div>
+
+                  {viewingPost.scheduled_at && (
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                      <Clock className="h-4 w-4" />
+                      <span>Scheduled for {new Date(viewingPost.scheduled_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>
+                    </div>
+                  )}
+
+                  <p className="text-[10px] text-gray-600">Created {timeAgo(viewingPost.created_at)}</p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 border-t border-dark-border p-4">
+                  {viewingPost.status !== 'POSTED' && (
+                    <button onClick={() => { handleMarkPosted(viewingPost.id); setViewingPost({ ...viewingPost, status: 'POSTED' }) }}
+                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-500">
+                      <CheckCircle className="h-4 w-4" /> Mark as Posted
+                    </button>
+                  )}
+                  <button onClick={() => { handleDeletePost(viewingPost.id); setViewingPost(null) }}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-400 transition-all hover:bg-red-500/20">
+                    <Trash2 className="h-4 w-4" /> Delete
+                  </button>
                 </div>
               </div>
             </div>
-          ))}
+          ) : (
+            <>
+              {loadingPosts ? <div className="flex justify-center py-12"><div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" /></div>
+              : posts.length === 0 ? <div className="rounded-xl border border-dark-border bg-dark-card p-12 text-center"><Calendar className="mx-auto h-10 w-10 text-gray-600" /><p className="mt-3 text-sm text-gray-500">No posts yet. Create one in the Compose tab.</p></div>
+              : posts.map(post => (
+                <button key={post.id} onClick={() => setViewingPost(post)} className="w-full text-left rounded-xl border border-dark-border bg-dark-card p-4 transition-all hover:border-gold/20 hover:bg-dark-card/80">
+                  <div className="flex items-start gap-3">
+                    {post.image_url ? <img src={post.image_url} alt="" className="h-14 w-14 rounded-lg object-cover shrink-0" />
+                    : <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-white/5 shrink-0"><FileText className="h-5 w-5 text-gray-600" /></div>}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-2"><p className="text-sm font-medium text-white line-clamp-2 leading-snug">{post.title}</p><Badge variant={statusV[post.status] || 'outline'}>{post.status}</Badge></div>
+                      <p className="mt-0.5 text-xs text-gray-500">{post.platform}</p>
+                      {post.scheduled_at && <p className="mt-0.5 text-xs text-gray-500 flex items-center gap-1"><Clock className="h-3 w-3" />{new Date(post.scheduled_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>}
+                      <p className="mt-1 text-xs text-gray-400 line-clamp-1">{post.caption}</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </>
+          )}
         </div>
       )}
     </div>
