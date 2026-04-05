@@ -56,6 +56,26 @@ export interface SocialContentItem {
 
 // ─── AI Research ────────────────────────────────────────
 
+const EVENT_JSON_FORMAT = `[{ "id": "slug", "name": "Event", "venue": "Venue", "date_start": "YYYY-MM-DD", "date_end": null, "category": "CONCERTS|SPORTS|EDM_FESTIVALS|CONVENTIONS|COMBAT_SPORTS|MOTORSPORTS|FREMONT_DTLV|HOLIDAYS", "estimated_attendance": 65000, "demand_level": "RED|YELLOW|GREEN", "tourism_impact": "Brief note", "posting_urgency": "POST NOW|THIS WEEK|NEXT WEEK|PLAN AHEAD", "days_until": 5, "ideogram_prompt_suggestion": "Brief flyer prompt" }]`
+
+async function searchVenues(client: Anthropic, prompt: string): Promise<ResearchEvent[]> {
+  try {
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 3 }],
+      messages: [{ role: 'user', content: prompt }],
+    })
+    let text = ''
+    for (const block of response.content) { if (block.type === 'text') text += block.text }
+    const match = text.match(/\[[\s\S]*\]/)
+    return match ? JSON.parse(match[0]) : []
+  } catch (err) {
+    console.error('Search batch error:', err)
+    return []
+  }
+}
+
 export async function researchEvents(): Promise<{ data?: ResearchResult; error?: string }> {
   await requireAdmin()
   const apiKey = process.env.ANTHROPIC_API_KEY
@@ -63,71 +83,68 @@ export async function researchEvents(): Promise<{ data?: ResearchResult; error?:
 
   try {
     const client = new Anthropic({ apiKey })
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
-      tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 10 }],
-      messages: [{
-        role: 'user',
-        content: `You are a social media strategist for American Royalty Las Vegas, a luxury party bus and limo company. Research the following for the next 90 days:
+    const today = new Date().toISOString().split('T')[0]
 
-VENUES TO SEARCH:
-1. Allegiant Stadium Las Vegas upcoming events
-2. Sphere Las Vegas upcoming shows
-3. T-Mobile Arena Las Vegas upcoming events
-4. MGM Grand Garden Arena upcoming events
-5. Las Vegas Convention Center upcoming conventions
-6. Major casino entertainment (Colosseum at Caesars, Dolby Live, Michelob Ultra Arena)
-7. Fremont Street Experience events
-8. Las Vegas Motor Speedway events
-9. Las Vegas tourism forecasts and visitor projections
+    // Run 3 searches in parallel
+    const [stadiums, entertainment, conventions] = await Promise.all([
+      // Call 1: Stadiums & Arenas
+      searchVenues(client, `Search for upcoming events at these Las Vegas venues in the next 90 days from ${today}:
+1. Allegiant Stadium Las Vegas
+2. T-Mobile Arena Las Vegas
+3. MGM Grand Garden Arena Las Vegas
+Return a JSON array of events. Format: ${EVENT_JSON_FORMAT}
+Return 5-10 events. Return ONLY the JSON array.`),
 
-Return a JSON object with this structure:
-{
-  "researched_at": "${new Date().toISOString()}",
-  "month_summary": {
-    "month_year": { "rating": "HIGH|PEAK|MODERATE|LOW", "note": "brief explanation" }
-  },
-  "tourism_insights": [
-    { "period": "Date range", "note": "Brief insight", "impact": "PEAK|HIGH|MODERATE" }
-  ],
-  "events": [
-    {
-      "id": "unique_slug",
-      "name": "Event name",
-      "venue": "Venue",
-      "date_start": "YYYY-MM-DD",
-      "date_end": "YYYY-MM-DD or null",
-      "category": "CONCERTS|SPORTS|EDM_FESTIVALS|CONVENTIONS|COMBAT_SPORTS|MOTORSPORTS|FREMONT_DTLV|HOLIDAYS",
-      "estimated_attendance": 65000,
-      "demand_level": "RED|YELLOW|GREEN",
-      "tourism_impact": "Brief note",
-      "posting_urgency": "POST NOW|THIS WEEK|NEXT WEEK|PLAN AHEAD",
-      "days_until": 5,
-      "ideogram_prompt_suggestion": "Brief prompt for creating a flyer"
-    }
-  ],
-  "industry_post_ideas": [
-    { "id": "unique_id", "title": "Post idea", "angle": "Why this works", "best_platform": "INSTAGRAM|TIKTOK|FACEBOOK", "category": "EVERGREEN", "hook": "Opening line" }
-  ],
-  "trending_topics": [
-    { "topic": "Topic", "relevance": "Why relevant", "suggested_angle": "How to use" }
-  ]
-}
+      // Call 2: Sphere & Entertainment
+      searchVenues(client, `Search for upcoming events at these Las Vegas venues in the next 90 days from ${today}:
+1. Sphere Las Vegas shows and residencies
+2. Major casino entertainment (Colosseum at Caesars Palace, Dolby Live at Park MGM, Michelob Ultra Arena)
+3. Las Vegas Motor Speedway
+Return a JSON array of events. Format: ${EVENT_JSON_FORMAT}
+Return 5-10 events. Return ONLY the JSON array.`),
 
-Include at least 15-25 events, 5 post ideas, and 3 trending topics. Be thorough — search each venue specifically. Return ONLY the JSON, no other text.`
-      }],
-    })
+      // Call 3: Conventions & Downtown
+      searchVenues(client, `Search for upcoming events in Las Vegas in the next 90 days from ${today}:
+1. Las Vegas Convention Center upcoming conventions and trade shows
+2. Fremont Street Experience and downtown Las Vegas events
+3. Any major Las Vegas festivals, holidays, or tourism events
+Return a JSON array of events. Format: ${EVENT_JSON_FORMAT}
+Return 5-10 events. Return ONLY the JSON array.`),
+    ])
 
-    let text = ''
-    for (const block of response.content) {
-      if (block.type === 'text') text += block.text
+    const allEvents = [...stadiums, ...entertainment, ...conventions]
+
+    // Build month summaries from events
+    const monthSummary: Record<string, { rating: string; note: string }> = {}
+    const months = new Set(allEvents.map(e => {
+      const d = new Date(e.date_start + 'T00:00:00')
+      return `${d.toLocaleString('en-US', { month: 'long' }).toLowerCase()}_${d.getFullYear()}`
+    }))
+    for (const m of months) {
+      const count = allEvents.filter(e => {
+        const d = new Date(e.date_start + 'T00:00:00')
+        return `${d.toLocaleString('en-US', { month: 'long' }).toLowerCase()}_${d.getFullYear()}` === m
+      }).length
+      const hasRed = allEvents.some(e => {
+        const d = new Date(e.date_start + 'T00:00:00')
+        return `${d.toLocaleString('en-US', { month: 'long' }).toLowerCase()}_${d.getFullYear()}` === m && e.demand_level === 'RED'
+      })
+      monthSummary[m] = {
+        rating: hasRed ? 'PEAK' : count > 5 ? 'HIGH' : count > 2 ? 'MODERATE' : 'LOW',
+        note: `${count} events found`,
+      }
     }
 
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) return { error: 'Failed to parse research data' }
+    const result: ResearchResult = {
+      researched_at: new Date().toISOString(),
+      month_summary: monthSummary,
+      tourism_insights: [],
+      events: allEvents,
+      industry_post_ideas: [],
+      trending_topics: [],
+    }
 
-    return { data: JSON.parse(jsonMatch[0]) as ResearchResult }
+    return { data: result }
   } catch (err) {
     console.error('Research error:', err)
     return { error: 'Research failed — please try again' }
