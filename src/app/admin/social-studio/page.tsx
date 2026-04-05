@@ -21,6 +21,7 @@ import {
   X,
   ExternalLink,
   Image as ImageIcon,
+  Settings,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import {
@@ -31,6 +32,7 @@ import {
   createSocialPost,
   updateSocialPost,
   deleteSocialPost,
+  getBufferProfiles,
 } from '@/lib/actions/social-studio'
 import type { ContentIdea, SocialPost } from '@/lib/actions/social-studio'
 
@@ -84,6 +86,12 @@ export default function SocialStudioPage() {
   // Queue
   const [posts, setPosts] = useState<SocialPost[]>([])
   const [loadingPosts, setLoadingPosts] = useState(true)
+
+  // Buffer settings
+  const [showSettings, setShowSettings] = useState(false)
+  const [bufferProfiles, setBufferProfiles] = useState<{ id: string; service: string; formatted_username: string }[]>([])
+  const [loadingProfiles, setLoadingProfiles] = useState(false)
+  const [profilesError, setProfilesError] = useState<string | null>(null)
 
   useEffect(() => {
     const stored = getStoredIdeas()
@@ -169,6 +177,16 @@ export default function SocialStudioPage() {
 
   // ─── Queue ────────────────────────────────────────────
 
+  const handleFetchProfiles = async () => {
+    setLoadingProfiles(true); setProfilesError(null)
+    try {
+      const r = await getBufferProfiles()
+      if (r.error) setProfilesError(r.error)
+      else setBufferProfiles(r.profiles)
+    } catch (e) { setProfilesError(e instanceof Error ? e.message : 'Failed') }
+    finally { setLoadingProfiles(false) }
+  }
+
   const handleMarkPosted = async (id: string) => { try { const u = await updateSocialPost(id, { status: 'POSTED' }); setPosts(prev => prev.map(p => p.id === id ? u : p)) } catch {} }
   const handleDeletePost = async (id: string) => { try { await deleteSocialPost(id); setPosts(prev => prev.filter(p => p.id !== id)) } catch {} }
 
@@ -181,10 +199,70 @@ export default function SocialStudioPage() {
     <div className="space-y-6">
       <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleUpload} />
 
-      <div>
-        <h1 className="text-2xl font-bold text-white">Social Studio</h1>
-        <p className="mt-1 text-sm text-gray-400">Research, compose, and schedule social media posts</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Social Studio</h1>
+          <p className="mt-1 text-sm text-gray-400">Research, compose, and schedule social media posts</p>
+        </div>
+        <button onClick={() => setShowSettings(!showSettings)}
+          className={`rounded-lg p-2 transition-colors ${showSettings ? 'bg-gold/15 text-gold' : 'text-gray-500 hover:bg-white/5 hover:text-white'}`}>
+          <Settings className="h-5 w-5" />
+        </button>
       </div>
+
+      {/* Buffer Settings Panel */}
+      {showSettings && (
+        <div className="rounded-xl border border-dark-border bg-dark-card p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-white">Buffer Integration</h3>
+            <button onClick={() => setShowSettings(false)} className="text-gray-500 hover:text-white"><X className="h-4 w-4" /></button>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs text-gray-400 mb-2">Connect Buffer to auto-post scheduled content to your social accounts.</p>
+              <div className="flex gap-2">
+                <a href="https://buffer.com/developers/apps" target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg border border-dark-border px-3 py-2 text-xs font-medium text-gray-400 transition-all hover:border-gold/30 hover:text-gold">
+                  <ExternalLink className="h-3.5 w-3.5" /> Get Buffer Access Token
+                </a>
+                <button onClick={handleFetchProfiles} disabled={loadingProfiles}
+                  className="inline-flex items-center gap-2 rounded-lg bg-gold px-3 py-2 text-xs font-semibold text-black transition-all hover:bg-gold-light disabled:opacity-50">
+                  {loadingProfiles ? 'Loading...' : 'Fetch Profile IDs'}
+                </button>
+              </div>
+            </div>
+
+            {profilesError && (
+              <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-400">{profilesError}</div>
+            )}
+
+            {bufferProfiles.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Connected Profiles</p>
+                {bufferProfiles.map(p => (
+                  <div key={p.id} className="flex items-center justify-between rounded-lg border border-dark-border bg-black/50 px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-white capitalize">{p.service}</span>
+                      <span className="text-xs text-gray-500">@{p.formatted_username}</span>
+                    </div>
+                    <code className="text-[10px] text-gold/70 font-mono">{p.id}</code>
+                  </div>
+                ))}
+                <p className="text-[10px] text-gray-600">Add these profile IDs as <code className="text-gold/50">BUFFER_PROFILE_IDS</code> in Vercel env vars (comma-separated).</p>
+              </div>
+            )}
+
+            <div className="border-t border-dark-border pt-3">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Required Env Vars</p>
+              <div className="space-y-1 text-xs text-gray-400">
+                <p><code className="text-gold/60">BUFFER_ACCESS_TOKEN</code> — your Buffer access token</p>
+                <p><code className="text-gold/60">BUFFER_PROFILE_IDS</code> — comma-separated profile IDs</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 rounded-lg border border-dark-border bg-dark-card p-1">
