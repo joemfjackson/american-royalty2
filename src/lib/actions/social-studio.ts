@@ -327,3 +327,92 @@ export async function deleteSocialPhoto(id: string): Promise<{ error?: string }>
     return { error: 'Failed to delete photo' }
   }
 }
+
+// ─── Buffer Auto-Publishing ─────────────────────────────
+
+export async function getBufferProfiles(): Promise<{ profiles: { id: string; service: string; formatted_username: string }[]; error?: string }> {
+  await requireAdmin()
+
+  const token = process.env.BUFFER_ACCESS_TOKEN
+  if (!token) return { profiles: [], error: 'BUFFER_ACCESS_TOKEN not configured' }
+
+  try {
+    const res = await fetch(`https://api.bufferapp.com/1/profiles.json?access_token=${token}`)
+    if (!res.ok) return { profiles: [], error: 'Failed to fetch Buffer profiles' }
+    const data = await res.json()
+    return {
+      profiles: data.map((p: { id: string; service: string; formatted_username: string }) => ({
+        id: p.id,
+        service: p.service,
+        formatted_username: p.formatted_username,
+      })),
+    }
+  } catch (err) {
+    console.error('Buffer profiles error:', err)
+    return { profiles: [], error: 'Failed to fetch Buffer profiles' }
+  }
+}
+
+export async function publishScheduledPosts(): Promise<{ published: number; errors: number }> {
+  const token = process.env.BUFFER_ACCESS_TOKEN
+  if (!token) return { published: 0, errors: 0 }
+
+  const profileIds = process.env.BUFFER_PROFILE_IDS
+  if (!profileIds) return { published: 0, errors: 0 }
+
+  const profiles = profileIds.split(',').map(id => id.trim())
+
+  // Find all scheduled posts that are due
+  const duePosts = await prisma.socialPost.findMany({
+    where: {
+      status: 'SCHEDULED',
+      scheduledAt: { lte: new Date() },
+    },
+  })
+
+  let published = 0
+  let errors = 0
+
+  for (const post of duePosts) {
+    try {
+      const params = new URLSearchParams()
+      params.append('access_token', token)
+      params.append('text', post.caption)
+
+      if (post.imageUrl) {
+        params.append('media[photo]', post.imageUrl)
+      }
+
+      if (post.scheduledAt) {
+        params.append('scheduled_at', Math.floor(post.scheduledAt.getTime() / 1000).toString())
+      }
+
+      for (const pid of profiles) {
+        params.append('profile_ids[]', pid)
+      }
+
+      const res = await fetch('https://api.bufferapp.com/1/updates/create.json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString(),
+      })
+
+      if (res.ok) {
+        await prisma.socialPost.update({
+          where: { id: post.id },
+          data: { status: 'POSTED' },
+        })
+        published++
+      } else {
+        const err = await res.text()
+        console.error(`Buffer publish failed for post ${post.id}:`, err)
+        errors++
+      }
+    } catch (err) {
+      console.error(`Buffer publish error for post ${post.id}:`, err)
+      errors++
+    }
+  }
+
+  return { published, errors }
+}
