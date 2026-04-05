@@ -352,3 +352,20 @@ model SocialGeneration {
 
   @@map("social_generations")
 }
+
+model SocialContent {
+  id        String   @id @default(cuid())
+  type      String   @default("flyer")
+  eventName String?
+  venue     String?
+  eventDate String?
+  imageUrl  String?
+  context   String?  @db.Text
+  captions  String?  @db.Text
+  hashtags  String?  @db.Text
+  platform  String?
+  status    String   @default("DRAFT")
+  createdAt DateTime @default(now())
+
+  @@map("social_content")
+}

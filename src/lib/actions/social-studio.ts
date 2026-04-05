@@ -9,163 +9,260 @@ import { put, del } from '@vercel/blob'
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions)
-  if (!session || session.user.role !== 'ADMIN') {
-    throw new Error('Unauthorized')
-  }
+  if (!session || session.user.role !== 'ADMIN') throw new Error('Unauthorized')
   return session
 }
 
 // ─── Types ──────────────────────────────────────────────
 
-export interface ContentIdea {
-  priority: 'High' | 'Medium' | 'Evergreen'
-  event: string
-  timing: string
-  platform: string
-  hook: string
-  caption: string
-  hashtags: string
+export interface ResearchEvent {
+  id: string
+  name: string
+  venue: string
+  date_start: string
+  date_end: string | null
+  category: string
+  estimated_attendance: number
+  demand_level: 'RED' | 'YELLOW' | 'GREEN'
+  tourism_impact: string
+  posting_urgency: string
+  days_until: number
+  ideogram_prompt_suggestion: string
 }
 
-export interface SocialPost {
+export interface ResearchResult {
+  researched_at: string
+  month_summary: Record<string, { rating: string; note: string }>
+  tourism_insights: { period: string; note: string; impact: string }[]
+  events: ResearchEvent[]
+  industry_post_ideas: { id: string; title: string; angle: string; best_platform: string; category: string; hook: string }[]
+  trending_topics: { topic: string; relevance: string; suggested_angle: string }[]
+}
+
+export interface SocialContentItem {
   id: string
-  title: string
-  caption: string
-  platform: string
+  type: string
+  event_name: string | null
+  venue: string | null
+  event_date: string | null
   image_url: string | null
-  scheduled_at: string | null
-  status: 'DRAFT' | 'SCHEDULED' | 'POSTED'
-  created_at: string
-}
-
-export interface SocialPhoto {
-  id: string
-  url: string
-  filename: string
-  tags: string | null
-  created_at: string
-}
-
-function mapPost(p: {
-  id: string
-  title: string
-  caption: string
-  platform: string
-  imageUrl: string | null
-  scheduledAt: Date | null
+  context: string | null
+  captions: string | null
+  hashtags: string | null
+  platform: string | null
   status: string
-  createdAt: Date
-}): SocialPost {
-  return {
-    id: p.id,
-    title: p.title,
-    caption: p.caption,
-    platform: p.platform,
-    image_url: p.imageUrl,
-    scheduled_at: p.scheduledAt?.toISOString() || null,
-    status: p.status as SocialPost['status'],
-    created_at: p.createdAt.toISOString(),
-  }
+  created_at: string
 }
 
-// ─── Content Ideas (Claude + Web Search) ────────────────
+// ─── AI Research ────────────────────────────────────────
 
-export async function getContentIdeas(): Promise<{ ideas: ContentIdea[]; error?: string }> {
+export async function researchEvents(): Promise<{ data?: ResearchResult; error?: string }> {
   await requireAdmin()
-
   const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) return { ideas: [], error: 'ANTHROPIC_API_KEY not configured' }
+  if (!apiKey) return { error: 'ANTHROPIC_API_KEY not configured' }
 
   try {
     const client = new Anthropic({ apiKey })
-
     const response = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
-      tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 5 }],
-      messages: [
-        {
-          role: 'user',
-          content: `You are a social media strategist for American Royalty Las Vegas, a luxury party bus and limo company. Search the web for:
-1. Las Vegas events happening this week and next 2 weeks
-2. Upcoming concerts at Allegiant Stadium 2026
-3. Upcoming shows at the Sphere Las Vegas 2026
-4. Las Vegas party bus trending topics
+      max_tokens: 4000,
+      tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 10 }],
+      messages: [{
+        role: 'user',
+        content: `You are a social media strategist for American Royalty Las Vegas, a luxury party bus and limo company. Research the following for the next 90 days:
 
-Based on your research, return exactly 6-8 ranked social media post ideas as a JSON array. Each item must have:
-- priority: "High" | "Medium" | "Evergreen"
-- event: the event name or topic
-- timing: when to post (e.g. "Post 3 days before event", "Post this week")
-- platform: best platform ("Instagram", "TikTok", "Facebook", or "All")
-- hook: a short attention-grabbing first line (under 15 words)
-- caption: a full social media caption (2-3 sentences, mention luxury party bus, no surge pricing, group transportation)
-- hashtags: 5-8 relevant hashtags as a string
+VENUES TO SEARCH:
+1. Allegiant Stadium Las Vegas upcoming events
+2. Sphere Las Vegas upcoming shows
+3. T-Mobile Arena Las Vegas upcoming events
+4. MGM Grand Garden Arena upcoming events
+5. Las Vegas Convention Center upcoming conventions
+6. Major casino entertainment (Colosseum at Caesars, Dolby Live, Michelob Ultra Arena)
+7. Fremont Street Experience events
+8. Las Vegas Motor Speedway events
+9. Las Vegas tourism forecasts and visitor projections
 
-Return ONLY the JSON array, no other text. Format: [{"priority":"High","event":"...","timing":"...","platform":"...","hook":"...","caption":"...","hashtags":"..."},...]`,
-        },
-      ],
-    })
-
-    let text = ''
-    for (const block of response.content) {
-      if (block.type === 'text') {
-        text += block.text
-      }
+Return a JSON object with this structure:
+{
+  "researched_at": "${new Date().toISOString()}",
+  "month_summary": {
+    "month_year": { "rating": "HIGH|PEAK|MODERATE|LOW", "note": "brief explanation" }
+  },
+  "tourism_insights": [
+    { "period": "Date range", "note": "Brief insight", "impact": "PEAK|HIGH|MODERATE" }
+  ],
+  "events": [
+    {
+      "id": "unique_slug",
+      "name": "Event name",
+      "venue": "Venue",
+      "date_start": "YYYY-MM-DD",
+      "date_end": "YYYY-MM-DD or null",
+      "category": "CONCERTS|SPORTS|EDM_FESTIVALS|CONVENTIONS|COMBAT_SPORTS|MOTORSPORTS|FREMONT_DTLV|HOLIDAYS",
+      "estimated_attendance": 65000,
+      "demand_level": "RED|YELLOW|GREEN",
+      "tourism_impact": "Brief note",
+      "posting_urgency": "POST NOW|THIS WEEK|NEXT WEEK|PLAN AHEAD",
+      "days_until": 5,
+      "ideogram_prompt_suggestion": "Brief prompt for creating a flyer"
     }
-
-    const jsonMatch = text.match(/\[[\s\S]*\]/)
-    if (!jsonMatch) return { ideas: [], error: 'Failed to parse content ideas from AI response' }
-
-    return { ideas: JSON.parse(jsonMatch[0]) as ContentIdea[] }
-  } catch (err) {
-    console.error('Content ideas error:', err)
-    return { ideas: [], error: 'Failed to fetch content ideas — please try again' }
-  }
+  ],
+  "industry_post_ideas": [
+    { "id": "unique_id", "title": "Post idea", "angle": "Why this works", "best_platform": "INSTAGRAM|TIKTOK|FACEBOOK", "category": "EVERGREEN", "hook": "Opening line" }
+  ],
+  "trending_topics": [
+    { "topic": "Topic", "relevance": "Why relevant", "suggested_angle": "How to use" }
+  ]
 }
 
-// ─── Caption Generation (Claude) ────────────────────────
-
-export async function generateCaption(eventName: string, postType: string, platforms: string[]): Promise<{ caption: string; hashtags: string; error?: string }> {
-  await requireAdmin()
-
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) return { caption: '', hashtags: '', error: 'ANTHROPIC_API_KEY not configured' }
-
-  try {
-    const client = new Anthropic({ apiKey })
-
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      system: 'You write social media captions for American Royalty Las Vegas, a premium party bus and limo service. Brand voice: confident, premium, direct. Always mention no surge pricing, group transportation, luxury experience. Keep captions punchy and under 150 words.',
-      messages: [
-        {
-          role: 'user',
-          content: `Write a ${postType} caption for ${platforms.join(', ')} about ${eventName}. Include a call to action to book. Phone: (702) 666-4037, website: americanroyaltylasvegas.com.
-
-Return JSON with exactly two fields:
-- caption: The full post caption
-- hashtags: 8-12 relevant hashtags as a single string
-
-Return ONLY the JSON object, no other text.`,
-        },
-      ],
+Include at least 15-25 events, 5 post ideas, and 3 trending topics. Be thorough — search each venue specifically. Return ONLY the JSON, no other text.`
+      }],
     })
 
     let text = ''
     for (const block of response.content) {
-      if (block.type === 'text') {
-        text += block.text
-      }
+      if (block.type === 'text') text += block.text
     }
 
     const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) return { caption: '', hashtags: '', error: 'Failed to parse caption from AI response' }
+    if (!jsonMatch) return { error: 'Failed to parse research data' }
 
-    return JSON.parse(jsonMatch[0])
+    return { data: JSON.parse(jsonMatch[0]) as ResearchResult }
   } catch (err) {
-    console.error('Caption generation error:', err)
-    return { caption: '', hashtags: '', error: 'Failed to generate caption — please try again' }
+    console.error('Research error:', err)
+    return { error: 'Research failed — please try again' }
+  }
+}
+
+// ─── Caption Generation (3 angles) ─────────────────────
+
+export async function generateCaptions(
+  eventName: string, venue: string | null, platform: string[], postType: string, angle?: string
+): Promise<{ captions?: { hype: string; value: string; premium: string }; error?: string }> {
+  await requireAdmin()
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) return { error: 'ANTHROPIC_API_KEY not configured' }
+
+  try {
+    const client = new Anthropic({ apiKey })
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1500,
+      system: `You write social media captions for American Royalty Las Vegas, a premium party bus and limousine service. Brand voice: confident, premium, aspirational, direct. Never use the word 'luxury' more than once. Always hint at the group experience. Key differentiators: no surge pricing, private group transportation, professional drivers, available 24/7, vehicles fit 8-40 passengers. Phone: (702) 666-4037. Website: americanroyaltylasvegas.com`,
+      messages: [{
+        role: 'user',
+        content: `Write 3 distinct social media captions for a ${postType} post about "${eventName}"${venue ? ` at ${venue}` : ''} for ${platform.join(', ')}.${angle ? ` Angle: ${angle}` : ''}
+
+Each caption must have a different angle:
+1. HYPE — Excitement, energy, FOMO
+2. VALUE — Practical, why it makes sense, no surge pricing
+3. PREMIUM — Aspirational, VIP treatment, elevated experience
+
+Include a call to action in each. Keep each under 150 words.
+
+Return JSON: { "hype": "caption1", "value": "caption2", "premium": "caption3" }
+Return ONLY the JSON.`
+      }],
+    })
+
+    let text = ''
+    for (const block of response.content) { if (block.type === 'text') text += block.text }
+    const match = text.match(/\{[\s\S]*\}/)
+    if (!match) return { error: 'Failed to parse captions' }
+    return { captions: JSON.parse(match[0]) }
+  } catch (err) {
+    console.error('Caption error:', err)
+    return { error: 'Failed to generate captions' }
+  }
+}
+
+// ─── Hashtag Generation (3 groups) ──────────────────────
+
+export async function generateHashtags(
+  eventName: string, venue: string | null, platform: string[]
+): Promise<{ hashtags?: { event: string[]; industry: string[]; trending: string[] }; error?: string }> {
+  await requireAdmin()
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) return { error: 'ANTHROPIC_API_KEY not configured' }
+
+  try {
+    const client = new Anthropic({ apiKey })
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 500,
+      messages: [{
+        role: 'user',
+        content: `Generate 20 hashtags for a social media post about "${eventName}"${venue ? ` at ${venue}` : ''} for a Las Vegas party bus company (American Royalty). Target: ${platform.join(', ')}.
+
+Group them:
+- event: 5 event-specific hashtags
+- industry: 8 industry/service hashtags
+- trending: 7 trending Las Vegas hashtags
+
+Return JSON: { "event": ["#Tag1",...], "industry": ["#Tag1",...], "trending": ["#Tag1",...] }
+Return ONLY the JSON.`
+      }],
+    })
+
+    let text = ''
+    for (const block of response.content) { if (block.type === 'text') text += block.text }
+    const match = text.match(/\{[\s\S]*\}/)
+    if (!match) return { error: 'Failed to parse hashtags' }
+    return { hashtags: JSON.parse(match[0]) }
+  } catch (err) {
+    console.error('Hashtag error:', err)
+    return { error: 'Failed to generate hashtags' }
+  }
+}
+
+// ─── Photo Analysis ─────────────────────────────────────
+
+export async function analyzePhoto(
+  imageUrl: string, context: string | null
+): Promise<{ angles?: { title: string; description: string; platform: string }[]; error?: string }> {
+  await requireAdmin()
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) return { error: 'ANTHROPIC_API_KEY not configured' }
+
+  try {
+    // Download image for Claude vision
+    const imgRes = await fetch(imageUrl)
+    if (!imgRes.ok) return { error: 'Failed to download image' }
+    const imgBuffer = Buffer.from(await imgRes.arrayBuffer())
+    const base64 = imgBuffer.toString('base64')
+    const mediaType = imageUrl.includes('.png') ? 'image/png' : 'image/jpeg'
+
+    const client = new Anthropic({ apiKey })
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+          { type: 'text', text: `You are the social media strategist for American Royalty Las Vegas, a premium party bus company.
+
+Analyze this photo and suggest 3 distinct post angles for social media.${context ? ` Context: ${context}` : ''}
+
+For each angle provide:
+- title: Short catchy title
+- description: 1-2 sentence description of the post angle
+- platform: Best platform (INSTAGRAM, TIKTOK, or FACEBOOK)
+
+Return JSON array: [{ "title": "...", "description": "...", "platform": "..." }, ...]
+Return ONLY the JSON array.` },
+        ],
+      }],
+    })
+
+    let text = ''
+    for (const block of response.content) { if (block.type === 'text') text += block.text }
+    const match = text.match(/\[[\s\S]*\]/)
+    if (!match) return { error: 'Failed to analyze photo' }
+    return { angles: JSON.parse(match[0]) }
+  } catch (err) {
+    console.error('Photo analysis error:', err)
+    return { error: 'Failed to analyze photo' }
   }
 }
 
@@ -173,323 +270,65 @@ Return ONLY the JSON object, no other text.`,
 
 export async function uploadImage(formData: FormData): Promise<{ url?: string; error?: string }> {
   await requireAdmin()
-
   const file = formData.get('file') as File
   if (!file) return { error: 'No file provided' }
   if (file.size > 10 * 1024 * 1024) return { error: 'File too large (max 10MB)' }
-
   const allowed = ['image/jpeg', 'image/png', 'image/webp']
-  if (!allowed.includes(file.type)) return { error: 'Invalid file type. Use JPG, PNG, or WebP.' }
+  if (!allowed.includes(file.type)) return { error: 'Invalid file type' }
 
   try {
-    const blob = await put(`social-studio/images/${Date.now()}-${file.name}`, file, { access: 'public' })
+    const blob = await put(`social-studio/v3/${Date.now()}-${file.name}`, file, { access: 'public' })
     return { url: blob.url }
-  } catch (err) {
-    console.error('Image upload error:', err)
-    return { error: 'Failed to upload image' }
-  }
+  } catch { return { error: 'Upload failed' } }
 }
 
-// ─── CRUD for Social Posts ──────────────────────────────
+// ─── Content Library CRUD ───────────────────────────────
 
-export async function getSocialPosts(): Promise<SocialPost[]> {
+export async function getContentLibrary(): Promise<SocialContentItem[]> {
   await requireAdmin()
-  const posts = await prisma.socialPost.findMany({
-    orderBy: { scheduledAt: 'asc' },
-    take: 100,
-  })
-  return posts.map(mapPost)
-}
-
-export async function createSocialPost(data: {
-  title: string
-  caption: string
-  platform: string
-  image_url?: string | null
-  scheduled_at?: string | null
-  status?: 'DRAFT' | 'SCHEDULED' | 'POSTED'
-}): Promise<SocialPost> {
-  await requireAdmin()
-
-  const post = await prisma.socialPost.create({
-    data: {
-      title: data.title,
-      caption: data.caption,
-      platform: data.platform,
-      imageUrl: data.image_url || null,
-      scheduledAt: data.scheduled_at ? new Date(data.scheduled_at) : null,
-      status: data.status || 'DRAFT',
-    },
-  })
-
-  revalidatePath('/admin/social-studio')
-  return mapPost(post)
-}
-
-export async function updateSocialPost(
-  id: string,
-  data: {
-    title?: string
-    caption?: string
-    platform?: string
-    image_url?: string | null
-    scheduled_at?: string | null
-    status?: 'DRAFT' | 'SCHEDULED' | 'POSTED'
-  }
-): Promise<SocialPost> {
-  await requireAdmin()
-
-  const updateData: Record<string, unknown> = {}
-  if (data.title !== undefined) updateData.title = data.title
-  if (data.caption !== undefined) updateData.caption = data.caption
-  if (data.platform !== undefined) updateData.platform = data.platform
-  if (data.image_url !== undefined) updateData.imageUrl = data.image_url
-  if (data.scheduled_at !== undefined) updateData.scheduledAt = data.scheduled_at ? new Date(data.scheduled_at) : null
-  if (data.status !== undefined) updateData.status = data.status
-
-  const post = await prisma.socialPost.update({
-    where: { id },
-    data: updateData,
-  })
-
-  revalidatePath('/admin/social-studio')
-  return mapPost(post)
-}
-
-export async function deleteSocialPost(id: string): Promise<void> {
-  await requireAdmin()
-  await prisma.socialPost.delete({ where: { id } })
-  revalidatePath('/admin/social-studio')
-}
-
-// ─── Photo Library ──────────────────────────────────────
-
-export async function getSocialPhotos(): Promise<SocialPhoto[]> {
-  await requireAdmin()
-  const photos = await prisma.socialPhoto.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 200,
-  })
-  return photos.map((p) => ({
-    id: p.id,
-    url: p.url,
-    filename: p.filename,
-    tags: p.tags,
-    created_at: p.createdAt.toISOString(),
+  const items = await prisma.socialContent.findMany({ orderBy: { createdAt: 'desc' }, take: 200 })
+  return items.map(i => ({
+    id: i.id, type: i.type, event_name: i.eventName, venue: i.venue,
+    event_date: i.eventDate, image_url: i.imageUrl, context: i.context,
+    captions: i.captions, hashtags: i.hashtags, platform: i.platform,
+    status: i.status, created_at: i.createdAt.toISOString(),
   }))
 }
 
-export async function uploadSocialPhoto(formData: FormData): Promise<{ photo?: SocialPhoto; error?: string }> {
+export async function saveContent(data: {
+  type?: string; event_name?: string | null; venue?: string | null; event_date?: string | null;
+  image_url?: string | null; context?: string | null; captions?: string | null; hashtags?: string | null;
+  platform?: string | null; status?: string;
+}): Promise<SocialContentItem> {
   await requireAdmin()
-
-  const file = formData.get('file') as File
-  if (!file) return { error: 'No file provided' }
-  if (file.size > 10 * 1024 * 1024) return { error: 'File too large (max 10MB)' }
-
-  const allowed = ['image/jpeg', 'image/png', 'image/webp']
-  if (!allowed.includes(file.type)) return { error: 'Invalid file type. Use JPG, PNG, or WebP.' }
-
-  try {
-    const blob = await put(`social-studio/photos/${Date.now()}-${file.name}`, file, { access: 'public' })
-
-    const photo = await prisma.socialPhoto.create({
-      data: { url: blob.url, filename: file.name },
-    })
-
-    revalidatePath('/admin/social-studio')
-    return {
-      photo: {
-        id: photo.id,
-        url: photo.url,
-        filename: photo.filename,
-        tags: photo.tags,
-        created_at: photo.createdAt.toISOString(),
-      },
-    }
-  } catch (err) {
-    console.error('Photo upload error:', err)
-    return { error: 'Failed to upload photo' }
-  }
-}
-
-export async function deleteSocialPhoto(id: string): Promise<{ error?: string }> {
-  await requireAdmin()
-
-  try {
-    const photo = await prisma.socialPhoto.findUnique({ where: { id } })
-    if (!photo) return { error: 'Photo not found' }
-    try { await del(photo.url) } catch { /* blob may already be gone */ }
-    await prisma.socialPhoto.delete({ where: { id } })
-    revalidatePath('/admin/social-studio')
-    return {}
-  } catch (err) {
-    console.error('Photo delete error:', err)
-    return { error: 'Failed to delete photo' }
-  }
-}
-
-// ─── Buffer Auto-Publishing ─────────────────────────────
-
-export async function getBufferProfiles(): Promise<{ profiles: { id: string; service: string; formatted_username: string }[]; error?: string }> {
-  await requireAdmin()
-
-  const token = process.env.BUFFER_ACCESS_TOKEN
-  if (!token) return { profiles: [], error: 'BUFFER_ACCESS_TOKEN not configured' }
-
-  try {
-    const res = await fetch('https://api.buffer.com', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        query: `
-          query GetChannels {
-            account {
-              channels {
-                id
-                name
-                service
-                serviceId
-              }
-            }
-          }
-        `,
-      }),
-    })
-
-    if (!res.ok) {
-      const err = await res.text()
-      console.error('Buffer API error:', err)
-      return { profiles: [], error: `Buffer API error (${res.status})` }
-    }
-
-    const json = await res.json()
-    const channels = json?.data?.account?.channels
-    if (!channels) return { profiles: [], error: 'No channels found in Buffer response' }
-
-    return {
-      profiles: channels.map((c: { id: string; name: string; service: string }) => ({
-        id: c.id,
-        service: c.service,
-        formatted_username: c.name,
-      })),
-    }
-  } catch (err) {
-    console.error('Buffer profiles error:', err)
-    return { profiles: [], error: 'Failed to fetch Buffer profiles' }
-  }
-}
-
-// Channel ID → service mapping for metadata
-const CHANNEL_SERVICE: Record<string, string> = {}
-
-async function getChannelServices(token: string): Promise<Record<string, string>> {
-  if (Object.keys(CHANNEL_SERVICE).length > 0) return CHANNEL_SERVICE
-  try {
-    const res = await fetch('https://api.buffer.com', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ query: '{ account { channels { id service } } }' }),
-    })
-    if (res.ok) {
-      const json = await res.json()
-      for (const ch of json?.data?.account?.channels || []) {
-        CHANNEL_SERVICE[ch.id] = ch.service
-      }
-    }
-  } catch { /* fallback: no metadata */ }
-  return CHANNEL_SERVICE
-}
-
-function getMetadataForService(service: string): Record<string, unknown> | null {
-  if (service === 'facebook') return { facebook: { type: 'post' } }
-  if (service === 'instagram') return { instagram: { type: 'post', shouldShareToFeed: true } }
-  if (service === 'tiktok') return { tiktok: { type: 'post' } }
-  return null
-}
-
-export async function publishScheduledPosts(): Promise<{ published: number; errors: number }> {
-  const token = process.env.BUFFER_ACCESS_TOKEN
-  if (!token) return { published: 0, errors: 0 }
-
-  const profileIds = process.env.BUFFER_PROFILE_IDS
-  if (!profileIds) return { published: 0, errors: 0 }
-
-  const channelIds = profileIds.split(',').map(id => id.trim())
-  const services = await getChannelServices(token)
-
-  const duePosts = await prisma.socialPost.findMany({
-    where: {
-      status: 'SCHEDULED',
-      scheduledAt: { lte: new Date() },
+  const item = await prisma.socialContent.create({
+    data: {
+      type: data.type || 'flyer', eventName: data.event_name || null,
+      venue: data.venue || null, eventDate: data.event_date || null,
+      imageUrl: data.image_url || null, context: data.context || null,
+      captions: data.captions || null, hashtags: data.hashtags || null,
+      platform: data.platform || null, status: data.status || 'DRAFT',
     },
   })
-
-  let published = 0
-  let errors = 0
-
-  for (const post of duePosts) {
-    let postSuccess = false
-
-    for (const channelId of channelIds) {
-      try {
-        const service = services[channelId] || ''
-        const metadata = getMetadataForService(service)
-
-        const input: Record<string, unknown> = {
-          channelId,
-          text: post.caption,
-          schedulingType: 'automatic',
-          mode: 'shareNow',
-        }
-
-        if (metadata) input.metadata = metadata
-
-        if (post.imageUrl) {
-          input.assets = { images: [{ url: post.imageUrl }] }
-        }
-
-        const res = await fetch('https://api.buffer.com', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({
-            query: `mutation CreatePost($input: CreatePostInput!) {
-              createPost(input: $input) {
-                __typename
-                ... on PostActionSuccess { post { id } }
-                ... on UnexpectedError { message }
-              }
-            }`,
-            variables: { input },
-          }),
-        })
-
-        if (res.ok) {
-          const json = await res.json()
-          const result = json?.data?.createPost
-          if (result?.__typename === 'PostActionSuccess') {
-            postSuccess = true
-            console.log(`Buffer: posted to ${service} (${channelId}) for post ${post.id}`)
-          } else {
-            console.error(`Buffer error for ${channelId}:`, result?.message || JSON.stringify(result))
-          }
-        } else {
-          console.error(`Buffer HTTP error for ${channelId}:`, res.status)
-        }
-      } catch (err) {
-        console.error(`Buffer publish error for channel ${channelId}:`, err)
-      }
-    }
-
-    if (postSuccess) {
-      await prisma.socialPost.update({ where: { id: post.id }, data: { status: 'POSTED' } })
-      published++
-    } else {
-      errors++
-    }
+  revalidatePath('/admin/social-studio')
+  return {
+    id: item.id, type: item.type, event_name: item.eventName, venue: item.venue,
+    event_date: item.eventDate, image_url: item.imageUrl, context: item.context,
+    captions: item.captions, hashtags: item.hashtags, platform: item.platform,
+    status: item.status, created_at: item.createdAt.toISOString(),
   }
+}
 
-  return { published, errors }
+export async function updateContentStatus(id: string, status: string): Promise<void> {
+  await requireAdmin()
+  await prisma.socialContent.update({ where: { id }, data: { status } })
+  revalidatePath('/admin/social-studio')
+}
+
+export async function deleteContent(id: string): Promise<void> {
+  await requireAdmin()
+  const item = await prisma.socialContent.findUnique({ where: { id } })
+  if (item?.imageUrl) { try { await del(item.imageUrl) } catch {} }
+  await prisma.socialContent.delete({ where: { id } })
+  revalidatePath('/admin/social-studio')
 }
