@@ -116,11 +116,11 @@ Return 5-10 events. Return ONLY the JSON array.`),
 
     // Build month summaries from events
     const monthSummary: Record<string, { rating: string; note: string }> = {}
-    const months = new Set(allEvents.map(e => {
+    const monthKeys = Array.from(new Set(allEvents.map(e => {
       const d = new Date(e.date_start + 'T00:00:00')
       return `${d.toLocaleString('en-US', { month: 'long' }).toLowerCase()}_${d.getFullYear()}`
-    }))
-    for (const m of months) {
+    })))
+    for (const m of monthKeys) {
       const count = allEvents.filter(e => {
         const d = new Date(e.date_start + 'T00:00:00')
         return `${d.toLocaleString('en-US', { month: 'long' }).toLowerCase()}_${d.getFullYear()}` === m
