@@ -26,7 +26,14 @@ const DEMAND_TEXT: Record<string, string> = { RED: 'text-red-400', YELLOW: 'text
 
 function getStoredResearch(): ResearchResult | null {
   if (typeof window === 'undefined') return null
-  try { const r = localStorage.getItem(RESEARCH_KEY); return r ? JSON.parse(r) : null } catch { return null }
+  try {
+    const r = localStorage.getItem(RESEARCH_KEY)
+    if (!r) return null
+    const parsed = JSON.parse(r)
+    // Validate it has expected shape
+    if (!parsed || !Array.isArray(parsed.events)) return null
+    return parsed
+  } catch { return null }
 }
 function timeAgo(d: string): string {
   const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000)
@@ -93,12 +100,12 @@ export default function SocialStudioPage() {
       const r = await researchEvents()
       if (r.error) setError(r.error)
       else if (r.data) { setResearch(r.data); localStorage.setItem(RESEARCH_KEY, JSON.stringify(r.data)) }
-    } catch (e) { setError(e instanceof Error ? e.message : 'Failed') }
+    } catch (e) { setError(e instanceof Error ? e.message : String(e || 'Research failed — please try again')) }
     finally { setLoading(false) }
   }, [])
 
   const getEventsForDay = (day: number): ResearchEvent[] => {
-    if (!research) return []
+    if (!research?.events) return []
     const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
     return research.events.filter(e => e.date_start <= dateStr && (e.date_end ? e.date_end >= dateStr : e.date_start === dateStr))
   }
@@ -198,7 +205,7 @@ export default function SocialStudioPage() {
   const monthKey = `${monthNames[calMonth].toLowerCase()}_${calYear}`
   const monthSummary = research?.month_summary?.[monthKey]
 
-  const filteredEvents = research?.events.filter(e => categoryFilter === 'ALL' || e.category === categoryFilter) || []
+  const filteredEvents = (research?.events || []).filter(e => categoryFilter === 'ALL' || e.category === categoryFilter)
 
   return (
     <div className="space-y-4">
