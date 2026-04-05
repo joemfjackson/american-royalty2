@@ -382,6 +382,34 @@ export async function getBufferProfiles(): Promise<{ profiles: { id: string; ser
   }
 }
 
+// Channel ID → service mapping for metadata
+const CHANNEL_SERVICE: Record<string, string> = {}
+
+async function getChannelServices(token: string): Promise<Record<string, string>> {
+  if (Object.keys(CHANNEL_SERVICE).length > 0) return CHANNEL_SERVICE
+  try {
+    const res = await fetch('https://api.buffer.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ query: '{ account { channels { id service } } }' }),
+    })
+    if (res.ok) {
+      const json = await res.json()
+      for (const ch of json?.data?.account?.channels || []) {
+        CHANNEL_SERVICE[ch.id] = ch.service
+      }
+    }
+  } catch { /* fallback: no metadata */ }
+  return CHANNEL_SERVICE
+}
+
+function getMetadataForService(service: string): Record<string, unknown> | null {
+  if (service === 'facebook') return { facebook: { type: 'post' } }
+  if (service === 'instagram') return { instagram: { type: 'post' } }
+  if (service === 'tiktok') return { tiktok: { type: 'post' } }
+  return null
+}
+
 export async function publishScheduledPosts(): Promise<{ published: number; errors: number }> {
   const token = process.env.BUFFER_ACCESS_TOKEN
   if (!token) return { published: 0, errors: 0 }
@@ -389,9 +417,9 @@ export async function publishScheduledPosts(): Promise<{ published: number; erro
   const profileIds = process.env.BUFFER_PROFILE_IDS
   if (!profileIds) return { published: 0, errors: 0 }
 
-  const profiles = profileIds.split(',').map(id => id.trim())
+  const channelIds = profileIds.split(',').map(id => id.trim())
+  const services = await getChannelServices(token)
 
-  // Find all scheduled posts that are due
   const duePosts = await prisma.socialPost.findMany({
     where: {
       status: 'SCHEDULED',
@@ -403,42 +431,58 @@ export async function publishScheduledPosts(): Promise<{ published: number; erro
   let errors = 0
 
   for (const post of duePosts) {
-    try {
-      const params = new URLSearchParams()
-      params.append('access_token', token)
-      params.append('text', post.caption)
+    let postSuccess = false
 
-      if (post.imageUrl) {
-        params.append('media[photo]', post.imageUrl)
-      }
+    for (const channelId of channelIds) {
+      try {
+        const service = services[channelId] || ''
+        const metadata = getMetadataForService(service)
 
-      if (post.scheduledAt) {
-        params.append('scheduled_at', Math.floor(post.scheduledAt.getTime() / 1000).toString())
-      }
+        const input: Record<string, unknown> = {
+          channelId,
+          text: post.caption,
+          schedulingType: 'automatic',
+          mode: 'shareNow',
+        }
 
-      for (const pid of profiles) {
-        params.append('profile_ids[]', pid)
-      }
+        if (metadata) input.metadata = metadata
 
-      const res = await fetch('https://api.bufferapp.com/1/updates/create.json', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: params.toString(),
-      })
-
-      if (res.ok) {
-        await prisma.socialPost.update({
-          where: { id: post.id },
-          data: { status: 'POSTED' },
+        const res = await fetch('https://api.buffer.com', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            query: `mutation CreatePost($input: CreatePostInput!) {
+              createPost(input: $input) {
+                __typename
+                ... on PostActionSuccess { post { id } }
+                ... on UnexpectedError { message }
+              }
+            }`,
+            variables: { input },
+          }),
         })
-        published++
-      } else {
-        const err = await res.text()
-        console.error(`Buffer publish failed for post ${post.id}:`, err)
-        errors++
+
+        if (res.ok) {
+          const json = await res.json()
+          const result = json?.data?.createPost
+          if (result?.__typename === 'PostActionSuccess') {
+            postSuccess = true
+            console.log(`Buffer: posted to ${service} (${channelId}) for post ${post.id}`)
+          } else {
+            console.error(`Buffer error for ${channelId}:`, result?.message || JSON.stringify(result))
+          }
+        } else {
+          console.error(`Buffer HTTP error for ${channelId}:`, res.status)
+        }
+      } catch (err) {
+        console.error(`Buffer publish error for channel ${channelId}:`, err)
       }
-    } catch (err) {
-      console.error(`Buffer publish error for post ${post.id}:`, err)
+    }
+
+    if (postSuccess) {
+      await prisma.socialPost.update({ where: { id: post.id }, data: { status: 'POSTED' } })
+      published++
+    } else {
       errors++
     }
   }
