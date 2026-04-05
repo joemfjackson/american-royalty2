@@ -405,7 +405,7 @@ async function getChannelServices(token: string): Promise<Record<string, string>
 
 function getMetadataForService(service: string): Record<string, unknown> | null {
   if (service === 'facebook') return { facebook: { type: 'post' } }
-  if (service === 'instagram') return { instagram: { type: 'post' } }
+  if (service === 'instagram') return { instagram: { type: 'post', shouldShareToFeed: true } }
   if (service === 'tiktok') return { tiktok: { type: 'post' } }
   return null
 }
