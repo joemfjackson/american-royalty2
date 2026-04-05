@@ -448,7 +448,7 @@ export async function publishScheduledPosts(): Promise<{ published: number; erro
         if (metadata) input.metadata = metadata
 
         if (post.imageUrl) {
-          input.assets = { images: [{ sourceUrl: post.imageUrl }] }
+          input.assets = { images: [{ url: post.imageUrl }] }
         }
 
         const res = await fetch('https://api.buffer.com', {
