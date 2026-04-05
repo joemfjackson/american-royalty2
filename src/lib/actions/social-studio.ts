@@ -337,14 +337,43 @@ export async function getBufferProfiles(): Promise<{ profiles: { id: string; ser
   if (!token) return { profiles: [], error: 'BUFFER_ACCESS_TOKEN not configured' }
 
   try {
-    const res = await fetch(`https://api.bufferapp.com/1/profiles.json?access_token=${token}`)
-    if (!res.ok) return { profiles: [], error: 'Failed to fetch Buffer profiles' }
-    const data = await res.json()
+    const res = await fetch('https://api.buffer.com', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        query: `
+          query GetChannels {
+            account {
+              channels {
+                id
+                name
+                service
+                serviceId
+              }
+            }
+          }
+        `,
+      }),
+    })
+
+    if (!res.ok) {
+      const err = await res.text()
+      console.error('Buffer API error:', err)
+      return { profiles: [], error: `Buffer API error (${res.status})` }
+    }
+
+    const json = await res.json()
+    const channels = json?.data?.account?.channels
+    if (!channels) return { profiles: [], error: 'No channels found in Buffer response' }
+
     return {
-      profiles: data.map((p: { id: string; service: string; formatted_username: string }) => ({
-        id: p.id,
-        service: p.service,
-        formatted_username: p.formatted_username,
+      profiles: channels.map((c: { id: string; name: string; service: string }) => ({
+        id: c.id,
+        service: c.service,
+        formatted_username: c.name,
       })),
     }
   } catch (err) {
