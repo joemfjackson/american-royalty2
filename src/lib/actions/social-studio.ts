@@ -144,10 +144,30 @@ Return 5-10 events. Return ONLY the JSON array.`),
       trending_topics: [],
     }
 
+    // Save to database so it's available on all devices
+    await prisma.socialGeneration.upsert({
+      where: { id: 'research-cache' },
+      update: { prompt: JSON.stringify(result) },
+      create: { id: 'research-cache', prompt: JSON.stringify(result) },
+    })
+
     return { data: result }
   } catch (err) {
     console.error('Research error:', err)
     return { error: 'Research failed — please try again' }
+  }
+}
+
+export async function getStoredResearch(): Promise<{ data?: ResearchResult; error?: string }> {
+  await requireAdmin()
+  try {
+    const cached = await prisma.socialGeneration.findUnique({ where: { id: 'research-cache' } })
+    if (!cached) return {}
+    const data = JSON.parse(cached.prompt) as ResearchResult
+    if (!data || !Array.isArray(data.events)) return {}
+    return { data }
+  } catch {
+    return {}
   }
 }
 

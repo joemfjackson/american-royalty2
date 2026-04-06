@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import {
-  researchEvents, generateCaptions, generateHashtags, analyzePhoto,
+  researchEvents, getStoredResearch, generateCaptions, generateHashtags, analyzePhoto,
   uploadImage, getContentLibrary, saveContent, updateContentStatus, deleteContent,
 } from '@/lib/actions/social-studio'
 import type { ResearchResult, ResearchEvent, SocialContentItem } from '@/lib/actions/social-studio'
@@ -19,22 +19,9 @@ type ComposeMode = 'event' | 'photo'
 const PLATFORMS = ['Instagram', 'Facebook', 'TikTok']
 const POST_TYPES = ['Event Promo', 'Vehicle Showcase', 'Behind the Scenes', 'Package Promo', 'General']
 const CATEGORIES = ['ALL', 'SPORTS', 'CONCERTS', 'EDM_FESTIVALS', 'CONVENTIONS', 'COMBAT_SPORTS', 'MOTORSPORTS', 'FREMONT_DTLV', 'HOLIDAYS']
-const RESEARCH_KEY = 'ar-social-v3-research'
-
 const DEMAND_COLORS: Record<string, string> = { RED: 'bg-red-500', YELLOW: 'bg-yellow-500', GREEN: 'bg-emerald-500' }
 const DEMAND_TEXT: Record<string, string> = { RED: 'text-red-400', YELLOW: 'text-yellow-400', GREEN: 'text-emerald-400' }
 
-function getStoredResearch(): ResearchResult | null {
-  if (typeof window === 'undefined') return null
-  try {
-    const r = localStorage.getItem(RESEARCH_KEY)
-    if (!r) return null
-    const parsed = JSON.parse(r)
-    // Validate it has expected shape
-    if (!parsed || !Array.isArray(parsed.events)) return null
-    return parsed
-  } catch { return null }
-}
 function timeAgo(d: string): string {
   const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000)
   if (m < 1) return 'just now'; if (m < 60) return `${m}m ago`
@@ -87,8 +74,7 @@ export default function SocialStudioPage() {
   const [libSearch, setLibSearch] = useState('')
 
   useEffect(() => {
-    const stored = getStoredResearch()
-    if (stored) setResearch(stored)
+    getStoredResearch().then(r => { if (r.data) setResearch(r.data) }).catch(() => {})
     getContentLibrary().then(setLibrary).catch(() => {}).finally(() => setLibLoading(false))
   }, [])
 
@@ -99,7 +85,7 @@ export default function SocialStudioPage() {
     try {
       const r = await researchEvents()
       if (r.error) setError(r.error)
-      else if (r.data) { setResearch(r.data); localStorage.setItem(RESEARCH_KEY, JSON.stringify(r.data)) }
+      else if (r.data) { setResearch(r.data) }
     } catch (e) { setError(e instanceof Error ? e.message : String(e || 'Research failed — please try again')) }
     finally { setLoading(false) }
   }, [])
