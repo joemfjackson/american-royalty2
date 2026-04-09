@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  X,
+  ChevronUp,
   Mail,
   Phone,
   Calendar,
@@ -63,16 +63,15 @@ const STATUS_OPTIONS: { value: QuoteStatus; label: string }[] = [
   { value: 'cancelled', label: 'Cancelled' },
 ]
 
-interface QuoteDetailPanelProps {
-  quote: Quote | null
-  open: boolean
+interface QuoteDetailInlineContentProps {
+  quote: Quote
   onClose: () => void
   onUpdateQuote: (updated: Quote) => void
   onDeleteQuote?: (quoteId: string) => void
   vehicleNames?: Record<string, string>
 }
 
-export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, onDeleteQuote, vehicleNames = {} }: QuoteDetailPanelProps) {
+export function QuoteDetailInlineContent({ quote, onClose, onUpdateQuote, onDeleteQuote, vehicleNames = {} }: QuoteDetailInlineContentProps) {
   const [status, setStatus] = useState<QuoteStatus>(quote?.status || 'new')
   const [adminNotes, setAdminNotes] = useState(quote?.admin_notes || '')
   const [quotedAmount, setQuotedAmount] = useState(quote?.quoted_amount?.toString() || '')
@@ -156,8 +155,6 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, onDelete
       }
     }
   }, [quote])
-
-  if (!quote) return null
 
   const handleSave = async () => {
     setSaving(true)
@@ -368,44 +365,26 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, onDelete
   const depositAmount = Math.round(amount * depositPercent / 100)
 
   return (
-    <AnimatePresence>
-      {open && (
-        <>
-          {/* Overlay */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+    <>
+      <div className="rounded-2xl border border-dark-border bg-dark-card shadow-lg">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-dark-border p-4">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Quote Details</h2>
+            <p className="text-sm text-gray-400">
+              Submitted {formatDate(quote.created_at)} at {new Date(quote.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+            </p>
+          </div>
+          <button
             onClick={onClose}
-          />
-
-          {/* Panel */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed left-1/2 top-1/2 z-50 flex max-h-[90vh] w-full max-w-3xl -translate-x-1/2 -translate-y-1/2 flex-col rounded-2xl border border-dark-border bg-dark-card shadow-2xl"
+            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-dark-border p-4">
-              <div>
-                <h2 className="text-lg font-semibold text-white">Quote Details</h2>
-                <p className="text-sm text-gray-400">
-                  Submitted {formatDate(quote.created_at)} at {new Date(quote.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
-                </p>
-              </div>
-              <button
-                onClick={onClose}
-                className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+            <ChevronUp className="h-5 w-5" />
+          </button>
+        </div>
 
-            {/* Content - scrollable */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Content */}
+        <div className="p-4 space-y-4">
               {/* Action message */}
               {actionMessage && (
                 <div className={`rounded-lg px-3 py-2 text-sm font-medium ${
@@ -959,114 +938,116 @@ export function QuoteDetailPanel({ quote, open, onClose, onUpdateQuote, onDelete
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
-          </motion.div>
+      </div>
 
-          {/* Deposit paid confirmation popup */}
-          {showDepositConfirm && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[60] bg-black/60"
-                onClick={() => setShowDepositConfirm(false)}
-              />
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="fixed left-1/2 top-1/2 z-[60] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-dark-border bg-dark-card p-6 shadow-2xl"
-              >
-                <h3 className="text-lg font-semibold text-white">Confirm Deposit Payment</h3>
-                <p className="mt-2 text-sm text-gray-400">
-                  This will mark the deposit as paid and create a booking for <span className="font-medium text-white">{quote.name}</span>.
-                </p>
+      {/* Deposit paid confirmation popup */}
+      <AnimatePresence>
+        {showDepositConfirm && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[60] bg-black/60"
+              onClick={() => setShowDepositConfirm(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed left-1/2 top-1/2 z-[60] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-dark-border bg-dark-card p-6 shadow-2xl"
+            >
+              <h3 className="text-lg font-semibold text-white">Confirm Deposit Payment</h3>
+              <p className="mt-2 text-sm text-gray-400">
+                This will mark the deposit as paid and create a booking for <span className="font-medium text-white">{quote.name}</span>.
+              </p>
 
-                <div className="mt-4 rounded-lg border border-dark-border bg-black/50 p-3 space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Total</span>
-                    <span className="text-white">{formatCurrency(amount)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Deposit ({quote.deposit_percent}%)</span>
-                    <span className="font-bold text-gold">{formatCurrency(depositAmount)}</span>
-                  </div>
+              <div className="mt-4 rounded-lg border border-dark-border bg-black/50 p-3 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Total</span>
+                  <span className="text-white">{formatCurrency(amount)}</span>
                 </div>
-
-                <div className="mt-4">
-                  <label className="mb-1.5 block text-sm font-medium text-gray-300">Payment Method</label>
-                  <select
-                    value={depositPaymentMethod}
-                    onChange={(e) => setDepositPaymentMethod(e.target.value)}
-                    className="w-full rounded-lg border border-dark-border bg-black px-4 py-2.5 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
-                  >
-                    <option value="Zelle">Zelle</option>
-                    <option value="Venmo">Venmo</option>
-                    <option value="CashApp">CashApp</option>
-                    <option value="Cash">Cash</option>
-                    <option value="Other">Other</option>
-                  </select>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Deposit ({quote.deposit_percent}%)</span>
+                  <span className="font-bold text-gold">{formatCurrency(depositAmount)}</span>
                 </div>
+              </div>
 
-                <div className="mt-6 flex gap-3">
-                  <button
-                    onClick={() => setShowDepositConfirm(false)}
-                    className="flex-1 rounded-lg border border-dark-border px-4 py-2.5 text-sm font-medium text-gray-400 transition-all hover:bg-white/5 hover:text-white"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleDepositPaidOffPlatform}
-                    disabled={depositProcessing}
-                    className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-500 disabled:opacity-50"
-                  >
-                    {depositProcessing ? 'Processing...' : 'Confirm Paid'}
-                  </button>
-                </div>
-              </motion.div>
-            </>
-          )}
+              <div className="mt-4">
+                <label className="mb-1.5 block text-sm font-medium text-gray-300">Payment Method</label>
+                <select
+                  value={depositPaymentMethod}
+                  onChange={(e) => setDepositPaymentMethod(e.target.value)}
+                  className="w-full rounded-lg border border-dark-border bg-black px-4 py-2.5 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+                >
+                  <option value="Zelle">Zelle</option>
+                  <option value="Venmo">Venmo</option>
+                  <option value="CashApp">CashApp</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
 
-          {/* Delete confirmation popup */}
-          {showDeleteConfirm && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[60] bg-black/60"
-                onClick={() => setShowDeleteConfirm(false)}
-              />
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="fixed left-1/2 top-1/2 z-[60] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-red-500/30 bg-dark-card p-6 shadow-2xl"
-              >
-                <h3 className="text-lg font-semibold text-white">Delete Quote</h3>
-                <p className="mt-2 text-sm text-gray-400">
-                  This will permanently delete this quote from <span className="font-medium text-white">{quote.name}</span>, along with all related invoices and bookings. This cannot be undone.
-                </p>
-                <div className="mt-6 flex gap-3">
-                  <button
-                    onClick={() => setShowDeleteConfirm(false)}
-                    className="flex-1 rounded-lg border border-dark-border px-4 py-2.5 text-sm font-medium text-gray-400 transition-all hover:bg-white/5 hover:text-white"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleDeleteQuote}
-                    disabled={deleting}
-                    className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-red-500 disabled:opacity-50"
-                  >
-                    {deleting ? 'Deleting...' : 'Delete Forever'}
-                  </button>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </>
-      )}
-    </AnimatePresence>
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={() => setShowDepositConfirm(false)}
+                  className="flex-1 rounded-lg border border-dark-border px-4 py-2.5 text-sm font-medium text-gray-400 transition-all hover:bg-white/5 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDepositPaidOffPlatform}
+                  disabled={depositProcessing}
+                  className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-500 disabled:opacity-50"
+                >
+                  {depositProcessing ? 'Processing...' : 'Confirm Paid'}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Delete confirmation popup */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[60] bg-black/60"
+              onClick={() => setShowDeleteConfirm(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed left-1/2 top-1/2 z-[60] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-red-500/30 bg-dark-card p-6 shadow-2xl"
+            >
+              <h3 className="text-lg font-semibold text-white">Delete Quote</h3>
+              <p className="mt-2 text-sm text-gray-400">
+                This will permanently delete this quote from <span className="font-medium text-white">{quote.name}</span>, along with all related invoices and bookings. This cannot be undone.
+              </p>
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1 rounded-lg border border-dark-border px-4 py-2.5 text-sm font-medium text-gray-400 transition-all hover:bg-white/5 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteQuote}
+                  disabled={deleting}
+                  className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-red-500 disabled:opacity-50"
+                >
+                  {deleting ? 'Deleting...' : 'Delete Forever'}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   )
 }

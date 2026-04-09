@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import React, { useState, useMemo, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Filter, ArrowUpDown, Plus, X } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { QuoteDetailPanel } from '@/components/admin/QuoteDetailPanel'
+import { QuoteDetailInlineContent } from '@/components/admin/QuoteDetailPanel'
 import { getQuotes, getVehicleNames, createQuoteManually } from '@/lib/actions/admin'
 import { formatDate } from '@/lib/utils'
 import { EVENT_TYPES } from '@/lib/constants'
@@ -45,8 +45,7 @@ export default function AdminQuotesPage() {
   const [statusFilter, setStatusFilter] = useState<QuoteStatus | 'all'>('all')
   const [sortField, setSortField] = useState<SortField>('created_at')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
-  const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null)
-  const [panelOpen, setPanelOpen] = useState(false)
+  const [expandedQuoteId, setExpandedQuoteId] = useState<string | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [addingQuote, setAddingQuote] = useState(false)
   const [newQuote, setNewQuote] = useState({
@@ -111,13 +110,11 @@ export default function AdminQuotesPage() {
   }
 
   const handleRowClick = (quote: Quote) => {
-    setSelectedQuote(quote)
-    setPanelOpen(true)
+    setExpandedQuoteId((prev) => (prev === quote.id ? null : quote.id))
   }
 
   const handleUpdateQuote = (updated: Quote) => {
     setQuotes((prev) => prev.map((q) => (q.id === updated.id ? updated : q)))
-    setSelectedQuote(updated)
   }
 
   const handleAddQuote = async () => {
@@ -155,6 +152,7 @@ export default function AdminQuotesPage() {
 
   const handleDeleteQuote = (quoteId: string) => {
     setQuotes((prev) => prev.filter((q) => q.id !== quoteId))
+    setExpandedQuoteId(null)
   }
 
   const statusCounts = useMemo(() => {
@@ -255,7 +253,9 @@ export default function AdminQuotesPage() {
             animate={{ opacity: 1, y: 0 }}
           >
             <Card
-              className="cursor-pointer !p-4 transition-all hover:border-gold/20 active:scale-[0.99]"
+              className={`cursor-pointer !p-4 transition-all hover:border-gold/20 active:scale-[0.99] ${
+                expandedQuoteId === quote.id ? 'border-gold/30' : ''
+              }`}
               onClick={() => handleRowClick(quote)}
             >
               <div className="flex items-start justify-between gap-2">
@@ -281,6 +281,27 @@ export default function AdminQuotesPage() {
                 <span className="shrink-0 ml-2">{formatDate(quote.created_at)}</span>
               </div>
             </Card>
+            <AnimatePresence>
+              {expandedQuoteId === quote.id && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+                    <QuoteDetailInlineContent
+                      quote={quote}
+                      onClose={() => setExpandedQuoteId(null)}
+                      onUpdateQuote={handleUpdateQuote}
+                      onDeleteQuote={handleDeleteQuote}
+                      vehicleNames={vehicleNames}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         ))}
         {filteredQuotes.length === 0 && (
@@ -318,37 +339,65 @@ export default function AdminQuotesPage() {
               </thead>
               <tbody className="divide-y divide-dark-border">
                 {filteredQuotes.map((quote) => (
-                  <tr
-                    key={quote.id}
-                    onClick={() => handleRowClick(quote)}
-                    className="cursor-pointer transition-colors hover:bg-white/[0.03]"
-                  >
-                    <td className="p-4 pr-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gold/10 text-xs font-bold text-gold">
-                        {quote.name.charAt(0)}
-                      </div>
-                    </td>
-                    <td className="py-3 pr-4 font-medium text-white whitespace-nowrap">
-                      {quote.name}
-                    </td>
-                    <td className="py-3 pr-4 text-gray-300 whitespace-nowrap">{quote.email}</td>
-                    <td className="py-3 pr-4 text-gray-300 whitespace-nowrap">{quote.phone}</td>
-                    <td className="py-3 pr-4 text-gray-300 whitespace-nowrap">{quote.event_type}</td>
-                    <td className="py-3 pr-4 text-gray-300 whitespace-nowrap">
-                      {formatDate(quote.event_date)}
-                    </td>
-                    <td className="py-3 pr-4 text-gray-300 whitespace-nowrap">
-                      {getVehicleName(quote.preferred_vehicle_id)}
-                    </td>
-                    <td className="py-3 pr-4">
-                      <Badge variant={statusBadgeVariant[quote.status] || 'outline'}>
-                        {quote.status}
-                      </Badge>
-                    </td>
-                    <td className="py-3 pr-4 text-gray-400 whitespace-nowrap">
-                      {formatDate(quote.created_at)}
-                    </td>
-                  </tr>
+                  <React.Fragment key={quote.id}>
+                    <tr
+                      onClick={() => handleRowClick(quote)}
+                      className={`cursor-pointer transition-colors hover:bg-white/[0.03] ${
+                        expandedQuoteId === quote.id ? 'bg-white/[0.05] border-l-2 border-l-gold' : ''
+                      }`}
+                    >
+                      <td className="p-4 pr-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gold/10 text-xs font-bold text-gold">
+                          {quote.name.charAt(0)}
+                        </div>
+                      </td>
+                      <td className="py-3 pr-4 font-medium text-white whitespace-nowrap">
+                        {quote.name}
+                      </td>
+                      <td className="py-3 pr-4 text-gray-300 whitespace-nowrap">{quote.email}</td>
+                      <td className="py-3 pr-4 text-gray-300 whitespace-nowrap">{quote.phone}</td>
+                      <td className="py-3 pr-4 text-gray-300 whitespace-nowrap">{quote.event_type}</td>
+                      <td className="py-3 pr-4 text-gray-300 whitespace-nowrap">
+                        {formatDate(quote.event_date)}
+                      </td>
+                      <td className="py-3 pr-4 text-gray-300 whitespace-nowrap">
+                        {getVehicleName(quote.preferred_vehicle_id)}
+                      </td>
+                      <td className="py-3 pr-4">
+                        <Badge variant={statusBadgeVariant[quote.status] || 'outline'}>
+                          {quote.status}
+                        </Badge>
+                      </td>
+                      <td className="py-3 pr-4 text-gray-400 whitespace-nowrap">
+                        {formatDate(quote.created_at)}
+                      </td>
+                    </tr>
+                    <AnimatePresence>
+                      {expandedQuoteId === quote.id && (
+                        <tr>
+                          <td colSpan={9} className="p-0 border-b border-gold/20" onClick={(e) => e.stopPropagation()}>
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3, ease: 'easeInOut' }}
+                              className="overflow-hidden"
+                            >
+                              <div className="p-4">
+                                <QuoteDetailInlineContent
+                                  quote={quote}
+                                  onClose={() => setExpandedQuoteId(null)}
+                                  onUpdateQuote={handleUpdateQuote}
+                                  onDeleteQuote={handleDeleteQuote}
+                                  vehicleNames={vehicleNames}
+                                />
+                              </div>
+                            </motion.div>
+                          </td>
+                        </tr>
+                      )}
+                    </AnimatePresence>
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
@@ -363,16 +412,6 @@ export default function AdminQuotesPage() {
           </div>
         </Card>
       </motion.div>
-
-      {/* Quote detail panel */}
-      <QuoteDetailPanel
-        quote={selectedQuote}
-        open={panelOpen}
-        onClose={() => setPanelOpen(false)}
-        onUpdateQuote={handleUpdateQuote}
-        onDeleteQuote={(id) => setQuotes((prev) => prev.filter((q) => q.id !== id))}
-        vehicleNames={vehicleNames}
-      />
 
       {/* Add Quote Modal */}
       {showAddModal && (
