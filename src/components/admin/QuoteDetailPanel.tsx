@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronUp,
+  Smartphone,
   Mail,
   Phone,
   Calendar,
@@ -87,6 +88,7 @@ export function QuoteDetailInlineContent({ quote, onClose, onUpdateQuote, onDele
   const [lineItems, setLineItems] = useState<QuoteLineItem[]>([])
   const [quoteLink, setQuoteLink] = useState<string | null>(null)
   const [quoteLinkCopied, setQuoteLinkCopied] = useState(false)
+  const [textMsgCopied, setTextMsgCopied] = useState(false)
   const [vehicle, setVehicle] = useState<Vehicle | null>(null)
   const [showDepositConfirm, setShowDepositConfirm] = useState(false)
   const [depositPaymentMethod, setDepositPaymentMethod] = useState('Zelle')
@@ -298,6 +300,16 @@ export function QuoteDetailInlineContent({ quote, onClose, onUpdateQuote, onDele
     setTimeout(() => setQuoteLinkCopied(false), 2000)
   }
 
+  const handleCopyTextMsg = async () => {
+    if (!quoteLink) return
+    const firstName = quote.name.split(' ')[0]
+    const dateStr = new Date(quote.event_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })
+    const msg = `Hi ${firstName}! This is American Royalty. Your quote for your ${quote.event_type.toLowerCase()} on ${dateStr} is ready! View your quote and book online here: ${quoteLink}`
+    await navigator.clipboard.writeText(msg)
+    setTextMsgCopied(true)
+    setTimeout(() => setTextMsgCopied(false), 2000)
+  }
+
   const handleDepositPaidOffPlatform = async () => {
     setDepositProcessing(true)
     setActionMessage(null)
@@ -348,8 +360,20 @@ export function QuoteDetailInlineContent({ quote, onClose, onUpdateQuote, onDele
       setQuotedAmount(updatedQuote.quoted_amount.toString())
     }
     if (updatedQuote.quote_sent_at) {
-      setActionMessage({ type: 'success', text: `Quote sent to ${quote.email}` })
-      getQuotePublicLink(quote.id).then(setQuoteLink).catch(() => {})
+      setActionMessage({ type: 'success', text: `Quote sent to ${quote.email} — copy the text message below to send via text` })
+      getQuotePublicLink(quote.id).then((link) => {
+        setQuoteLink(link)
+        // Auto-copy text message to clipboard
+        if (link) {
+          const firstName = quote.name.split(' ')[0]
+          const dateStr = new Date(quote.event_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })
+          const msg = `Hi ${firstName}! This is American Royalty. Your quote for your ${quote.event_type.toLowerCase()} on ${dateStr} is ready! View your quote and book online here: ${link}`
+          navigator.clipboard.writeText(msg).then(() => {
+            setTextMsgCopied(true)
+            setTimeout(() => setTextMsgCopied(false), 3000)
+          }).catch(() => {})
+        }
+      }).catch(() => {})
     } else {
       setActionMessage({ type: 'success', text: 'Draft saved' })
     }
@@ -622,24 +646,42 @@ export function QuoteDetailInlineContent({ quote, onClose, onUpdateQuote, onDele
                       )}
                     </div>
                   )}
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {quoteLink && (
-                      <button
-                        onClick={handleCopyQuoteLink}
-                        className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-dark-border bg-black px-3 py-2 text-xs font-medium text-gray-300 transition-all hover:border-gold/30 hover:text-gold"
-                      >
-                        {quoteLinkCopied ? (
-                          <>
-                            <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
-                            <span className="text-emerald-400">Copied!</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="h-3.5 w-3.5" />
-                            Copy Quote Link
-                          </>
-                        )}
-                      </button>
+                      <>
+                        <button
+                          onClick={handleCopyQuoteLink}
+                          className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-dark-border bg-black px-3 py-2 text-xs font-medium text-gray-300 transition-all hover:border-gold/30 hover:text-gold"
+                        >
+                          {quoteLinkCopied ? (
+                            <>
+                              <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
+                              <span className="text-emerald-400">Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3.5 w-3.5" />
+                              Copy Link
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={handleCopyTextMsg}
+                          className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-dark-border bg-black px-3 py-2 text-xs font-medium text-gray-300 transition-all hover:border-emerald-500/30 hover:text-emerald-400"
+                        >
+                          {textMsgCopied ? (
+                            <>
+                              <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
+                              <span className="text-emerald-400">Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Smartphone className="h-3.5 w-3.5" />
+                              Copy Text Msg
+                            </>
+                          )}
+                        </button>
+                      </>
                     )}
                     <button
                       onClick={() => setShowQuoteBuilder(true)}
