@@ -27,6 +27,7 @@ export interface PublicQuoteData {
   gratuity_percent: number | null
   tax_amount: number | null
   custom_items: { description: string; amount: number }[] | null
+  vehicle_entries: { vehicleId: string; vehicleName: string; rate: number; duration: number; subtotal: number }[] | null
 }
 
 export async function getQuotePublic(token: string): Promise<PublicQuoteData | null> {
@@ -78,5 +79,6 @@ export async function getQuotePublic(token: string): Promise<PublicQuoteData | n
     gratuity_percent: quote.gratuityPercent ?? null,
     tax_amount: quote.taxAmount ? Number(quote.taxAmount) : null,
     custom_items: (quote.customItems as { description: string; amount: number }[] | null) ?? null,
+    vehicle_entries: (quote.vehicleEntries as { vehicleId: string; vehicleName: string; rate: number; duration: number; subtotal: number }[] | null) ?? null,
   }
 }

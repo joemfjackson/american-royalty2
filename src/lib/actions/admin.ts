@@ -122,6 +122,7 @@ function mapQuote(q: PrismaQuote & { preferredVehicle?: PrismaVehicle | null; li
     driver_gratuity: q.driverGratuity ? Number(q.driverGratuity) : null,
     tax_amount: q.taxAmount ? Number(q.taxAmount) : null,
     custom_items: (q.customItems as { description: string; amount: number }[] | null) ?? null,
+    vehicle_entries: (q.vehicleEntries as { vehicleId: string; vehicleName: string; rate: number; duration: number; subtotal: number }[] | null) ?? null,
     created_at: q.createdAt.toISOString(),
     updated_at: q.updatedAt.toISOString(),
     line_items: q.lineItems?.map(mapQuoteLineItem),
@@ -790,6 +791,14 @@ export async function getVehicleForQuote(vehicleId: string): Promise<Vehicle | n
   return vehicle ? mapVehicle(vehicle) : null
 }
 
+export interface VehicleEntry {
+  vehicleId: string
+  vehicleName: string
+  rate: number
+  duration: number
+  subtotal: number
+}
+
 export interface QuotePricingData {
   hourlyRate: number
   durationHours: number
@@ -799,6 +808,7 @@ export interface QuotePricingData {
   driverGratuity: number
   taxAmount: number
   customItems: { description: string; amount: number }[]
+  vehicleEntries?: VehicleEntry[]
   total: number
   depositPercent: number
 }
@@ -820,6 +830,7 @@ export async function saveQuotePricing(
       driverGratuity: pricing.driverGratuity,
       taxAmount: pricing.taxAmount,
       customItems: pricing.customItems,
+      vehicleEntries: pricing.vehicleEntries ? JSON.parse(JSON.stringify(pricing.vehicleEntries)) : undefined,
       quotedAmount: pricing.total,
       depositPercent: pricing.depositPercent,
     },
@@ -859,6 +870,7 @@ export async function buildAndSendQuote(
       driverGratuity: pricing.driverGratuity,
       taxAmount: pricing.taxAmount,
       customItems: pricing.customItems,
+      vehicleEntries: pricing.vehicleEntries ? JSON.parse(JSON.stringify(pricing.vehicleEntries)) : undefined,
       quotedAmount: pricing.total,
       depositPercent: pricing.depositPercent,
       quoteToken,
@@ -1201,6 +1213,17 @@ export async function getVehicleNames(): Promise<Record<string, string>> {
   const map: Record<string, string> = {}
   for (const v of vehicles) {
     map[v.id] = v.name
+  }
+  return map
+}
+
+export async function getVehiclesForBuilder(): Promise<Record<string, { name: string; slug: string; hourlyRate: number }>> {
+  const vehicles = await prisma.vehicle.findMany({
+    select: { id: true, name: true, slug: true, hourlyRate: true },
+  })
+  const map: Record<string, { name: string; slug: string; hourlyRate: number }> = {}
+  for (const v of vehicles) {
+    map[v.id] = { name: v.name, slug: v.slug, hourlyRate: Number(v.hourlyRate) }
   }
   return map
 }

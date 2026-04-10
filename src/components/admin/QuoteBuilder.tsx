@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Plus, Trash2, Send, Save } from 'lucide-react'
+import { Plus, Trash2, Send, Save, Bus } from 'lucide-react'
 import type { Quote, Vehicle } from '@/types'
 import { saveQuotePricing, buildAndSendQuote } from '@/lib/actions/admin'
+import type { VehicleEntry } from '@/lib/actions/admin'
 import { formatTime } from '@/lib/utils'
 
 const VEHICLE_RATE_DEFAULTS: Record<string, number> = {
@@ -21,9 +22,18 @@ interface CustomItem {
   amount: number
 }
 
+interface VehicleFareEntry {
+  id: string
+  vehicleId: string
+  vehicleName: string
+  rate: number
+  duration: number
+}
+
 interface QuoteBuilderProps {
   quote: Quote
   vehicle: Vehicle | null
+  vehicles: Record<string, { name: string; slug: string; hourlyRate: number }>
   onSaved: (updated: Quote) => void
   onCancel: () => void
   adminNotes?: string
@@ -33,13 +43,31 @@ function fmt(n: number): string {
   return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-export function QuoteBuilder({ quote, vehicle, onSaved, onCancel, adminNotes }: QuoteBuilderProps) {
+export function QuoteBuilder({ quote, vehicle, vehicles, onSaved, onCancel, adminNotes }: QuoteBuilderProps) {
   const defaultRate = vehicle
     ? (vehicle.hourly_rate || VEHICLE_RATE_DEFAULTS[vehicle.slug] || 200)
     : 200
 
-  const [rate, setRate] = useState(quote.hourly_rate ?? defaultRate)
-  const [duration, setDuration] = useState(quote.duration_hours ?? 3)
+  // Initialize vehicle entries from saved data or create a single default entry
+  const [vehicleFares, setVehicleFares] = useState<VehicleFareEntry[]>(() => {
+    if (quote.vehicle_entries && quote.vehicle_entries.length > 0) {
+      return quote.vehicle_entries.map((ve, i) => ({
+        id: `vf_${i}`,
+        vehicleId: ve.vehicleId,
+        vehicleName: ve.vehicleName,
+        rate: ve.rate,
+        duration: ve.duration,
+      }))
+    }
+    return [{
+      id: 'vf_0',
+      vehicleId: quote.preferred_vehicle_id || '',
+      vehicleName: vehicle?.name || '',
+      rate: quote.hourly_rate ?? defaultRate,
+      duration: quote.duration_hours ?? 3,
+    }]
+  })
+
   const [fuelSurcharge, setFuelSurcharge] = useState(
     quote.fuel_surcharge ?? (quote.duration_hours ?? 3) * 6
   )
@@ -51,9 +79,14 @@ export function QuoteBuilder({ quote, vehicle, onSaved, onCancel, adminNotes }: 
   const [saving, setSaving] = useState(false)
   const [sending, setSending] = useState(false)
 
+  const totalDuration = useMemo(() =>
+    vehicleFares.reduce((sum, vf) => sum + vf.duration, 0),
+    [vehicleFares]
+  )
+
   // Auto-calculated values
   const calcs = useMemo(() => {
-    const baseFare = rate * duration
+    const baseFare = vehicleFares.reduce((sum, vf) => sum + vf.rate * vf.duration, 0)
     const gratuity = Math.round(baseFare * gratuityPercent / 100 * 100) / 100
     const tax = Math.round(baseFare * 0.03 * 100) / 100
     const customTotal = customItems.reduce((s, i) => s + (i.amount || 0), 0)
@@ -61,17 +94,24 @@ export function QuoteBuilder({ quote, vehicle, onSaved, onCancel, adminNotes }: 
     const total = subtotal + tax + gratuity
     const deposit = Math.round(total * depositPercent / 100 * 100) / 100
     return { baseFare, gratuity, tax, customTotal, subtotal, total, deposit }
-  }, [rate, duration, fuelSurcharge, gratuityPercent, customItems, depositPercent])
+  }, [vehicleFares, fuelSurcharge, gratuityPercent, customItems, depositPercent])
 
   const buildPricingData = () => ({
-    hourlyRate: rate,
-    durationHours: duration,
+    hourlyRate: vehicleFares[0]?.rate || 0,
+    durationHours: vehicleFares[0]?.duration || 0,
     baseFare: calcs.baseFare,
     fuelSurcharge,
     gratuityPercent,
     driverGratuity: calcs.gratuity,
     taxAmount: calcs.tax,
     customItems: customItems.filter(i => i.description.trim()).map(i => ({ description: i.description, amount: i.amount })),
+    vehicleEntries: vehicleFares.map(vf => ({
+      vehicleId: vf.vehicleId,
+      vehicleName: vf.vehicleName,
+      rate: vf.rate,
+      duration: vf.duration,
+      subtotal: vf.rate * vf.duration,
+    })),
     total: calcs.total,
     depositPercent,
   })
@@ -112,56 +152,145 @@ export function QuoteBuilder({ quote, vehicle, onSaved, onCancel, adminNotes }: 
     setCustomItems(customItems.filter(i => i.id !== id))
   }
 
-  // Recalculate fuel surcharge when duration changes
-  const handleDurationChange = (newDuration: number) => {
-    const oldDefault = duration * 6
-    setDuration(newDuration)
-    // Only auto-update fuel if it was still at the default
+  // Vehicle fare entry handlers
+  const addVehicleFare = () => {
+    setVehicleFares([...vehicleFares, {
+      id: `vf_${Date.now()}`,
+      vehicleId: '',
+      vehicleName: '',
+      rate: 200,
+      duration: 3,
+    }])
+  }
+
+  const updateVehicleFare = (id: string, field: keyof VehicleFareEntry, value: string | number) => {
+    setVehicleFares(vehicleFares.map(vf => {
+      if (vf.id !== id) return vf
+      if (field === 'vehicleId') {
+        const vid = value as string
+        const vInfo = vehicles[vid]
+        return {
+          ...vf,
+          vehicleId: vid,
+          vehicleName: vInfo?.name || '',
+          rate: vInfo?.hourlyRate || VEHICLE_RATE_DEFAULTS[vInfo?.slug || ''] || vf.rate,
+        }
+      }
+      return { ...vf, [field]: value }
+    }))
+  }
+
+  const removeVehicleFare = (id: string) => {
+    if (vehicleFares.length <= 1) return
+    const removed = vehicleFares.find(vf => vf.id === id)
+    const newFares = vehicleFares.filter(vf => vf.id !== id)
+    setVehicleFares(newFares)
+    // Auto-update fuel if at default
+    const oldTotalDuration = vehicleFares.reduce((s, vf) => s + vf.duration, 0)
+    const newTotalDuration = newFares.reduce((s, vf) => s + vf.duration, 0)
+    if (removed && fuelSurcharge === oldTotalDuration * 6) {
+      setFuelSurcharge(newTotalDuration * 6)
+    }
+  }
+
+  const handleDurationChange = (id: string, newDuration: number) => {
+    const oldTotalDuration = vehicleFares.reduce((s, vf) => s + vf.duration, 0)
+    const oldDefault = oldTotalDuration * 6
+    setVehicleFares(vehicleFares.map(vf =>
+      vf.id === id ? { ...vf, duration: newDuration } : vf
+    ))
+    // Auto-update fuel if still at default
     if (fuelSurcharge === oldDefault) {
-      setFuelSurcharge(newDuration * 6)
+      const newTotalDuration = vehicleFares.reduce((s, vf) =>
+        s + (vf.id === id ? newDuration : vf.duration), 0
+      )
+      setFuelSurcharge(newTotalDuration * 6)
     }
   }
 
   return (
     <div className="space-y-4">
-      {/* Base Fare */}
-      <div className="rounded-lg border border-dark-border bg-black/50 p-3 space-y-3">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Base Fare</p>
-        <div className="grid grid-cols-3 gap-3 items-end">
-          <div>
-            <label className="text-xs text-gray-500 block mb-1">Rate ($/hr)</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+      {/* Vehicle Fares */}
+      {vehicleFares.map((vf, index) => (
+        <div key={vf.id} className="rounded-lg border border-dark-border bg-black/50 p-3 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Bus className="h-3.5 w-3.5" />
+              {vehicleFares.length > 1 ? `Vehicle ${index + 1}` : 'Vehicle Fare'}
+            </p>
+            {vehicleFares.length > 1 && (
+              <button
+                onClick={() => removeVehicleFare(vf.id)}
+                className="rounded-lg p-1.5 text-gray-500 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          {/* Vehicle selector */}
+          <select
+            value={vf.vehicleId}
+            onChange={(e) => updateVehicleFare(vf.id, 'vehicleId', e.target.value)}
+            className="w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+          >
+            <option value="">Select vehicle (optional)</option>
+            {Object.entries(vehicles).map(([id, v]) => (
+              <option key={id} value={id}>{v.name}</option>
+            ))}
+          </select>
+          <div className="grid grid-cols-3 gap-3 items-end">
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">Rate ($/hr)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                <input
+                  type="number"
+                  value={vf.rate}
+                  onChange={(e) => updateVehicleFare(vf.id, 'rate', parseFloat(e.target.value) || 0)}
+                  className="w-full rounded-lg border border-dark-border bg-black py-2 pl-7 pr-3 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">Duration (hrs)</label>
               <input
                 type="number"
-                value={rate}
-                onChange={(e) => setRate(parseFloat(e.target.value) || 0)}
-                className="w-full rounded-lg border border-dark-border bg-black py-2 pl-7 pr-3 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+                min={1}
+                value={vf.duration}
+                onChange={(e) => handleDurationChange(vf.id, parseInt(e.target.value) || 1)}
+                className="w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
               />
             </div>
-          </div>
-          <div>
-            <label className="text-xs text-gray-500 block mb-1">Duration (hrs)</label>
-            <input
-              type="number"
-              min={1}
-              value={duration}
-              onChange={(e) => handleDurationChange(parseInt(e.target.value) || 1)}
-              className="w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
-            />
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-gray-500 mb-1">Subtotal</p>
-            <p className="text-lg font-bold text-gold">{fmt(calcs.baseFare)}</p>
+            <div className="text-right">
+              <p className="text-xs text-gray-500 mb-1">Subtotal</p>
+              <p className="text-lg font-bold text-gold">{fmt(vf.rate * vf.duration)}</p>
+            </div>
           </div>
         </div>
-      </div>
+      ))}
+
+      {/* Add Vehicle button */}
+      <button
+        onClick={addVehicleFare}
+        className="flex items-center gap-2 rounded-lg border border-dashed border-dark-border px-3 py-2 text-xs font-medium text-gray-400 transition-all hover:border-gold/30 hover:text-gold w-full justify-center"
+      >
+        <Plus className="h-3.5 w-3.5" />
+        Add Vehicle
+      </button>
+
+      {/* Combined base fare (only show when multiple vehicles) */}
+      {vehicleFares.length > 1 && (
+        <div className="flex items-center justify-between rounded-lg border border-dark-border bg-black/30 p-3">
+          <p className="text-sm text-white">Combined Base Fare</p>
+          <p className="text-sm font-bold text-gold">{fmt(calcs.baseFare)}</p>
+        </div>
+      )}
 
       {/* NTA Fuel Surcharge */}
       <div className="flex items-center justify-between rounded-lg border border-dark-border bg-black/50 p-3">
         <div>
           <p className="text-sm text-white">NTA Fuel Surcharge</p>
-          <p className="text-xs text-gray-500">Default: $6/hr &times; {duration} hrs = {fmt(duration * 6)}</p>
+          <p className="text-xs text-gray-500">Default: $6/hr &times; {totalDuration} hrs = {fmt(totalDuration * 6)}</p>
         </div>
         <div className="relative w-28">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
@@ -244,6 +373,29 @@ export function QuoteBuilder({ quote, vehicle, onSaved, onCancel, adminNotes }: 
 
       {/* Totals */}
       <div className="rounded-lg border border-gold/20 bg-gold/5 p-3 space-y-2">
+        {vehicleFares.length > 1 ? (
+          vehicleFares.map((vf, i) => (
+            <div key={vf.id} className="flex justify-between text-sm">
+              <span className="text-gray-400">{vf.vehicleName || `Vehicle ${i + 1}`}: {vf.duration} hrs &times; {fmt(vf.rate)}/hr</span>
+              <span className="text-white">{fmt(vf.rate * vf.duration)}</span>
+            </div>
+          ))
+        ) : (
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-400">Base Fare: {vehicleFares[0]?.duration} hrs &times; {fmt(vehicleFares[0]?.rate || 0)}/hr</span>
+            <span className="text-white">{fmt(calcs.baseFare)}</span>
+          </div>
+        )}
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-400">NTA Fuel Surcharge</span>
+          <span className="text-white">{fmt(fuelSurcharge)}</span>
+        </div>
+        {customItems.filter(i => i.description.trim()).map(item => (
+          <div key={item.id} className="flex justify-between text-sm">
+            <span className="text-gray-400">{item.description}</span>
+            <span className="text-white">{fmt(item.amount)}</span>
+          </div>
+        ))}
         <div className="flex justify-between text-sm">
           <span className="text-gray-400">Subtotal</span>
           <span className="text-white">{fmt(calcs.subtotal)}</span>
@@ -289,13 +441,15 @@ export function QuoteBuilder({ quote, vehicle, onSaved, onCancel, adminNotes }: 
           <div className="rounded border border-dark-border p-2 space-y-1 text-xs">
             <p>Date: {quote.event_date}</p>
             {quote.pickup_time && <p>Time: {formatTime(quote.pickup_time)}</p>}
-            <p>Duration: {duration} hours</p>
+            <p>Duration: {totalDuration} hours{vehicleFares.length > 1 ? ` (${vehicleFares.length} vehicles)` : ''}</p>
           </div>
           <div className="rounded border border-dark-border p-2 space-y-1 text-xs">
-            <div className="flex justify-between">
-              <span>Base Fare: {duration} hrs &times; {fmt(rate)}/hr</span>
-              <span>{fmt(calcs.baseFare)}</span>
-            </div>
+            {vehicleFares.map((vf, i) => (
+              <div key={vf.id} className="flex justify-between">
+                <span>{vehicleFares.length > 1 ? `${vf.vehicleName || `Vehicle ${i + 1}`}: ` : 'Base Fare: '}{vf.duration} hrs &times; {fmt(vf.rate)}/hr</span>
+                <span>{fmt(vf.rate * vf.duration)}</span>
+              </div>
+            ))}
             <div className="flex justify-between">
               <span>NTA Fuel Surcharge</span>
               <span>{fmt(fuelSurcharge)}</span>

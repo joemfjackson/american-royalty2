@@ -69,6 +69,7 @@ export interface Quote {
   driver_gratuity: number | null
   tax_amount: number | null
   custom_items: { description: string; amount: number }[] | null
+  vehicle_entries: { vehicleId: string; vehicleName: string; rate: number; duration: number; subtotal: number }[] | null
   created_at: string
   updated_at: string
   vehicle?: Vehicle

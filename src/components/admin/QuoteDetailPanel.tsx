@@ -37,6 +37,7 @@ import {
   getQuoteWithLineItems,
   getQuotePublicLink,
   getVehicleForQuote,
+  getVehiclesForBuilder,
   deleteQuote,
 } from '@/lib/actions/admin'
 import { formatDate, formatCurrency, formatTime } from '@/lib/utils'
@@ -90,6 +91,7 @@ export function QuoteDetailInlineContent({ quote, onClose, onUpdateQuote, onDele
   const [quoteLinkCopied, setQuoteLinkCopied] = useState(false)
   const [textMsgCopied, setTextMsgCopied] = useState(false)
   const [vehicle, setVehicle] = useState<Vehicle | null>(null)
+  const [vehiclesForBuilder, setVehiclesForBuilder] = useState<Record<string, { name: string; slug: string; hourlyRate: number }>>({})
   const [showDepositConfirm, setShowDepositConfirm] = useState(false)
   const [depositPaymentMethod, setDepositPaymentMethod] = useState('Zelle')
   const [depositProcessing, setDepositProcessing] = useState(false)
@@ -139,6 +141,9 @@ export function QuoteDetailInlineContent({ quote, onClose, onUpdateQuote, onDele
       } else {
         setVehicle(null)
       }
+
+      // Load all vehicles for builder
+      getVehiclesForBuilder().then(setVehiclesForBuilder).catch(() => {})
 
       // Load quote link if quote has been sent
       if (quote.quote_sent_at) {
@@ -699,6 +704,7 @@ export function QuoteDetailInlineContent({ quote, onClose, onUpdateQuote, onDele
                 <QuoteBuilder
                   quote={quote}
                   vehicle={vehicle}
+                  vehicles={vehiclesForBuilder}
                   onSaved={handleQuoteSaved}
                   onCancel={() => setShowQuoteBuilder(false)}
                   adminNotes={adminNotes}

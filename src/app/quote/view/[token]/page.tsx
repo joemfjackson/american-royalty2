@@ -74,12 +74,21 @@ export default async function QuoteViewPage({ params }: Props) {
               <span className="text-white font-medium">{quote.duration_hours} hours</span>
             </div>
           )}
-          {quote.vehicle_name && (
+          {quote.vehicle_entries && quote.vehicle_entries.length > 1 ? (
+            quote.vehicle_entries.map((ve, i) => (
+              ve.vehicleName && (
+                <div key={i} className="flex justify-between text-sm">
+                  <span className="text-gray-400">Vehicle {i + 1}</span>
+                  <span className="text-white font-medium">{ve.vehicleName}</span>
+                </div>
+              )
+            ))
+          ) : quote.vehicle_name ? (
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Vehicle</span>
               <span className="text-white font-medium">{quote.vehicle_name}</span>
             </div>
-          )}
+          ) : null}
           {quote.guest_count && (
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Guests</span>
@@ -112,18 +121,32 @@ export default async function QuoteViewPage({ params }: Props) {
         <div className="px-5 py-4 space-y-1">
           {hasStructuredPricing ? (
             <>
-              {/* Base Fare */}
-              <div className="flex justify-between items-baseline text-sm py-1.5">
-                <div>
-                  <span className="text-gray-300">Base Fare</span>
-                  {quote.duration_hours && quote.hourly_rate && (
-                    <span className="ml-2 text-xs text-gray-500">
-                      {quote.duration_hours} hrs &times; {fmt(quote.hourly_rate)}/hr
-                    </span>
-                  )}
+              {/* Vehicle Fares */}
+              {quote.vehicle_entries && quote.vehicle_entries.length > 1 ? (
+                quote.vehicle_entries.map((ve, i) => (
+                  <div key={i} className="flex justify-between items-baseline text-sm py-1.5">
+                    <div>
+                      <span className="text-gray-300">{ve.vehicleName || `Vehicle ${i + 1}`}</span>
+                      <span className="ml-2 text-xs text-gray-500">
+                        {ve.duration} hrs &times; {fmt(ve.rate)}/hr
+                      </span>
+                    </div>
+                    <span className="text-white font-medium ml-4 shrink-0">{fmt(ve.subtotal)}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex justify-between items-baseline text-sm py-1.5">
+                  <div>
+                    <span className="text-gray-300">Base Fare</span>
+                    {quote.duration_hours && quote.hourly_rate && (
+                      <span className="ml-2 text-xs text-gray-500">
+                        {quote.duration_hours} hrs &times; {fmt(quote.hourly_rate)}/hr
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-white font-medium ml-4 shrink-0">{fmt(quote.base_fare!)}</span>
                 </div>
-                <span className="text-white font-medium ml-4 shrink-0">{fmt(quote.base_fare!)}</span>
-              </div>
+              )}
 
               {/* Fuel Surcharge */}
               {quote.fuel_surcharge != null && quote.fuel_surcharge > 0 && (
