@@ -60,7 +60,7 @@ export async function getQuotePublic(token: string): Promise<PublicQuoteData | n
     event_type: quote.eventType,
     event_date: quote.eventDate,
     pickup_time: quote.pickupTime,
-    duration_hours: quote.durationHours,
+    duration_hours: quote.durationHours ? Number(quote.durationHours) : null,
     guest_count: quote.guestCount,
     pickup_location: quote.pickupLocation,
     dropoff_location: quote.dropoffLocation,

@@ -255,9 +255,10 @@ export function QuoteBuilder({ quote, vehicle, vehicles, onSaved, onCancel, admi
               <label className="text-xs text-gray-500 block mb-1">Duration (hrs)</label>
               <input
                 type="number"
-                min={1}
+                min={0.5}
+                step={0.5}
                 value={vf.duration}
-                onChange={(e) => handleDurationChange(vf.id, parseInt(e.target.value) || 1)}
+                onChange={(e) => handleDurationChange(vf.id, parseFloat(e.target.value) || 1)}
                 className="w-full rounded-lg border border-dark-border bg-black px-3 py-2 text-sm text-white focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
               />
             </div>

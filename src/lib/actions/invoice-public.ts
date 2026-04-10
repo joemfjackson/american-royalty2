@@ -62,7 +62,7 @@ export async function getInvoicePublic(token: string): Promise<PublicInvoiceData
       event_type: invoice.quote.eventType,
       event_date: invoice.quote.eventDate,
       pickup_time: invoice.quote.pickupTime,
-      duration_hours: invoice.quote.durationHours,
+      duration_hours: invoice.quote.durationHours ? Number(invoice.quote.durationHours) : null,
       guest_count: invoice.quote.guestCount,
       pickup_location: invoice.quote.pickupLocation,
       dropoff_location: invoice.quote.dropoffLocation,

@@ -116,7 +116,7 @@ model Quote {
   eventDate          String
   pickupTime         String?
   guestCount         Int?
-  durationHours      Int?
+  durationHours      Decimal?    @db.Decimal(4, 1)
   pickupLocation     String?
   dropoffLocation    String?
   details            String?     @db.Text
