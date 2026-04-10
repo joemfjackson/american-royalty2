@@ -43,7 +43,7 @@ export function QuoteBuilder({ quote, vehicle, onSaved, onCancel, adminNotes }: 
   const [fuelSurcharge, setFuelSurcharge] = useState(
     quote.fuel_surcharge ?? (quote.duration_hours ?? 3) * 6
   )
-  const [gratuityPercent, setGratuityPercent] = useState(quote.gratuity_percent ?? 20)
+  const [gratuityPercent, setGratuityPercent] = useState(quote.gratuity_percent ?? 0)
   const [depositPercent, setDepositPercent] = useState(quote.deposit_percent ?? 25)
   const [customItems, setCustomItems] = useState<CustomItem[]>(
     quote.custom_items?.map((ci, i) => ({ id: `ci_${i}`, ...ci })) ?? []
