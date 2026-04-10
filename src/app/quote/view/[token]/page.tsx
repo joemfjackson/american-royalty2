@@ -58,37 +58,62 @@ export default async function QuoteViewPage({ params }: Props) {
             <span className="text-gray-400">Event</span>
             <span className="text-white font-medium">{quote.event_type}</span>
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-400">Date</span>
-            <span className="text-white font-medium">{formatDate(quote.event_date)}</span>
-          </div>
-          {quote.pickup_time && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Time</span>
-              <span className="text-white font-medium">{formatTime(quote.pickup_time)}</span>
-            </div>
-          )}
-          {quote.duration_hours && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Duration</span>
-              <span className="text-white font-medium">{quote.duration_hours} hours</span>
-            </div>
-          )}
           {quote.vehicle_entries && quote.vehicle_entries.length > 1 ? (
-            quote.vehicle_entries.map((ve, i) => (
-              ve.vehicleName && (
-                <div key={i} className="flex justify-between text-sm">
-                  <span className="text-gray-400">Vehicle {i + 1}</span>
-                  <span className="text-white font-medium">{ve.vehicleName}</span>
+            <>
+              {quote.vehicle_entries.map((ve, i) => (
+                <div key={i} className="rounded-lg bg-white/[0.03] p-3 space-y-1.5">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Ride {i + 1}</p>
+                  {ve.date && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Date</span>
+                      <span className="text-white font-medium">{formatDate(ve.date)}</span>
+                    </div>
+                  )}
+                  {ve.pickupTime && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Time</span>
+                      <span className="text-white font-medium">{formatTime(ve.pickupTime)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Duration</span>
+                    <span className="text-white font-medium">{ve.duration} hours</span>
+                  </div>
+                  {ve.vehicleName && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Vehicle</span>
+                      <span className="text-white font-medium">{ve.vehicleName}</span>
+                    </div>
+                  )}
                 </div>
-              )
-            ))
-          ) : quote.vehicle_name ? (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Vehicle</span>
-              <span className="text-white font-medium">{quote.vehicle_name}</span>
-            </div>
-          ) : null}
+              ))}
+            </>
+          ) : (
+            <>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Date</span>
+                <span className="text-white font-medium">{formatDate(quote.event_date)}</span>
+              </div>
+              {quote.pickup_time && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Time</span>
+                  <span className="text-white font-medium">{formatTime(quote.pickup_time)}</span>
+                </div>
+              )}
+              {quote.duration_hours && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Duration</span>
+                  <span className="text-white font-medium">{quote.duration_hours} hours</span>
+                </div>
+              )}
+              {quote.vehicle_name && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Vehicle</span>
+                  <span className="text-white font-medium">{quote.vehicle_name}</span>
+                </div>
+              )}
+            </>
+          )}
           {quote.guest_count && (
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Guests</span>

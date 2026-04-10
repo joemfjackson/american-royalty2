@@ -122,7 +122,7 @@ function mapQuote(q: PrismaQuote & { preferredVehicle?: PrismaVehicle | null; li
     driver_gratuity: q.driverGratuity ? Number(q.driverGratuity) : null,
     tax_amount: q.taxAmount ? Number(q.taxAmount) : null,
     custom_items: (q.customItems as { description: string; amount: number }[] | null) ?? null,
-    vehicle_entries: (q.vehicleEntries as { vehicleId: string; vehicleName: string; rate: number; duration: number; subtotal: number }[] | null) ?? null,
+    vehicle_entries: (q.vehicleEntries as VehicleEntry[] | null) ?? null,
     created_at: q.createdAt.toISOString(),
     updated_at: q.updatedAt.toISOString(),
     line_items: q.lineItems?.map(mapQuoteLineItem),
@@ -797,6 +797,8 @@ export interface VehicleEntry {
   rate: number
   duration: number
   subtotal: number
+  date?: string
+  pickupTime?: string
 }
 
 export interface QuotePricingData {
