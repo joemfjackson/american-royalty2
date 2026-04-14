@@ -134,6 +134,13 @@ export default async function ServiceDetailPage({ params }: PageProps) {
       sameAs: 'https://en.wikipedia.org/wiki/Las_Vegas',
     },
     url: `${BRAND.siteUrl}/services/${service.slug}`,
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '5.0',
+      reviewCount: '7',
+      bestRating: '5',
+      worstRating: '1',
+    },
   }
 
   // FAQ JSON-LD

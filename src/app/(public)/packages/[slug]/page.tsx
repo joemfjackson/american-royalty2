@@ -77,23 +77,46 @@ export default async function PackageDetailPage({
       availability: 'https://schema.org/InStock',
       itemCondition: 'https://schema.org/NewCondition',
       priceValidUntil: '2026-12-31',
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        applicableCountry: 'US',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
+      },
+      shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        shippingRate: {
+          '@type': 'MonetaryAmount',
+          value: '0',
+          currency: 'USD',
+        },
+        shippingDestination: {
+          '@type': 'DefinedRegion',
+          addressCountry: 'US',
+          addressRegion: 'NV',
+        },
+        deliveryTime: {
+          '@type': 'ShippingDeliveryTime',
+          handlingTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 0,
+            maxValue: 0,
+            unitCode: 'DAY',
+          },
+          transitTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 0,
+            maxValue: 0,
+            unitCode: 'DAY',
+          },
+        },
+      },
     })),
-    hasMerchantReturnPolicy: {
-      '@type': 'MerchantReturnPolicy',
-      applicableCountry: 'US',
-      returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
-    },
-    shippingDetails: {
-      '@type': 'OfferShippingDetails',
-      shippingRate: {
-        '@type': 'MonetaryAmount',
-        value: '0',
-        currency: 'USD',
-      },
-      shippingDestination: {
-        '@type': 'DefinedRegion',
-        addressCountry: 'US',
-      },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '5.0',
+      reviewCount: '7',
+      bestRating: '5',
+      worstRating: '1',
     },
     provider: {
       '@type': 'LocalBusiness',

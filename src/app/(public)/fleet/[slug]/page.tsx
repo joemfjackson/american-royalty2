@@ -99,6 +99,46 @@ export default async function VehicleDetailPage({ params }: PageProps) {
       url: `${BRAND.siteUrl}/fleet/${vehicle.slug}`,
       unitCode: 'HUR',
       description: `Starting at ${formatCurrency(vehicle.hourly_rate)}/hr with a ${vehicle.min_hours}-hour minimum`,
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        applicableCountry: 'US',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
+      },
+      shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        shippingRate: {
+          '@type': 'MonetaryAmount',
+          value: '0',
+          currency: 'USD',
+        },
+        shippingDestination: {
+          '@type': 'DefinedRegion',
+          addressCountry: 'US',
+          addressRegion: 'NV',
+        },
+        deliveryTime: {
+          '@type': 'ShippingDeliveryTime',
+          handlingTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 0,
+            maxValue: 0,
+            unitCode: 'DAY',
+          },
+          transitTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 0,
+            maxValue: 0,
+            unitCode: 'DAY',
+          },
+        },
+      },
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '5.0',
+      reviewCount: '7',
+      bestRating: '5',
+      worstRating: '1',
     },
     additionalProperty: [
       {
