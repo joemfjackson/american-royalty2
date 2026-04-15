@@ -4,7 +4,11 @@ import { getVehicles, getServices } from '@/lib/data'
 import { PACKAGES } from '@/lib/packages'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = BRAND.siteUrl
+  // Always use www canonical URL in sitemap to avoid redirect errors in Google Search Console
+  const baseUrl = BRAND.siteUrl.replace(
+    '://americanroyaltylasvegas.com',
+    '://www.americanroyaltylasvegas.com'
+  )
 
   const [vehicles, services] = await Promise.all([
     getVehicles(),
