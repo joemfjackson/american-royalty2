@@ -88,9 +88,9 @@ const benefits = [
 
 // ─── Night Options ──────────────────────────────────────
 const nightOptions = [
-  'Night 1 — Thursday May 15',
-  'Night 2 — Friday May 16',
-  'Night 3 — Saturday May 17',
+  'Night 1 — Friday May 15',
+  'Night 2 — Saturday May 16',
+  'Night 3 — Sunday May 17',
   'All 3 Nights (best value)',
 ]
 
@@ -123,7 +123,7 @@ function FaqAccordion({ items }: { items: FaqItem[] }) {
               openIndex === i ? 'max-h-96 pb-4' : 'max-h-0'
             }`}
           >
-            <p className="px-6 text-sm leading-relaxed text-white/60">{item.answer}</p>
+            <p className="px-6 text-sm leading-relaxed text-white/80">{item.answer}</p>
           </div>
         </div>
       ))}
@@ -238,7 +238,7 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
               Electric Daisy Carnival Transportation
             </p>
 
-            <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-white/60 sm:text-lg">
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg">
               Skip the parking chaos. Your private party bus takes your whole crew from your hotel directly to Las Vegas Motor Speedway — no waiting, just vibes.
             </p>
 
@@ -385,7 +385,7 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
                 Check <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">Availability</span>
               </h2>
               <div className="mx-auto mt-4 h-0.5 w-20 bg-gradient-to-r from-transparent via-gold to-transparent" />
-              <p className="mt-4 text-white/50">
+              <p className="mt-4 text-white/90">
                 Fill out the form below and we&apos;ll confirm availability and pricing within 2 hours.
               </p>
             </div>
@@ -400,10 +400,10 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
                   <Check className="h-8 w-8 text-green-400" />
                 </div>
                 <h3 className="text-xl font-bold text-white">Request Received!</h3>
-                <p className="mt-3 text-white/60">
+                <p className="mt-3 text-white/80">
                   We&apos;ll confirm availability within 2 hours.
                 </p>
-                <p className="mt-2 text-white/60">
+                <p className="mt-2 text-white/80">
                   Questions? Call or text{' '}
                   <a href={`tel:${BRAND.phone.replace(/[^0-9+]/g, '')}`} className="font-semibold text-gold hover:text-gold-light">
                     {BRAND.phone}
@@ -415,7 +415,7 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
                 {/* Name / Email / Phone */}
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div className="sm:col-span-2">
-                    <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-white/70">
+                    <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-white/90">
                       Full Name <span className="text-red-400">*</span>
                     </label>
                     <input
@@ -428,7 +428,7 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
                     />
                   </div>
                   <div>
-                    <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-white/70">
+                    <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-white/90">
                       Email <span className="text-red-400">*</span>
                     </label>
                     <input
@@ -441,7 +441,7 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
                     />
                   </div>
                   <div>
-                    <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-white/70">
+                    <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-white/90">
                       Phone <span className="text-red-400">*</span>
                     </label>
                     <input
@@ -458,7 +458,7 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
                 {/* Guest Count / Pickup */}
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <label htmlFor="guestCount" className="mb-1.5 block text-sm font-medium text-white/70">
+                    <label htmlFor="guestCount" className="mb-1.5 block text-sm font-medium text-white/90">
                       Guest Count <span className="text-red-400">*</span>
                     </label>
                     <select
@@ -474,7 +474,7 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="pickupLocation" className="mb-1.5 block text-sm font-medium text-white/70">
+                    <label htmlFor="pickupLocation" className="mb-1.5 block text-sm font-medium text-white/90">
                       Pickup Location
                     </label>
                     <input
@@ -489,7 +489,7 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
 
                 {/* Night Selection */}
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-white/70">
+                  <label className="mb-2 block text-sm font-medium text-white/90">
                     Night Selection <span className="text-red-400">*</span>
                   </label>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -506,7 +506,7 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
                               ? isBestValue
                                 ? 'border-cyan-500/50 bg-cyan-500/10 text-cyan-300'
                                 : 'border-purple-500/50 bg-purple-500/10 text-purple-300'
-                              : 'border-[#333] bg-[#1A1A1A] text-white/70 hover:border-[#555]'
+                              : 'border-[#333] bg-[#1A1A1A] text-white/90 hover:border-[#555]'
                           } ${isBestValue ? 'sm:col-span-2' : ''}`}
                         >
                           <div
@@ -529,7 +529,7 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
 
                 {/* Notes */}
                 <div>
-                  <label htmlFor="notes" className="mb-1.5 block text-sm font-medium text-white/70">
+                  <label htmlFor="notes" className="mb-1.5 block text-sm font-medium text-white/90">
                     Additional Notes
                   </label>
                   <textarea

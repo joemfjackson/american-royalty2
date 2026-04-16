@@ -15,9 +15,9 @@ const edcSchema = z.object({
 })
 
 const NIGHT_DATES: Record<string, string> = {
-  'Night 1 — Thursday May 15': '2026-05-15',
-  'Night 2 — Friday May 16': '2026-05-16',
-  'Night 3 — Saturday May 17': '2026-05-17',
+  'Night 1 — Friday May 15': '2026-05-15',
+  'Night 2 — Saturday May 16': '2026-05-16',
+  'Night 3 — Sunday May 17': '2026-05-17',
   'All 3 Nights (best value)': '2026-05-15',
 }
 
