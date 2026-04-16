@@ -185,14 +185,14 @@ export async function generateCaptions(
     const response = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1500,
-      system: `You write social media captions for American Royalty Las Vegas, a premium party bus and limousine service. Brand voice: confident, premium, aspirational, direct. Never use the word 'luxury' more than once. Always hint at the group experience. Key differentiators: no surge pricing, private group transportation, professional drivers, available 24/7, vehicles fit 8-40 passengers. Phone: (702) 666-4037. Website: americanroyaltylasvegas.com`,
+      system: `You write social media captions for American Royalty Las Vegas, a premium party bus and limousine service. Brand voice: confident, premium, aspirational, direct. Never use the word 'luxury' more than once. Always hint at the group experience. Key differentiators: private group transportation, professional drivers, available 24/7, vehicles fit 8-40 passengers. Phone: (702) 666-4037. Website: americanroyaltylasvegas.com`,
       messages: [{
         role: 'user',
         content: `Write 3 distinct social media captions for a ${postType} post about "${eventName}"${venue ? ` at ${venue}` : ''} for ${platform.join(', ')}.${angle ? ` Angle: ${angle}` : ''}
 
 Each caption must have a different angle:
 1. HYPE — Excitement, energy, FOMO
-2. VALUE — Practical, why it makes sense, no surge pricing
+2. VALUE — Practical, why it makes sense, fixed group pricing
 3. PREMIUM — Aspirational, VIP treatment, elevated experience
 
 Include a call to action in each. Keep each under 150 words.

@@ -5,11 +5,11 @@ import { EdcPage } from './EdcPage'
 export const metadata: Metadata = {
   title: 'EDC 2026 Party Bus Transportation | Las Vegas Motor Speedway',
   description:
-    'Private party bus transportation to Electric Daisy Carnival 2026 at Las Vegas Motor Speedway. Groups of 8-40. No surge pricing. Check availability for May 15, 16, 17.',
+    'Private party bus transportation to Electric Daisy Carnival 2026 at Las Vegas Motor Speedway. Groups of 8-40. Check availability for May 15, 16, 17.',
   openGraph: {
     title: 'EDC 2026 Party Bus Transportation | American Royalty',
     description:
-      'Private party bus transportation to Electric Daisy Carnival 2026 at Las Vegas Motor Speedway. Groups of 8-40. No surge pricing.',
+      'Private party bus transportation to Electric Daisy Carnival 2026 at Las Vegas Motor Speedway. Groups of 8-40.',
     url: `${BRAND.siteUrl}/services/edc-2026`,
     type: 'website',
   },

@@ -231,14 +231,14 @@ export const PACKAGES: PackageConfig[] = [
   {
     slug: 'sphere-transportation',
     name: 'Sphere Transportation',
-    tagline: 'Arrive at the Sphere in style — no surge, no stress',
+    tagline: 'Arrive at the Sphere in style — stress-free',
     heroHeading: 'Las Vegas Sphere Transportation — Party Bus To & From The Show',
     metaTitle: 'Sphere Las Vegas Transportation | Party Bus To The Sphere | American Royalty',
-    metaDescription: 'Skip the Uber surge and parking chaos. Book a luxury party bus to the Sphere Las Vegas. Group pickup, liquor store stop, VIP drop-off, and guaranteed post-show ride back. Groups of 1-40.',
+    metaDescription: 'Skip the parking chaos. Book a luxury party bus to the Sphere Las Vegas. Group pickup, liquor store stop, VIP drop-off, and guaranteed post-show ride back. Groups of 1-40.',
     duration: 'Approx. 4 hours',
     durationHours: 4,
     description:
-      'The Sphere experience starts before you walk through the doors. Skip the $70 parking, the Uber surge after the show, and the chaos of 20,000 people all trying to leave at once. Your group gets a private luxury party bus from your hotel — with a liquor store stop on the way so you can pregame the ride over. We drop you at the Sphere entrance, then pick you up right after the show ends. No waiting, no surge pricing, no splitting a tiny Uber with your whole crew. Cap the night with a Strip cruise back to your hotel. Show tickets not included — transportation only.',
+      'The Sphere experience starts before you walk through the doors. Skip the $70 parking, the chaos of 20,000 people all trying to leave at once, and the headache of splitting tiny Ubers with your whole crew. Your group gets a private luxury party bus from your hotel — with a liquor store stop on the way so you can pregame the ride over. We drop you at the Sphere entrance, then pick you up right after the show ends. No waiting, no stress. Cap the night with a Strip cruise back to your hotel. Show tickets not included — transportation only.',
     includes: [
       'Private luxury party bus for your group',
       'Hotel or Strip pickup at your location',
@@ -269,15 +269,15 @@ export const PACKAGES: PackageConfig[] = [
     faqs: [
       {
         q: 'What is the best way to get to the Sphere Las Vegas?',
-        a: 'A private party bus is the best way to get to the Sphere as a group. Rideshare pickup and drop-off at the Sphere is located at the corner of Sands Avenue and Koval Lane, but after a sold-out show that area is extremely congested and surge pricing is common. A pre-booked private party bus means guaranteed pickup with no surge, no waiting, and your whole group rides together.',
+        a: 'A private party bus is the best way to get to the Sphere as a group. Rideshare pickup and drop-off at the Sphere is located at the corner of Sands Avenue and Koval Lane, but after a sold-out show that area is extremely congested. A pre-booked private party bus means guaranteed pickup, no waiting, and your whole group rides together.',
       },
       {
         q: 'Where does my driver pick me up after the Sphere show?',
         a: 'Your chauffeur will coordinate your post-show pickup location with you before the show. Since drivers cannot wait on Sphere property during the event, your driver will return at show end and meet your group at a designated nearby pickup point. We will confirm the exact meetup location on the day of your booking.',
       },
       {
-        q: 'Is there surge pricing after Sphere shows?',
-        a: 'Yes — post-show Uber and Lyft surge pricing at the Sphere can be significant, especially after sold-out concerts. With a pre-booked party bus your price is locked in at the time of booking with no surprises.',
+        q: 'What happens after the Sphere show ends?',
+        a: 'After sold-out concerts, getting a rideshare can be a challenge with long wait times. With a pre-booked party bus your price is locked in at the time of booking and your driver returns to pick you up right when the show ends — no waiting, no surprises.',
       },
       {
         q: 'How much does parking cost at the Sphere Las Vegas?',
@@ -301,7 +301,7 @@ export const PACKAGES: PackageConfig[] = [
       },
       {
         q: 'Is this better than just taking an Uber to the Sphere?',
-        a: 'For groups, yes — significantly. A party bus means your whole group rides together, you get a pregame experience on the way, VIP drop-off, and a guaranteed post-show ride with no surge pricing. After a sold-out Sphere show, getting a rideshare for a large group can take 20-30 minutes with 2-3x surge pricing. Your party bus is waiting for you.',
+        a: 'For groups, yes — significantly. A party bus means your whole group rides together, you get a pregame experience on the way, VIP drop-off, and a guaranteed post-show ride. After a sold-out Sphere show, getting a rideshare for a large group can take 20-30 minutes. Your party bus is waiting for you.',
       },
       {
         q: 'What Sphere shows is this package available for?',
@@ -315,7 +315,7 @@ export const PACKAGES: PackageConfig[] = [
     extraSections: [
       {
         heading: 'Why Not Just Take an Uber to the Sphere?',
-        content: 'For a solo couple, an Uber works fine. For a group of 8, 12, or 20 people — it is a logistical nightmare. You are splitting into multiple cars, coordinating pickups, and hoping nobody gets left behind. After the show, you are competing with thousands of other concertgoers all trying to get a ride at the exact same moment. Post-show surge pricing at the Sphere regularly runs 2-3x normal rates. A private party bus costs less per person than parking plus Uber for most groups, and the ride itself becomes part of the experience — not a stressful afterthought.',
+        content: 'For a solo couple, an Uber works fine. For a group of 8, 12, or 20 people — it is a logistical nightmare. You are splitting into multiple cars, coordinating pickups, and hoping nobody gets left behind. After the show, you are competing with thousands of other concertgoers all trying to get a ride at the exact same moment. A private party bus costs less per person than parking plus Uber for most groups, and the ride itself becomes part of the experience — not a stressful afterthought.',
       },
       {
         heading: 'The Best Group Transportation to the Sphere Las Vegas',
@@ -324,19 +324,19 @@ export const PACKAGES: PackageConfig[] = [
     ],
     image: '/images/packages/sphere-hero.jpg',
     keywords:
-      'Sphere Las Vegas transportation, party bus to Sphere Las Vegas, how to get to Sphere Las Vegas, Sphere Las Vegas group transportation, Sphere Las Vegas limo service, ride to Sphere Las Vegas, Backstreet Boys Sphere transportation, Eagles Sphere Las Vegas party bus, Wizard of Oz Sphere Las Vegas transportation, no surge pricing Sphere Las Vegas, post-show pickup Sphere Las Vegas',
+      'Sphere Las Vegas transportation, party bus to Sphere Las Vegas, how to get to Sphere Las Vegas, Sphere Las Vegas group transportation, Sphere Las Vegas limo service, ride to Sphere Las Vegas, Backstreet Boys Sphere transportation, Eagles Sphere Las Vegas party bus, Wizard of Oz Sphere Las Vegas transportation, post-show pickup Sphere Las Vegas',
   },
   {
     slug: 'allegiant-stadium',
     name: 'Allegiant Stadium Transportation',
-    tagline: 'Skip the surge — private pickup, drop-off, and return ride',
+    tagline: 'Private pickup, drop-off, and guaranteed return ride',
     heroHeading: 'Las Vegas Allegiant Stadium Transportation | Party Bus & Limo Service',
     metaTitle: 'Allegiant Stadium Transportation Las Vegas | Party Bus & Limo | American Royalty',
     metaDescription: 'Skip the $150 parking and post-game traffic. Book a private party bus or limo to Allegiant Stadium Las Vegas. Hotel pickup, VIP drop-off, and guaranteed post-event return ride. Raiders games, concerts, WrestleMania, BTS, and more.',
     duration: 'Approx. 4 hours',
     durationHours: 4,
     description:
-      'Getting to Allegiant Stadium is easy. Getting out after 65,000 people try to leave at the same time is not. Skip the $60-$150 parking pass, the post-event traffic gridlock, and the Uber surge. Your private party bus or limo picks you up from your hotel, drops you at the stadium entrance on Diablo Drive and Procyon Street, and your driver returns when the event ends to bring you back. No surge pricing, no waiting in a rideshare crowd, no stress. Just show up, enjoy the event, and your ride is waiting.',
+      'Getting to Allegiant Stadium is easy. Getting out after 65,000 people try to leave at the same time is not. Skip the $60-$150 parking pass and the post-event traffic gridlock. Your private party bus or limo picks you up from your hotel, drops you at the stadium entrance on Diablo Drive and Procyon Street, and your driver returns when the event ends to bring you back. No waiting in a rideshare crowd, no stress. Just show up, enjoy the event, and your ride is waiting.',
     includes: [
       'Private party bus or limo for your group',
       'Hotel or Strip pickup at your location',
@@ -364,7 +364,7 @@ export const PACKAGES: PackageConfig[] = [
     faqs: [
       {
         q: 'What is the best way to get to Allegiant Stadium in Las Vegas?',
-        a: 'A private party bus or limo is the best option for groups. Official stadium parking runs $60-$150 per car and must be booked in advance through SpotHero. After the event, I-15 and surrounding streets gridlock immediately as 65,000 people leave at once. A pre-booked private vehicle means guaranteed post-event pickup with no surge pricing and no searching for a rideshare in a crowd.',
+        a: 'A private party bus or limo is the best option for groups. Official stadium parking runs $60-$150 per car and must be booked in advance through SpotHero. After the event, I-15 and surrounding streets gridlock immediately as 65,000 people leave at once. A pre-booked private vehicle means guaranteed post-event pickup and no searching for a rideshare in a crowd.',
       },
       {
         q: 'Where does the driver drop off and pick up at Allegiant Stadium?',
@@ -379,8 +379,8 @@ export const PACKAGES: PackageConfig[] = [
         a: 'Official Allegiant Stadium parking ranges from $60 to $150 per car depending on the event and lot location. Lots must be booked in advance through SpotHero or ParkMobile and sell out quickly for major events. For a group of 12 in three cars, parking alone can cost $180-$450 before the event starts.',
       },
       {
-        q: 'Is there surge pricing after Allegiant Stadium events?',
-        a: 'Yes — post-event Uber and Lyft surge pricing is significant after sold-out Raiders games and major concerts. With 65,000 people leaving at once, wait times can be 20-40 minutes with 2-3x normal rates. A pre-booked party bus locks in your price with no surprises.',
+        q: 'What happens after the event ends at Allegiant Stadium?',
+        a: 'With 65,000 people leaving at once, rideshare wait times can be 20-40 minutes. A pre-booked party bus locks in your price with no surprises — your driver returns when the event ends and your group rides together.',
       },
       {
         q: 'What events at Allegiant Stadium is this package available for?',

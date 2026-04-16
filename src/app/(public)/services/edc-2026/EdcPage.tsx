@@ -79,7 +79,7 @@ function ParticleCanvas() {
 // ─── Benefits Row ───────────────────────────────────────
 const benefits = [
   { icon: Bus, label: 'Private Group Transportation' },
-  { icon: Zap, label: 'No Surge Pricing' },
+  { icon: Zap, label: 'Fixed Group Pricing' },
   { icon: Tent, label: 'Direct to LVMS' },
   { icon: Crown, label: '8–40 Passengers' },
   { icon: RefreshCw, label: 'Round Trip Available' },
@@ -229,7 +229,7 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
             </p>
 
             <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-white/60 sm:text-lg">
-              Skip the parking chaos. Your private party bus takes your whole crew from your hotel directly to Las Vegas Motor Speedway — no surge pricing, no waiting, just vibes.
+              Skip the parking chaos. Your private party bus takes your whole crew from your hotel directly to Las Vegas Motor Speedway — no waiting, just vibes.
             </p>
 
             {/* CTA arrow */}
