@@ -14,6 +14,10 @@ const ServicesGrid = dynamic(
   () => import('@/components/sections/ServicesGrid').then((m) => m.ServicesGrid),
 )
 
+const PackagesPreview = dynamic(
+  () => import('@/components/sections/PackagesPreview').then((m) => m.PackagesPreview),
+)
+
 const CTABanner = dynamic(
   () => import('@/components/sections/CTABanner').then((m) => m.CTABanner),
 )
@@ -114,6 +118,7 @@ export default async function HomePage() {
       <TrustSignals />
       <FleetPreview vehicles={vehicles} />
       <ServicesGrid services={services} />
+      <PackagesPreview />
       <Testimonials testimonials={testimonials} />
       <CTABanner />
       <FAQ />
