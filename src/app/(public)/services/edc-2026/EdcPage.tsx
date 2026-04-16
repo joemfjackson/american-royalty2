@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Bus, Zap, Tent, Crown, RefreshCw, ChevronDown, Check } from 'lucide-react'
 import { BRAND } from '@/lib/constants'
@@ -93,7 +94,7 @@ const nightOptions = [
   'All 3 Nights (best value)',
 ]
 
-const guestOptions = ['8-15', '16-25', '26-35', '36-40', '40+']
+const guestOptions = ['2-6', '7-12', '13-20', '21-30', '31-40']
 
 // ─── FAQ Accordion ──────────────────────────────────────
 function FaqAccordion({ items }: { items: FaqItem[] }) {
@@ -200,6 +201,15 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
     <div className="relative min-h-screen bg-[#0a0a0a]">
       {/* ── Hero Section ─────────────────────────────── */}
       <section className="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-28">
+        {/* Hero background image */}
+        <Image
+          src="/images/edc/hero-aerial.jpg"
+          alt="EDC Las Vegas aerial view"
+          fill
+          priority
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-black/70" />
         <ParticleCanvas />
 
         {/* Neon glows */}
@@ -265,6 +275,111 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
                 <span className="text-xs font-semibold text-white/80 sm:text-sm">{b.label}</span>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Photo Gallery ───────────────────────────── */}
+      <section className="section-padding relative overflow-hidden">
+        <div className="pointer-events-none absolute -right-40 top-1/4 h-[500px] w-[500px] rounded-full bg-purple-600/[0.05] blur-[120px]" />
+        <div className="container-max relative">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white sm:text-4xl">
+              The <span className="bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">Experience</span>
+            </h2>
+            <div className="mx-auto mt-4 h-0.5 w-20 bg-gradient-to-r from-transparent via-gold to-transparent" />
+          </div>
+
+          {/* Bento grid */}
+          <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3 auto-rows-[200px] sm:auto-rows-[240px]">
+            {/* KineticFIELD with EDC drone text — large */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="group relative col-span-2 row-span-1 overflow-hidden rounded-xl border border-[#333]"
+            >
+              <Image
+                src="/images/edc/kinetic-field-stage.jpg"
+                alt="KineticFIELD stage with EDC Las Vegas drone show and fireworks"
+                fill
+                sizes="(max-width: 1024px) 100vw, 66vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+            </motion.div>
+
+            {/* Lineup poster — tall, spans 2 rows */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="group relative row-span-2 overflow-hidden rounded-xl border border-[#333]"
+            >
+              <Image
+                src="/images/edc/lineup-2026.png"
+                alt="EDC Las Vegas 2026 official lineup poster"
+                fill
+                sizes="(max-width: 1024px) 50vw, 33vw"
+                className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+              />
+            </motion.div>
+
+            {/* Drone owl show */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="group relative overflow-hidden rounded-xl border border-[#333]"
+            >
+              <Image
+                src="/images/edc/kinetic-field-drones.jpg"
+                alt="KineticFIELD stage with drone owl light show"
+                fill
+                sizes="(max-width: 1024px) 50vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+            </motion.div>
+
+            {/* Green lasers */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="group relative overflow-hidden rounded-xl border border-[#333]"
+            >
+              <Image
+                src="/images/edc/green-lasers.webp"
+                alt="EDC Las Vegas crowd with green laser show"
+                fill
+                sizes="(max-width: 1024px) 50vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+            </motion.div>
+
+            {/* Grounds with fireworks — wide */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="group relative col-span-2 overflow-hidden rounded-xl border border-[#333]"
+            >
+              <Image
+                src="/images/edc/grounds-fireworks.jpg"
+                alt="EDC Las Vegas aerial view of festival grounds with fireworks"
+                fill
+                sizes="(max-width: 1024px) 100vw, 66vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+            </motion.div>
           </div>
         </div>
       </section>
