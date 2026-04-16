@@ -83,5 +83,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ]
 
-  return [...staticPages, ...vehiclePages, ...servicePages, ...packagePages]
+  const edcPage: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/services/edc-2026`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+  ]
+
+  return [...staticPages, ...vehiclePages, ...servicePages, ...packagePages, ...edcPage]
 }

@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { href: '/fleet', label: 'Fleet' },
   { href: '/services', label: 'Services' },
   { href: '/packages', label: 'Packages' },
+  { href: '/services/edc-2026', label: 'EDC 2026', badge: 'Limited' },
   { href: '/quote', label: 'Quote' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
@@ -93,7 +94,14 @@ export function Navbar() {
                     : 'text-white/70 hover:text-white'
                 )}
               >
-                {link.label}
+                <span className="flex items-center gap-1.5">
+                  {link.label}
+                  {link.badge && (
+                    <span className="rounded-full bg-purple-600 px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none text-white tracking-normal">
+                      {link.badge}
+                    </span>
+                  )}
+                </span>
                 <span
                   className={cn(
                     'absolute -bottom-1 left-0 right-0 h-0.5 transition-opacity duration-300',
@@ -163,7 +171,14 @@ export function Navbar() {
                   : 'text-white/70 hover:text-white'
               )}
             >
-              {link.label}
+              <span className="inline-flex items-center gap-2">
+                {link.label}
+                {link.badge && (
+                  <span className="rounded-full bg-purple-600 px-2 py-0.5 text-[10px] font-bold uppercase leading-none text-white tracking-normal">
+                    {link.badge}
+                  </span>
+                )}
+              </span>
             </Link>
           ))}
 
