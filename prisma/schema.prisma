@@ -144,6 +144,15 @@ model Quote {
   @@map("quotes")
 }
 
+model QuoteShortCode {
+  id         String   @id @default(cuid())
+  shortCode  String   @unique @db.VarChar(6)
+  quoteToken String   @unique
+  createdAt  DateTime @default(now())
+
+  @@map("quote_short_codes")
+}
+
 model QuoteLineItem {
   id          String   @id @default(cuid())
   quoteId     String

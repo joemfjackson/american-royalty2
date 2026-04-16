@@ -845,6 +845,36 @@ export async function saveQuotePricing(
   return mapQuote(updated!)
 }
 
+function generateShortCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // no I/O/0/1 to avoid confusion
+  let code = 'AR'
+  for (let i = 0; i < 4; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)]
+  }
+  return code
+}
+
+async function ensureShortCode(quoteToken: string): Promise<string> {
+  const existing = await prisma.quoteShortCode.findUnique({
+    where: { quoteToken },
+  })
+  if (existing) return existing.shortCode
+
+  // Try up to 5 times in case of collision
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const shortCode = generateShortCode()
+    try {
+      await prisma.quoteShortCode.create({
+        data: { shortCode, quoteToken },
+      })
+      return shortCode
+    } catch {
+      // Collision — retry with a new code
+    }
+  }
+  throw new Error('Failed to generate unique short code')
+}
+
 export async function buildAndSendQuote(
   quoteId: string,
   pricing: QuotePricingData,
@@ -879,6 +909,9 @@ export async function buildAndSendQuote(
       adminNotes: adminNotes ?? quote.adminNotes,
     },
   })
+
+  // Generate short code for SMS links
+  await ensureShortCode(quoteToken)
 
   // Send email BEFORE marking as QUOTED — if email fails, admin can retry
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
@@ -927,6 +960,15 @@ export async function getQuotePublicLink(quoteId: string): Promise<string | null
   if (!quote?.quoteToken) return null
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.americanroyaltylasvegas.com'
+
+  // Return short URL if a short code exists
+  const shortCodeRecord = await prisma.quoteShortCode.findUnique({
+    where: { quoteToken: quote.quoteToken },
+  })
+  if (shortCodeRecord) {
+    return `${siteUrl}/q/${shortCodeRecord.shortCode}`
+  }
+
   return `${siteUrl}/quote/view/${quote.quoteToken}`
 }
 
