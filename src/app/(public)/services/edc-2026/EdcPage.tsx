@@ -363,23 +363,6 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
             </motion.div>
 
-            {/* Grounds with fireworks — wide */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="group relative col-span-2 overflow-hidden rounded-xl border border-[#333]"
-            >
-              <Image
-                src="/images/edc/grounds-fireworks.jpg"
-                alt="EDC Las Vegas aerial view of festival grounds with fireworks"
-                fill
-                sizes="(max-width: 1024px) 100vw, 66vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-            </motion.div>
           </div>
         </div>
       </section>
@@ -387,11 +370,16 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
       {/* ── Availability Form ────────────────────────── */}
       <section id="availability" className="relative section-padding overflow-hidden">
         {/* Neon glows */}
-        <div className="pointer-events-none absolute -right-60 top-20 h-[500px] w-[500px] rounded-full bg-purple-600/[0.06] blur-[130px]" />
-        <div className="pointer-events-none absolute -left-40 bottom-20 h-[400px] w-[400px] rounded-full bg-cyan-500/[0.04] blur-[100px]" />
+        <div className="pointer-events-none absolute -right-60 top-20 h-[500px] w-[500px] rounded-full bg-purple-600/[0.08] blur-[130px]" />
+        <div className="pointer-events-none absolute -left-40 bottom-20 h-[400px] w-[400px] rounded-full bg-cyan-500/[0.06] blur-[100px]" />
 
         <div className="container-max relative">
           <div className="mx-auto max-w-2xl">
+            {/* Glowing card wrapper */}
+            <div className="relative rounded-2xl border border-purple-500/20 bg-[#111111] p-8 sm:p-10 shadow-[0_0_60px_rgba(147,51,234,0.12),0_0_30px_rgba(6,182,212,0.08)]">
+              {/* Gradient top accent */}
+              <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl bg-gradient-to-r from-purple-500 via-cyan-400 to-purple-500" />
+
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold text-white sm:text-4xl">
                 Check <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">Availability</span>
@@ -578,6 +566,7 @@ export function EdcPage({ faqItems }: { faqItems: FaqItem[] }) {
                 </button>
               </form>
             )}
+            </div>
           </div>
         </div>
       </section>
