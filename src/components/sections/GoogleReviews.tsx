@@ -1,11 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { GoldLine } from '@/components/ui/GoldLine'
 
 const GOOGLE_MAPS_URL =
   'https://www.google.com/maps/place/American+Royalty/@36.0556623,-115.4177476,10z'
+
+const AUTO_PLAY_MS = 5000
 
 function GoogleG({ className = 'h-5 w-5' }: { className?: string }) {
   return (
@@ -69,19 +71,13 @@ const reviews = [
   },
 ]
 
-function ReviewCard({ review, index }: { review: (typeof reviews)[0]; index: number }) {
+function ReviewCard({ review }: { review: (typeof reviews)[0] }) {
   const [expanded, setExpanded] = useState(false)
   const needsTruncate = review.text.length > 120
   const displayText = !expanded && needsTruncate ? review.text.slice(0, 120) + '...' : review.text
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="relative flex min-w-[280px] flex-col rounded-xl border border-gold/15 bg-[#18181B] p-5 snap-start sm:min-w-0"
-    >
+    <div className="flex h-full flex-col rounded-xl border border-gold/15 bg-[#18181B] p-5">
       {/* Header: avatar + name + date */}
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gold to-gold-dark text-sm font-bold text-black">
@@ -119,11 +115,63 @@ function ReviewCard({ review, index }: { review: (typeof reviews)[0]; index: num
       <div className="mt-3 flex justify-end">
         <GoogleG className="h-4 w-4 opacity-40" />
       </div>
-    </motion.div>
+    </div>
   )
 }
 
+function useVisibleCount() {
+  const [count, setCount] = useState(3)
+
+  useEffect(() => {
+    function update() {
+      if (window.innerWidth < 640) setCount(1)
+      else if (window.innerWidth < 1024) setCount(2)
+      else setCount(3)
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+
+  return count
+}
+
 export function GoogleReviews() {
+  const visibleCount = useVisibleCount()
+  const maxIndex = reviews.length - visibleCount
+  const [current, setCurrent] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const goTo = useCallback((index: number) => {
+    setCurrent(Math.max(0, Math.min(index, maxIndex)))
+  }, [maxIndex])
+
+  const next = useCallback(() => {
+    setCurrent((prev) => (prev >= maxIndex ? 0 : prev + 1))
+  }, [maxIndex])
+
+  const prev = useCallback(() => {
+    setCurrent((prev) => (prev <= 0 ? maxIndex : prev - 1))
+  }, [maxIndex])
+
+  // Keep current in bounds when visibleCount changes
+  useEffect(() => {
+    if (current > maxIndex) setCurrent(maxIndex)
+  }, [current, maxIndex])
+
+  // Auto-play
+  useEffect(() => {
+    if (paused) return
+    timerRef.current = setInterval(next, AUTO_PLAY_MS)
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [paused, next])
+
+  // Dot count = number of positions
+  const dotCount = maxIndex + 1
+
   return (
     <section className="section-padding relative overflow-hidden">
       {/* Purple ambient glow */}
@@ -144,8 +192,7 @@ export function GoogleReviews() {
             </div>
           </div>
           <h2 className="text-3xl font-bold sm:text-4xl">
-            <span className="text-white">8 Reviews on </span>
-            <span className="gold-gradient-text">Google</span>
+            <span className="gold-gradient-text">Google Reviews</span>
           </h2>
           <GoldLine className="mx-auto mt-4" width="80px" />
           <p className="mx-auto mt-4 max-w-lg text-white/50">
@@ -153,10 +200,62 @@ export function GoogleReviews() {
           </p>
         </div>
 
-        {/* Review cards — scrollable on mobile, grid on desktop */}
-        <div className="mt-12 flex gap-5 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-hide sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-3">
-          {reviews.map((review, i) => (
-            <ReviewCard key={review.name} review={review} index={i} />
+        {/* Carousel */}
+        <div
+          className="relative mt-12"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          {/* Arrow buttons */}
+          <button
+            onClick={prev}
+            aria-label="Previous reviews"
+            className="absolute -left-3 top-1/2 z-10 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full border border-dark-border bg-dark-card/80 text-white/60 backdrop-blur-sm transition-colors hover:border-gold/30 hover:text-gold sm:-left-5"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            onClick={next}
+            aria-label="Next reviews"
+            className="absolute -right-3 top-1/2 z-10 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full border border-dark-border bg-dark-card/80 text-white/60 backdrop-blur-sm transition-colors hover:border-gold/30 hover:text-gold sm:-right-5"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+
+          {/* Slide track */}
+          <div className="overflow-hidden px-2">
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{
+                transform: `translateX(-${current * (100 / visibleCount)}%)`,
+              }}
+            >
+              {reviews.map((review) => (
+                <div
+                  key={review.name}
+                  className="shrink-0 px-2.5"
+                  style={{ width: `${100 / visibleCount}%` }}
+                >
+                  <ReviewCard review={review} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Dot indicators */}
+        <div className="mt-6 flex justify-center gap-2">
+          {Array.from({ length: dotCount }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                i === current
+                  ? 'w-6 bg-gold'
+                  : 'w-2 bg-white/20 hover:bg-white/40'
+              }`}
+            />
           ))}
         </div>
 
