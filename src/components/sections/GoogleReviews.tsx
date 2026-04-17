@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { GoldLine } from '@/components/ui/GoldLine'
 
 const GOOGLE_MAPS_URL =
-  'https://www.google.com/maps/place/American+Royalty/@36.0556623,-115.4177476,10z/data=!3m1!4b1!4m6!3m5!1s0xaaf2d891a4939ebf:0xb2cb8292f96eb7e5!8m2!3d36.0561135!4d-115.0880966'
+  'https://www.google.com/maps/place/American+Royalty/@36.0496103,-115.145409,10z/data=!4m18!1m9!3m8!1s0xaaf2d891a4939ebf:0xb2cb8292f96eb7e5!2sAmerican+Royalty!8m2!3d36.0561135!4d-115.0880966!9m1!1b1!16s%2Fg%2F11z1sr8qh2!3m7!1s0xaaf2d891a4939ebf:0xb2cb8292f96eb7e5!8m2!3d36.0561135!4d-115.0880966!9m1!1b1!16s%2Fg%2F11z1sr8qh2?entry=ttu&g_ep=EgoyMDI2MDQxNS4wIKXMDSoASAFQAw%3D%3D'
 
 const AUTO_PLAY_MS = 5000
 
