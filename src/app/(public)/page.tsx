@@ -18,6 +18,10 @@ const PackagesPreview = dynamic(
   () => import('@/components/sections/PackagesPreview').then((m) => m.PackagesPreview),
 )
 
+const GoogleReviews = dynamic(
+  () => import('@/components/sections/GoogleReviews').then((m) => m.GoogleReviews),
+)
+
 const CTABanner = dynamic(
   () => import('@/components/sections/CTABanner').then((m) => m.CTABanner),
 )
@@ -82,6 +86,23 @@ const jsonLd = {
     closes: '23:59',
   },
   sameAs: [],
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '5.0',
+    reviewCount: '8',
+    bestRating: '5',
+    worstRating: '1',
+  },
+  review: [
+    { '@type': 'Review', author: { '@type': 'Person', name: 'Punjabi Refix' }, reviewRating: { '@type': 'Rating', ratingValue: '5' }, reviewBody: 'Booked a party bus for our parents anniversary. Great service and a smooth ride.' },
+    { '@type': 'Review', author: { '@type': 'Person', name: 'Edgar Lopez' }, reviewRating: { '@type': 'Rating', ratingValue: '5' }, reviewBody: "Las Vegas's limousine service provider. They provided me with an exceptional offer." },
+    { '@type': 'Review', author: { '@type': 'Person', name: 'Jenny' }, reviewRating: { '@type': 'Rating', ratingValue: '5' }, reviewBody: 'We had the BEST experience with this party bus! From start to finish, everything was smooth, fun, and very well organized.' },
+    { '@type': 'Review', author: { '@type': 'Person', name: 'Terry Gebremichael' }, reviewRating: { '@type': 'Rating', ratingValue: '5' }, reviewBody: 'Thank you Shammi for making my cousin birthday special. We had a blast!!' },
+    { '@type': 'Review', author: { '@type': 'Person', name: 'Mulu Mekonen' }, reviewRating: { '@type': 'Rating', ratingValue: '5' }, reviewBody: 'Thank you shammi we had a good time you the best driver thanks again!' },
+    { '@type': 'Review', author: { '@type': 'Person', name: 'Jodenne Nunnally' }, reviewRating: { '@type': 'Rating', ratingValue: '5' }, reviewBody: 'Joe was an excellent driver. We did a 2 hour strip tour for my daughters birthday.' },
+    { '@type': 'Review', author: { '@type': 'Person', name: 'Jorge Quinonez' }, reviewRating: { '@type': 'Rating', ratingValue: '5' }, reviewBody: 'Excellent service, my driver Joe was great. They drove my daughters quincea\u00f1era party. I highly recommend them.' },
+    { '@type': 'Review', author: { '@type': 'Person', name: 'Alex Rodriguez' }, reviewRating: { '@type': 'Rating', ratingValue: '5' }, reviewBody: 'Best limo company in Las Vegas.' },
+  ],
 }
 
 const faqJsonLd = {
@@ -116,6 +137,7 @@ export default async function HomePage() {
       />
       <Hero />
       <TrustSignals />
+      <GoogleReviews />
       <FleetPreview vehicles={vehicles} />
       <ServicesGrid services={services} />
       <PackagesPreview />

@@ -136,7 +136,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: '5.0',
-      reviewCount: '7',
+      reviewCount: '8',
       bestRating: '5',
       worstRating: '1',
     },

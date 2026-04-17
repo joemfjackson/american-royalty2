@@ -114,7 +114,7 @@ export default async function PackageDetailPage({
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: '5.0',
-      reviewCount: '7',
+      reviewCount: '8',
       bestRating: '5',
       worstRating: '1',
     },
