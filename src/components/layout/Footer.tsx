@@ -69,9 +69,11 @@ export async function Footer() {
               <Image
                 src="/images/logo.png"
                 alt="American Royalty"
-                width={180}
-                height={72}
+                width={160}
+                height={53}
+                sizes="160px"
                 className="h-16 w-auto transition-opacity group-hover:opacity-90"
+                loading="lazy"
               />
             </Link>
             <p className="mt-3 text-lg font-semibold italic text-gold/80">

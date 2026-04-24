@@ -8,22 +8,27 @@ const TrustSignals = dynamic(
 
 const FleetPreview = dynamic(
   () => import('@/components/sections/FleetPreview').then((m) => m.FleetPreview),
+  { ssr: false },
 )
 
 const ServicesGrid = dynamic(
   () => import('@/components/sections/ServicesGrid').then((m) => m.ServicesGrid),
+  { ssr: false },
 )
 
 const PackagesPreview = dynamic(
   () => import('@/components/sections/PackagesPreview').then((m) => m.PackagesPreview),
+  { ssr: false },
 )
 
 const GoogleReviews = dynamic(
   () => import('@/components/sections/GoogleReviews').then((m) => m.GoogleReviews),
+  { ssr: false },
 )
 
 const CTABanner = dynamic(
   () => import('@/components/sections/CTABanner').then((m) => m.CTABanner),
+  { ssr: false },
 )
 import { BRAND, SERVICE_AREAS, FAQ_ITEMS } from '@/lib/constants'
 import { getVehicles, getServices, getTestimonials } from '@/lib/data'
@@ -31,6 +36,7 @@ import { getVehicles, getServices, getTestimonials } from '@/lib/data'
 const Testimonials = dynamic(
   () => import('@/components/sections/Testimonials').then((m) => ({ default: m.Testimonials })),
   {
+    ssr: false,
     loading: () => (
       <div className="section-padding">
         <div className="container-max h-96" />
@@ -42,6 +48,7 @@ const Testimonials = dynamic(
 const FAQ = dynamic(
   () => import('@/components/sections/FAQ').then((m) => ({ default: m.FAQ })),
   {
+    ssr: false,
     loading: () => (
       <div className="section-padding">
         <div className="container-max h-96" />

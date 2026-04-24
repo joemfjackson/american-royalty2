@@ -74,8 +74,9 @@ export function Navbar() {
             <Image
               src="/images/logo.png"
               alt="American Royalty"
-              width={160}
-              height={64}
+              width={120}
+              height={40}
+              sizes="120px"
               className="h-14 w-auto transition-opacity group-hover:opacity-90"
               priority
             />
