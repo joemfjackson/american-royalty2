@@ -349,6 +349,8 @@ export async function updateQuote(
     guest_count?: number | null
     preferred_vehicle_id?: string | null
     deposit_percent?: number
+    pickup_location?: string | null
+    dropoff_location?: string | null
   }
 ) {
   await requireAdmin()
@@ -383,6 +385,12 @@ export async function updateQuote(
   }
   if (data.deposit_percent !== undefined) {
     updateData.depositPercent = data.deposit_percent
+  }
+  if (data.pickup_location !== undefined) {
+    updateData.pickupLocation = data.pickup_location
+  }
+  if (data.dropoff_location !== undefined) {
+    updateData.dropoffLocation = data.dropoff_location
   }
 
   const updated = await prisma.quote.update({

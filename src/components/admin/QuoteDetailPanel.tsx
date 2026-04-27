@@ -109,6 +109,8 @@ export function QuoteDetailInlineContent({ quote, onClose, onUpdateQuote, onDele
   const [editDuration, setEditDuration] = useState(quote?.duration_hours?.toString() || '')
   const [editGuests, setEditGuests] = useState(quote?.guest_count?.toString() || '')
   const [editVehicleId, setEditVehicleId] = useState(quote?.preferred_vehicle_id || '')
+  const [editPickupLocation, setEditPickupLocation] = useState(quote?.pickup_location || '')
+  const [editDropoffLocation, setEditDropoffLocation] = useState(quote?.dropoff_location || '')
 
   // Update local state when quote changes
   useEffect(() => {
@@ -127,6 +129,8 @@ export function QuoteDetailInlineContent({ quote, onClose, onUpdateQuote, onDele
       setEditDuration(quote.duration_hours?.toString() || '')
       setEditGuests(quote.guest_count?.toString() || '')
       setEditVehicleId(quote.preferred_vehicle_id || '')
+      setEditPickupLocation(quote.pickup_location || '')
+      setEditDropoffLocation(quote.dropoff_location || '')
 
       // Load line items
       getQuoteWithLineItems(quote.id)
@@ -176,6 +180,8 @@ export function QuoteDetailInlineContent({ quote, onClose, onUpdateQuote, onDele
         duration_hours: editDuration ? parseInt(editDuration) : null,
         guest_count: editGuests ? parseInt(editGuests) : null,
         preferred_vehicle_id: editVehicleId || null,
+        pickup_location: editPickupLocation || null,
+        dropoff_location: editDropoffLocation || null,
       })
       // If status changed to booked directly (legacy path), create booking
       if (status === 'booked' && quote.status !== 'booked') {
@@ -517,25 +523,35 @@ export function QuoteDetailInlineContent({ quote, onClose, onUpdateQuote, onDele
                 </div>
               </div>
 
-              {/* Locations — inline */}
-              {(quote.pickup_location || quote.dropoff_location) && (
-                <div className="flex flex-col gap-1.5 text-sm">
-                  {quote.pickup_location && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
-                      <span className="text-gray-500">Pickup:</span>
-                      <span className="text-white truncate">{quote.pickup_location}</span>
-                    </div>
-                  )}
-                  {quote.dropoff_location && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-3.5 w-3.5 shrink-0 text-red-400" />
-                      <span className="text-gray-500">Dropoff:</span>
-                      <span className="text-white truncate">{quote.dropoff_location}</span>
-                    </div>
-                  )}
+              {/* Locations — editable */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-lg border border-dark-border p-2.5">
+                  <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                    <MapPin className="h-3 w-3 text-emerald-400" />
+                    Pickup
+                  </p>
+                  <input
+                    type="text"
+                    value={editPickupLocation}
+                    onChange={(e) => setEditPickupLocation(e.target.value)}
+                    placeholder="Pickup location"
+                    className="w-full bg-transparent text-sm font-medium text-white focus:outline-none placeholder:text-gray-600"
+                  />
                 </div>
-              )}
+                <div className="rounded-lg border border-dark-border p-2.5">
+                  <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                    <MapPin className="h-3 w-3 text-red-400" />
+                    Dropoff
+                  </p>
+                  <input
+                    type="text"
+                    value={editDropoffLocation}
+                    onChange={(e) => setEditDropoffLocation(e.target.value)}
+                    placeholder="Dropoff location"
+                    className="w-full bg-transparent text-sm font-medium text-white focus:outline-none placeholder:text-gray-600"
+                  />
+                </div>
+              </div>
 
               {/* Client message */}
               {quote.details && (
